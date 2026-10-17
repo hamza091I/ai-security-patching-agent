@@ -6,3 +6,6 @@ tree-sitter
 bandit
 pydantic
 chroma_data/
+__pycache__/
+*.pyc
+db.sqlite3
