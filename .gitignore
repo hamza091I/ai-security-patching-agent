@@ -5,3 +5,4 @@ sentence-transformers
 tree-sitter
 bandit
 pydantic
+chroma_data/
