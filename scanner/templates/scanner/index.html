@@ -9,7 +9,7 @@
 </head>
 <body class="bg-light">
     <div class="container my-5">
-        <h2 class="text-center mb-4">🛡️ AI Security & Patching Agent</h2>
+        <h2 class="text-center mb-4"> AI Security & Patching Agent</h2>
         
         <div class="row">
             <!-- Input Column -->
@@ -50,10 +50,16 @@
                     body: JSON.stringify({ code: codeText })
                 });
 
-                let data = await response.json();
-                outputBox.innerText = JSON.stringify(data, null, 4);
+                const contentType = response.headers.get("content-type");
+                if (contentType && contentType.includes("application/json")) {
+                    let data = await response.json();
+                    outputBox.innerText = JSON.stringify(data, null, 4);
+                } else {
+                    let errorText = await response.text();
+                    outputBox.innerText = "Server Error (Non-JSON Response):\n" + errorText;
+                }
             } catch (error) {
-                outputBox.innerText = "Error: " + error;
+                outputBox.innerText = "Network Error: " + error;
             }
         });
     </script>
