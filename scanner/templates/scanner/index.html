@@ -34,22 +34,44 @@
     </div>
 
     <!-- JavaScript to handle API request -->
+<!-- JavaScript to handle API request -->
     <script>
+        // Helper function to get the CSRF token from browser cookies
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
         document.getElementById('scan-btn').addEventListener('click', async () => {
             const codeText = document.getElementById('code-input').value;
             const outputBox = document.getElementById('output-result');
             
             outputBox.innerText = "Scanning and patching in progress...";
 
+            // Retrieve the CSRF token for secure POST requests
+            const csrftoken = getCookie('csrftoken');
+
             try {
                 let response = await fetch('/api/scan-code/', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
+                        'X-CSRFToken': csrftoken, // Pass the CSRF token in headers
                     },
                     body: JSON.stringify({ code: codeText })
                 });
 
+                // Check if response is valid JSON
                 const contentType = response.headers.get("content-type");
                 if (contentType && contentType.includes("application/json")) {
                     let data = await response.json();
