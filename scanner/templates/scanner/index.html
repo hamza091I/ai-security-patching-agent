@@ -1,89 +1,328 @@
+{% load static %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark h-full">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Security & Patching Agent - MVP</title>
-    <!-- Bootstrap CSS for styling -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body class="bg-light">
-    <div class="container my-5">
-        <h2 class="text-center mb-4"> AI Security & Patching Agent</h2>
-        
-        <div class="row">
-            <!-- Input Column -->
-            <div class="col-md-6">
-                <div class="card shadow p-3 mb-4">
-                    <h4>Paste Vulnerable Python Code</h4>
-                    <div class="mb-3">
-                        <textarea id="code-input" class="form-control font-monospace" rows="10" placeholder="def test():&#10;    eval('1+1')"></textarea>
-                    </div>
-                    <button id="scan-btn" class="btn btn-primary w-100">Scan & Patch Code</button>
-                </div>
-            </div>
-
-            <!-- Output Column -->
-            <div class="col-md-6">
-                <div class="card shadow p-3 mb-4">
-                    <h4>Patching Results & Report</h4>
-                    <pre id="output-result" class="bg-dark text-light p-3 rounded" style="height: 280px; overflow-y: auto;">Results will appear here...</pre>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- JavaScript to handle API request -->
-<!-- JavaScript to handle API request -->
+    <title>CyberAI Security Agent | Enterprise Dashboard</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
     <script>
-        // Helper function to get the CSRF token from browser cookies
-        function getCookie(name) {
-            let cookieValue = null;
-            if (document.cookie && document.cookie !== '') {
-                const cookies = document.cookie.split(';');
-                for (let i = 0; i < cookies.length; i++) {
-                    const cookie = cookies[i].trim();
-                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                        break;
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        cyber: {
+                            dark: '#0B0F19',
+                            card: '#111827',
+                            border: '#1F2937',
+                            accent: '#3B82F6',
+                            success: '#10B981',
+                            danger: '#EF4444',
+                            warning: '#F59E0B'
+                        }
                     }
                 }
             }
-            return cookieValue;
+        }
+    </script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Smooth Eye-Comfort Animated Background */
+        @keyframes subtleMovingBg {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        body {
+            background: linear-gradient(135deg, #0b0f19, #1e293b, #0f172a, #1e3a8a);
+            background-size: 300% 300%;
+            animation: subtleMovingBg 10s ease infinite;
         }
 
-        document.getElementById('scan-btn').addEventListener('click', async () => {
-            const codeText = document.getElementById('code-input').value;
-            const outputBox = document.getElementById('output-result');
-            
-            outputBox.innerText = "Scanning and patching in progress...";
+        textarea::-webkit-scrollbar, div::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        textarea::-webkit-scrollbar-thumb, div::-webkit-scrollbar-thumb {
+            background: #1F2937;
+            border-radius: 4px;
+        }
+        textarea::-webkit-scrollbar-thumb:hover, div::-webkit-scrollbar-thumb:hover {
+            background: #374151;
+        }
+    </style>
+</head>
+<body class="text-gray-100 font-sans min-h-full flex flex-col antialiased selection:bg-blue-600 selection:text-white">
 
-            // Retrieve the CSRF token for secure POST requests
-            const csrftoken = getCookie('csrftoken');
+    <!-- Top Header & Original Logo Section -->
+    <header class="border-b border-cyber-border bg-cyber-card/80 backdrop-blur-md sticky top-0 z-50 px-6 py-3 flex items-center justify-between shadow-lg">
+        <div class="flex items-center space-x-3">
+            <!-- Original Logo CA CyberSec -->
+            <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center font-bold text-white shadow-md shadow-blue-600/30 text-xs">
+                    CA
+                </div>
+                <span class="font-bold text-base tracking-wide text-white">CyberSec</span>
+            </div>
+            <span class="text-[11px] px-2.5 py-0.5 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20 hidden md:inline-block">
+                CyberAI Security Agent | Enterprise
+            </span>
+        </div>
+
+        <div class="flex items-center space-x-3">
+            <button onclick="toggleBanner()" class="text-xs bg-gray-800/80 hover:bg-gray-700 text-gray-300 px-3 py-1.5 rounded-lg border border-gray-700 transition flex items-center gap-1.5">
+                <i class="fa-solid fa-image text-blue-400"></i> Toggle Banner
+            </button>
+            <button onclick="toggleGithubSettings()" class="text-xs bg-gray-800 hover:bg-gray-700 text-gray-200 px-3 py-1.5 rounded-lg border border-gray-700 transition flex items-center gap-2 shadow-sm">
+                <i class="fa-brands fa-github text-sm"></i> GitHub Settings
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content Area with Minimized Whitespace -->
+    <main class="flex-1 p-3 md:p-5 space-y-4 max-w-7xl mx-auto w-full">
+
+        <!-- Collapsible Hero Banner Image Section -->
+        <div id="heroBannerContainer" class="relative rounded-xl overflow-hidden border border-cyber-border bg-cyber-card shadow-xl transition-all duration-300">
+            <button onclick="toggleBanner()" class="absolute top-2 right-2 z-20 bg-gray-900/80 hover:bg-red-500/80 text-gray-300 hover:text-white w-7 h-7 rounded-lg flex items-center justify-center text-xs transition border border-gray-700">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <img src="{% static 'images/first-banner.png' %}" alt="AI Security Agent Banner" class="w-full h-auto max-h-[220px] object-cover">
+        </div>
+
+        <!-- Collapsible GitHub Settings Panel -->
+        <div id="githubSettingsPanel" class="hidden bg-cyber-card/95 backdrop-blur-md border border-cyber-border rounded-xl p-4 shadow-2xl transition-all duration-300">
+            <div class="flex items-center justify-between mb-3 border-b border-cyber-border pb-2">
+                <h2 class="text-xs font-semibold text-gray-200 flex items-center gap-2">
+                    <i class="fa-brands fa-github text-blue-400 text-sm"></i> Automated GitHub Push Configuration
+                </h2>
+                <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" id="enableGithubPush" class="sr-only peer">
+                    <div class="w-8 h-4 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-blue-600"></div>
+                    <span class="ml-2 text-xs font-medium text-gray-300">Enable Push</span>
+                </label>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div>
+                    <label class="block text-[11px] font-medium text-gray-400 mb-1">Repository Name</label>
+                    <input type="text" id="githubRepo" placeholder="username/repository" class="w-full bg-gray-900 border border-gray-700 text-xs text-gray-200 rounded-lg p-2 focus:border-blue-500 focus:outline-none text-left">
+                </div>
+                <div>
+                    <label class="block text-[11px] font-medium text-gray-400 mb-1">Target File Path</label>
+                    <input type="text" id="githubFilePath" placeholder="src/script.py" class="w-full bg-gray-900 border border-gray-700 text-xs text-gray-200 rounded-lg p-2 focus:border-blue-500 focus:outline-none text-left">
+                </div>
+                <div>
+                    <label class="block text-[11px] font-medium text-gray-400 mb-1">Personal Access Token</label>
+                    <input type="password" id="githubToken" placeholder="ghp_xxx" class="w-full bg-gray-900 border border-gray-700 text-xs text-gray-200 rounded-lg p-2 focus:border-blue-500 focus:outline-none text-left">
+                </div>
+            </div>
+        </div>
+
+        <!-- Balanced 50/50 Split View Workspace -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
+
+            <!-- Left Column: Code Input (50% Width -> 6 Cols) -->
+            <div class="lg:col-span-6 flex flex-col">
+                <div class="bg-cyber-card/90 backdrop-blur-md border border-cyber-border rounded-xl flex flex-col overflow-hidden shadow-2xl h-[520px]">
+                    <div class="bg-gray-900/80 px-4 py-2.5 border-b border-cyber-border flex items-center justify-between">
+                        <span class="text-xs font-semibold text-gray-300 flex items-center gap-2">
+                            <i class="fa-solid fa-code text-blue-400"></i> Target Python Code Input
+                        </span>
+                        <button onclick="clearCode()" class="text-xs text-gray-400 hover:text-red-400 transition">
+                            Clear Code
+                        </button>
+                    </div>
+                    <textarea id="sourceCode" class="flex-1 bg-gray-950/80 p-3.5 font-mono text-xs text-gray-200 resize-none focus:outline-none border-none leading-relaxed text-left" placeholder="# Paste vulnerable Python code here...&#10;&#10;import os&#10;user_cmd = input('Command: ')&#10;os.system(user_cmd)  # Vulnerability: CWE-78"></textarea>
+
+                    <div class="p-3 border-t border-cyber-border bg-cyber-card/90 flex items-center justify-between">
+                        <span class="text-[11px] text-gray-400">AST Analysis & RAG Engine</span>
+                        <button id="scanBtn" onclick="runScan()" class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-medium text-xs px-4 py-2 rounded-lg shadow-lg shadow-blue-500/20 transition flex items-center gap-2">
+                            <i class="fa-solid fa-bolt"></i> RUN DUAL SECURITY SCAN
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Reports & Patched Output (50% Width -> 6 Cols, Balanced Stack) -->
+            <div class="lg:col-span-6 flex flex-col space-y-4">
+
+                <!-- Vulnerability Audit Report Panel -->
+                <div class="bg-cyber-card/90 backdrop-blur-md border border-cyber-border rounded-xl flex flex-col overflow-hidden shadow-2xl h-[250px]">
+                    <div class="bg-gray-900/80 px-4 py-2.5 border-b border-cyber-border flex items-center justify-between">
+                        <span class="text-xs font-semibold text-gray-300 flex items-center gap-2">
+                            <i class="fa-solid fa-bug text-red-400"></i> Vulnerability Audit Report
+                        </span>
+                        <span id="vulnCountBadge" class="text-[11px] bg-gray-800 text-gray-300 px-2 py-0.5 rounded-full">Ready for Scan</span>
+                    </div>
+                    
+                    <div id="scanReportContainer" class="flex-1 p-3 overflow-y-auto space-y-2">
+                        <div id="idleState" class="h-full flex flex-col items-center justify-center text-center text-gray-500">
+                            <i class="fa-solid fa-shield-halved text-2xl mb-1 text-gray-600"></i>
+                            <p class="text-xs">Click scan to analyze code and detect vulnerabilities.</p>
+                        </div>
+
+                        <div id="scanLoader" class="hidden h-full flex-col items-center justify-center text-center text-gray-400">
+                            <div class="w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mb-2"></div>
+                            <p class="text-xs font-medium">Analyzing AST nodes & querying ChromaDB RAG...</p>
+                        </div>
+
+                        <div id="vulnerabilitiesList" class="space-y-2 hidden"></div>
+                    </div>
+                </div>
+
+                <!-- Patched Clean Code Output Panel -->
+                <div class="bg-cyber-card/90 backdrop-blur-md border border-cyber-border rounded-xl flex flex-col overflow-hidden shadow-2xl h-[254px]">
+                    <div class="bg-gray-900/80 px-4 py-2.5 border-b border-cyber-border flex items-center justify-between">
+                        <span class="text-xs font-semibold text-gray-300 flex items-center gap-2">
+                            <i class="fa-solid fa-wand-magic-sparkles text-emerald-400"></i> Remediation & Patched Code
+                        </span>
+                        <span id="githubPushStatus" class="text-xs text-gray-400"></span>
+                    </div>
+                    <div class="flex-1 bg-gray-950/80 p-3 font-mono text-xs overflow-y-auto">
+                        <pre><code id="patchedCodeDisplay" class="text-emerald-400 leading-relaxed text-left"># Secure patched code will appear here automatically...</code></pre>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- JavaScript for UI interactions and API handling -->
+    <script>
+        function toggleGithubSettings() {
+            const panel = document.getElementById('githubSettingsPanel');
+            panel.classList.toggle('hidden');
+        }
+
+        function toggleBanner() {
+            const banner = document.getElementById('heroBannerContainer');
+            banner.classList.toggle('hidden');
+        }
+
+        function clearCode() {
+            document.getElementById('sourceCode').value = '';
+        }
+
+        async function runScan() {
+            const codeInput = document.getElementById('sourceCode').value.trim();
+            if (!codeInput) {
+                alert("Please provide Python code to scan.");
+                return;
+            }
+
+            // Auto-collapse hero banner on scan to maximize working space without scrolling
+            document.getElementById('heroBannerContainer').classList.add('hidden');
+
+            const isPushEnabled = document.getElementById('enableGithubPush').checked;
+            const repo = document.getElementById('githubRepo').value.trim();
+            const filePath = document.getElementById('githubFilePath').value.trim();
+            const token = document.getElementById('githubToken').value.trim();
+
+            if (isPushEnabled && (!repo || !filePath || !token)) {
+                alert("Please fill in all GitHub configuration fields or disable push.");
+                return;
+            }
+
+            document.getElementById('idleState').classList.add('hidden');
+            document.getElementById('vulnerabilitiesList').classList.add('hidden');
+            document.getElementById('scanLoader').classList.remove('hidden');
+            document.getElementById('scanLoader').classList.add('flex');
+            document.getElementById('patchedCodeDisplay').textContent = "# Applying automated patches...";
+            document.getElementById('githubPushStatus').textContent = "";
+
+            const payload = {
+                code: codeInput,
+                github_config: {
+                    enable_push: isPushEnabled,
+                    repo: repo,
+                    file_path: filePath,
+                    token: token
+                }
+            };
 
             try {
-                let response = await fetch('/api/scan-code/', {
+                const response = await fetch('/api/scan/', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-CSRFToken': csrftoken, // Pass the CSRF token in headers
                     },
-                    body: JSON.stringify({ code: codeText })
+                    body: JSON.stringify(payload)
                 });
 
-                // Check if response is valid JSON
-                const contentType = response.headers.get("content-type");
-                if (contentType && contentType.includes("application/json")) {
-                    let data = await response.json();
-                    outputBox.innerText = JSON.stringify(data, null, 4);
+                const data = await response.json();
+
+                document.getElementById('scanLoader').classList.add('hidden');
+                document.getElementById('scanLoader').classList.remove('flex');
+
+                const listContainer = document.getElementById('vulnerabilitiesList');
+                listContainer.innerHTML = '';
+                listContainer.classList.remove('hidden');
+
+                if (data.vulnerabilities && data.vulnerabilities.length > 0) {
+                    document.getElementById('vulnCountBadge').textContent = `${data.vulnerabilities.length} Vulnerabilities Detected`;
+                    document.getElementById('vulnCountBadge').className = "text-[11px] bg-red-500/10 text-red-400 border border-red-500/20 px-2.5 py-0.5 rounded-full";
+
+                    data.vulnerabilities.forEach(vuln => {
+                        const item = document.createElement('div');
+                        item.className = "p-2 bg-gray-900 border border-red-500/30 rounded-lg text-xs space-y-1 text-left";
+                        item.innerHTML = `
+                            <div class="flex items-center justify-between">
+                                <span class="font-bold text-red-400 flex items-center gap-1">
+                                    <i class="fa-solid fa-triangle-exclamation text-[11px]"></i> ${vuln.cwe_id || 'CWE Security Issue'}
+                                </span>
+                                <span class="bg-red-950 text-red-300 px-1.5 py-0.5 rounded font-mono text-[10px]">${vuln.type || 'CRITICAL'}</span>
+                            </div>
+                            <p class="text-gray-300 text-[11px]">${vuln.description || 'Unsafe execution pattern detected.'}</p>
+                            <p class="text-gray-400 text-[11px]"><strong class="text-blue-400">Recommendation:</strong> ${vuln.recommendation || 'Apply secure coding standard.'}</p>
+                        `;
+                        listContainer.appendChild(item);
+                    });
                 } else {
-                    let errorText = await response.text();
-                    outputBox.innerText = "Server Error (Non-JSON Response):\n" + errorText;
+                    document.getElementById('vulnCountBadge').textContent = "100% Clean Code";
+                    document.getElementById('vulnCountBadge').className = "text-[11px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2.5 py-0.5 rounded-full";
+                    
+                    listContainer.innerHTML = `
+                        <div class="p-3 bg-emerald-950/30 border border-emerald-500/30 rounded-lg text-xs text-emerald-400 flex items-center gap-2 text-left">
+                            <i class="fa-solid fa-circle-check text-base"></i> No critical security vulnerabilities found in static analysis.
+                        </div>
+                    `;
                 }
+
+                if (data.patched_code) {
+                    document.getElementById('patchedCodeDisplay').textContent = data.patched_code;
+                } else {
+                    document.getElementById('patchedCodeDisplay').textContent = codeInput;
+                }
+
+                if (data.github_status) {
+                    if (data.github_status.success) {
+                        document.getElementById('githubPushStatus').innerHTML = `
+                            <span class="text-emerald-400 flex items-center gap-1">
+                                <i class="fa-solid fa-check-double"></i> Synced to GitHub Successfully
+                            </span>
+                        `;
+                    } else {
+                        document.getElementById('githubPushStatus').innerHTML = `
+                            <span class="text-red-400 flex items-center gap-1">
+                                <i class="fa-solid fa-xmark"></i> Sync Failed: ${data.github_status.error || 'Check Token'}
+                            </span>
+                        `;
+                    }
+                }
+
             } catch (error) {
-                outputBox.innerText = "Network Error: " + error;
+                console.error("Scan Error:", error);
+                document.getElementById('scanLoader').classList.add('hidden');
+                document.getElementById('idleState').classList.remove('hidden');
+                alert("An error occurred while connecting to server. Check Django server status.");
             }
-        });
+        }
     </script>
 </body>
 </html>

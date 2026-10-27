@@ -1,36 +1,54 @@
-from scanner.rag.vector_db import initialize_knowledge_base, query_knowledge_base
-from scanner.analysis.security_scanner import full_security_scan
+import os
+import chromadb
+from sentence_transformers import SentenceTransformer
+from scanner.analysis.ast_parser import analyze_code_string
 
-# Initialize the knowledge base as soon as the module runs
-initialize_knowledge_base()
+class SecurityRAGEngine:
+    def __init__(self):
+        # Initialize Sentence Transformer model for embeddings
+        self.model = SentenceTransformer('all-MiniLM-L6-v2')
+        
+        # Initialize ChromaDB persistent client
+        db_path = os.path.join(os.getcwd(), 'chroma_db')
+        self.client = chromadb.PersistentClient(path=db_path)
+        
+        # Get or create the vector collection
+        self.collection = self.client.get_or_create_collection(name="security_knowledge_base")
 
 def analyze_and_retrieve_fix(code_string):
     """
     This function:
-    1. Scans the code and detects vulnerabilities (AST + Bandit).
-    2. Takes the vulnerability description and searches for a ready-made fix via RAG (ChromaDB).
+    1. Scans the code and detects vulnerabilities using AST static analysis.
+    2. Queries ChromaDB via SecurityRAGEngine to retrieve secure code examples and fixes.
     """
-    # 1. Comprehensive security scan
-    scan_results = full_security_scan(code_string)
+    # 1. AST Static security scan
+    vulnerabilities = analyze_code_string(code_string)
     
-    all_issues = []
-    all_issues.extend(scan_results.get("ast_vulnerabilities", []))
-    all_issues.extend(scan_results.get("bandit_vulnerabilities", []))
+    # 2. Initialize RAG Engine for vector database queries
+    rag = SecurityRAGEngine()
     
     enriched_results = []
 
-    # 2. For each detected vulnerability, query the RAG for the appropriate fix
-    for issue in all_issues:
-        # Formulate the search text based on the vulnerability description
-        issue_text = issue.get("issue") or str(issue)
+    # 3. For each detected vulnerability, query the RAG for the appropriate fix
+    for vuln in vulnerabilities:
+        vuln_type = vuln.get('type', 'security issue')
+        query_text = f"Vulnerability: {vuln_type} in code snippet"
         
         # Retrieve the closest solution from ChromaDB (RAG Retrieval)
-        rag_match = query_knowledge_base(query_text=issue_text, n_results=1)
+        results = rag.collection.query(
+            query_texts=[query_text],
+            n_results=1
+        )
         
+        # Extract document/fix content safely
+        fix_content = "No direct fix found"
+        if results and results.get('documents') and len(results['documents'][0]) > 0:
+            fix_content = results['documents'][0][0]
+            
         # Combine the detected vulnerability with the retrieved suggested fix
         enriched_results.append({
-            "detected_issue": issue,
-            "rag_suggested_fix": rag_match.get("metadatas", [{}])[0] if rag_match.get("metadatas") else "No direct fix found"
+            "detected_issue": vuln,
+            "rag_suggested_fix": fix_content
         })
         
     return {

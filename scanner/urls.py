@@ -1,7 +1,8 @@
 from django.urls import path
+from scanner.views import ScanCodeAPIView
 from . import views
 
 urlpatterns = [
     path('', views.home_view, name='index'),
-    path('api/scan-code/', views.ScanCodeAPIView.as_view(), name='scan_and_patch_api'),
+    path('api/scan/', ScanCodeAPIView.as_view(), name='api_scan'),
 ]
