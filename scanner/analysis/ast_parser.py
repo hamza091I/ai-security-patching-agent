@@ -1,45 +1,148 @@
 import ast
 
-class PythonASTAnalyzer(ast.NodeVisitor):
-    """
-    AST (Abstract Syntax Tree) Analyzer for Python code.
-    Inherits from ast.NodeVisitor to traverse the code structure and detect security issues.
-    """
-    def __init__(self):
-        # List to store all detected vulnerabilities during the analysis
-        self.vulnerabilities = []
 
-    def visit_Call(self, node):
-        """
-        Triggered whenever a function call node is encountered in the AST.
-        Checks if the called function is part of a blacklist of dangerous functions (e.g., eval, exec).
-        """
-        # Check if the function being called is a direct name and matches dangerous functions
-        if isinstance(node.func, ast.Name) and node.func.id in ['eval', 'exec']:
-            self.vulnerabilities.append({
-                'line': node.lineno,
-                'issue': f"Dangerous use of function '{node.func.id}' detected.",
-                'severity': 'High'
-            })
-        
-        # Continue traversing the child nodes within this call
-        self.generic_visit(node)
+class ASTSecurityAnalyzer(ast.NodeVisitor):
 
-def analyze_code_string(code_string):
-    """
-    Wrapper function to parse a raw Python code string into an AST 
-    and run the analyzer visitor over it.
-    """
+  def __init__(self):
+    self.vulnerabilities = []
+
+  def analyze(self, code_string: str):
+    self.vulnerabilities = []
     try:
-        # Parse the source code string into an Abstract Syntax Tree
-        tree = ast.parse(code_string)
-        
-        # Initialize and run the analyzer
-        analyzer = PythonASTAnalyzer()
-        analyzer.visit(tree)
-        
-        return analyzer.vulnerabilities
-        
+      tree = ast.parse(code_string)
+      self.visit(tree)
     except SyntaxError as e:
-        # Handle syntax errors gracefully without crashing the application
-        return [{'error': f"Syntax error in code: {e}"}]
+      self.vulnerabilities.append({
+          "cwe_id": "SYNTAX",
+          "type": "SyntaxError",
+          "line": 0,
+          "message": str(e),
+      })
+    return self.vulnerabilities
+
+  def visit_Call(self, node):
+    # 1. CWE-95: Eval Injection
+    if isinstance(node.func, ast.Name) and node.func.id == "eval":
+      self.vulnerabilities.append({
+          "cwe_id": "CWE-95",
+          "type": "Code Injection",
+          "line": node.lineno,
+          "message": (
+              "Using the eval function allows the execution of unsafe code."
+          ),
+          "recommendation": (
+              "Avoid eval(); use safer parsing alternatives like"
+              " ast.literal_eval()."
+          ),
+      })
+
+    # 2. CWE-78: Command Injection (os.system)
+    elif isinstance(node.func, ast.Attribute):
+      if (
+          isinstance(node.func.value, ast.Name)
+          and node.func.value.id == "os"
+          and node.func.attr == "system"
+      ):
+        self.vulnerabilities.append({
+            "cwe_id": "CWE-78",
+            "type": "Command Injection",
+            "line": node.lineno,
+            "message": (
+                "Using os.system exposes the system to OS command injection."
+            ),
+            "recommendation": (
+                "Use the subprocess module with shell=False and pass arguments"
+                " as a list."
+            ),
+        })
+
+      # 3. CWE-89: SQL Injection (.execute with dynamic strings/f-strings)
+      elif node.func.attr == "execute":
+        if node.args:
+          arg = node.args[0]
+          # Check if argument is f-string (JoinedStr) or string concatenation (BinOp)
+          if isinstance(arg, (ast.JoinedStr, ast.BinOp)):
+            self.vulnerabilities.append({
+                "cwe_id": "CWE-89",
+                "type": "SQL Injection",
+                "line": node.lineno,
+                "message": (
+                    "SQL query uses dynamic string formatting or concatenation"
+                    " without parameterization."
+                ),
+                "recommendation": (
+                    "Use parameterized queries with placeholders (? or %s)"
+                    " instead of string formatting."
+                ),
+            })
+
+      # 4. CWE-502: Insecure Deserialization (pickle.loads / pickle.load)
+      elif (
+          isinstance(node.func.value, ast.Name)
+          and node.func.value.id == "pickle"
+          and node.func.attr in ("loads", "load")
+      ):
+        self.vulnerabilities.append({
+            "cwe_id": "CWE-502",
+            "type": "Insecure Deserialization",
+            "line": node.lineno,
+            "message": (
+                "Using pickle for loading untrusted data can lead to arbitrary"
+                " code execution."
+            ),
+            "recommendation": (
+                "Use safer serialization formats like JSON instead of pickle"
+                " for untrusted data."
+            ),
+        })
+
+    # 5. CWE-22: Path Traversal (open with concatenated paths)
+    if isinstance(node.func, ast.Name) and node.func.id == "open":
+      if node.args and isinstance(node.args[0], (ast.BinOp, ast.JoinedStr)):
+        self.vulnerabilities.append({
+            "cwe_id": "CWE-22",
+            "type": "Path Traversal",
+            "line": node.lineno,
+            "message": (
+                "Opening files with unvalidated dynamic paths allows path"
+                " traversal."
+            ),
+            "recommendation": (
+                "Validate and sanitize file paths using os.path.abspath or"
+                " pathlib."
+            ),
+        })
+
+    self.generic_visit(node)
+
+  def visit_Assign(self, node):
+    # 6. CWE-798: Hardcoded Secrets (Detecting hardcoded password/secret assignment)
+    for target in node.targets:
+      if isinstance(target, ast.Name):
+        target_name = target.id.lower()
+        if any(
+            secret_keyword in target_name
+            for secret_keyword in ["password", "secret", "api_key", "token"]
+        ):
+          if isinstance(node.value, ast.Constant) and isinstance(
+              node.value.value, str
+          ):
+            self.vulnerabilities.append({
+                "cwe_id": "CWE-798",
+                "type": "Hardcoded Secrets",
+                "line": node.lineno,
+                "message": (
+                    "Hardcoded sensitive credentials detected in code variable."
+                ),
+                "recommendation": (
+                    "Store sensitive keys and passwords in environment"
+                    " variables (.env)."
+                ),
+            })
+    self.generic_visit(node)
+
+
+def analyze_code_string(code_string: str):
+  # Helper function to wrap ASTSecurityAnalyzer for external modules like rag_engine.
+  analyzer = ASTSecurityAnalyzer()
+  return analyzer.analyze(code_string)

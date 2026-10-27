@@ -1,0 +1,44 @@
+[
+    {
+        "cwe_id": "CWE-95",
+        "title": "Improper Neutralization of Directives in Dynamically Evaluated Code ('Eval Injection')",
+        "vulnerable_example": "result = eval(user_input)",
+        "secure_example": "import ast\nresult = ast.literal_eval(user_input)",
+        "explanation": "Using the eval function allows executing arbitrary malicious code. The secure alternative for parsing simple literals and data structures is ast.literal_eval."
+    },
+    {
+        "cwe_id": "CWE-89",
+        "title": "Improper Neutralization of Special Elements used in an SQL Command ('SQL Injection')",
+        "vulnerable_example": "query = f'SELECT * FROM users WHERE username = \"{username}\"'",
+        "secure_example": "cursor.execute('SELECT * FROM users WHERE username = %s', (username,))",
+        "explanation": "Concatenating user input directly into queries causes SQL Injection vulnerabilities. Parameterized queries should be used instead."
+    },
+    {
+        "cwe_id": "CWE-78",
+        "title": "Improper Neutralization of Special Elements used in an OS Command ('Command Injection')",
+        "vulnerable_example": "import os\nos.system('ping ' + user_input)",
+        "secure_example": "import subprocess\nsubprocess.run(['ping', user_input], check=True)",
+        "explanation": "Using os.system executes OS commands directly. It is recommended to use the subprocess library with arguments passed as a list to avoid command injection."
+    },
+    {
+        "cwe_id": "CWE-22",
+        "title": "Improper Limitation of a Pathname to a Restricted Directory ('Path Traversal')",
+        "vulnerable_example": "with open('/var/www/uploads/' + filename, 'r') as f:\n    data = f.read()",
+        "secure_example": "import os\nfrom werkzeug.utils import secure_filename\nsafe_path = os.path.join('/var/www/uploads/', os.path.basename(filename))\nwith open(safe_path, 'r') as f:\n    data = f.read()",
+        "explanation": "Allowing unvalidated user input in file paths enables attackers to read sensitive system files using directory traversal sequences such as (../)."
+    },
+    {
+        "cwe_id": "CWE-502",
+        "title": "Deserialization of Untrusted Data ('Insecure Deserialization')",
+        "vulnerable_example": "import pickle\ndata = pickle.loads(user_input)",
+        "secure_example": "import json\ndata = json.loads(user_input)",
+        "explanation": "Deserializing untrusted data with the pickle library allows arbitrary code execution. Safe data formats such as JSON should be used instead."
+    },
+    {
+        "cwe_id": "CWE-798",
+        "title": "Use of Hard-coded Credentials ('Hardcoded Secrets')",
+        "vulnerable_example": "API_SECRET_KEY = '12345-ABCDE-SECRET-KEY'",
+        "secure_example": "import os\nAPI_SECRET_KEY = os.environ.get('API_SECRET_KEY')",
+        "explanation": "Hardcoding API keys and credentials directly into the source code exposes them to theft. Credentials should be retrieved from Environment Variables."
+    }
+]

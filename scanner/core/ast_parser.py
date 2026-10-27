@@ -4,6 +4,23 @@ class ASTSecurityAnalyzer(ast.NodeVisitor):
     def __init__(self):
         self.vulnerabilities = []
 
+    def analyze(self, code_string: str):
+        """
+        Analyzes code string directly and returns vulnerabilities list.
+        """
+        self.vulnerabilities = []
+        try:
+            tree = ast.parse(code_string)
+            self.visit(tree)
+        except SyntaxError as e:
+            self.vulnerabilities.append({
+                "cwe_id": "SYNTAX",
+                "type": "SyntaxError",
+                "line": 0,
+                "message": str(e)
+            })
+        return self.vulnerabilities
+
     def visit_Call(self, node):
         # Check for the dangerous eval function usage (CWE-95)
         if isinstance(node.func, ast.Name) and node.func.id == 'eval':
@@ -26,14 +43,19 @@ class ASTSecurityAnalyzer(ast.NodeVisitor):
         
         self.generic_visit(node)
 
-def run_ast_analysis(code_str: str):
-    """
-    Function to run static AST analysis and return detected vulnerabilities.
-    """
-    try:
-        tree = ast.parse(code_str)
-        analyzer = ASTSecurityAnalyzer()
-        analyzer.visit(tree)
-        return {"has_error": False, "vulnerabilities": analyzer.vulnerabilities}
-    except SyntaxError as e:
-        return {"has_error": True, "message": f"Syntax Error: {e}"}
+        for keyword in node.keywords:
+            if keyword.arg in ("password", "passwd", "secret", "token"):
+                val = None
+                if isinstance(keyword.value, ast.Constant):
+                    val = keyword.value.value
+                elif hasattr(ast, "Str") and isinstance(keyword.value, ast.Str):
+                    val = keyword.value.s
+
+                if isinstance(val, str) and len(val) > 0:
+                    self.vulnerabilities.append({
+                        "cwe_id": "CWE-798",
+                        "type": "Hard-coded Credentials",
+                        "line": node.lineno,
+                        "message": "Hard-coded password or credential detected in function call.",
+                        "recommendation": "Use environment variables via os.getenv() instead of hard-coding credentials."
+                    })
