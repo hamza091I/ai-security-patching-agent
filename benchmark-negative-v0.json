@@ -1,0 +1,162 @@
+[
+  {
+    "id": "NEG-001",
+    "language": "python",
+    "secure_code": "import ast\nresult = ast.literal_eval(user_input)",
+    "expected": {
+      "should_detect": false
+    }
+  },
+  {
+    "id": "NEG-002",
+    "language": "python",
+    "secure_code": "subprocess.run([\"echo\", user_input], check=True)",
+    "expected": {
+      "should_detect": false
+    }
+  },
+  {
+    "id": "NEG-003",
+    "language": "python",
+    "secure_code": "cursor.execute(\"SELECT * FROM users WHERE id=?\", (user_id,))",
+    "expected": {
+      "should_detect": false
+    }
+  },
+  {
+    "id": "NEG-004",
+    "language": "python",
+    "secure_code": "json.loads(payload)",
+    "expected": {
+      "should_detect": false
+    }
+  },
+  {
+    "id": "NEG-005",
+    "language": "python",
+    "secure_code": "open(os.path.join(\"/tmp\", os.path.basename(filename)))",
+    "expected": {
+      "should_detect": false
+    }
+  },
+  {
+    "id": "NEG-006",
+    "language": "python",
+    "secure_code": "API_SECRET = os.environ.get(\"API_SECRET\")",
+    "expected": {
+      "should_detect": false
+    }
+  },
+  {
+    "id": "NEG-007",
+    "language": "python",
+    "secure_code": "hashlib.sha256(data)",
+    "expected": {
+      "should_detect": false
+    }
+  },
+  {
+    "id": "NEG-008",
+    "language": "python",
+    "secure_code": "requests.get(url, verify=True)",
+    "expected": {
+      "should_detect": false
+    }
+  },
+  {
+    "id": "NEG-009",
+    "language": "javascript",
+    "secure_code": "element.textContent = userInput;",
+    "expected": {
+      "should_detect": false
+    }
+  },
+  {
+    "id": "NEG-010",
+    "language": "javascript",
+    "secure_code": "const x = JSON.parse(input);",
+    "expected": {
+      "should_detect": false
+    }
+  },
+  {
+    "id": "NEG-011",
+    "language": "javascript",
+    "secure_code": "spawn(\"echo\", [userInput], {shell:false});",
+    "expected": {
+      "should_detect": false
+    }
+  },
+  {
+    "id": "NEG-012",
+    "language": "javascript",
+    "secure_code": "const apiKey = process.env.API_KEY;",
+    "expected": {
+      "should_detect": false
+    }
+  },
+  {
+    "id": "NEG-013",
+    "language": "javascript",
+    "secure_code": "db.query(\"SELECT * FROM t WHERE id=?\", [id]);",
+    "expected": {
+      "should_detect": false
+    }
+  },
+  {
+    "id": "NEG-014",
+    "language": "python",
+    "secure_code": "@csrf_protect\n@app.route(\"/transfer\", methods=[\"POST\"])\ndef transfer(): pass",
+    "expected": {
+      "should_detect": false
+    }
+  },
+  {
+    "id": "NEG-015",
+    "language": "python",
+    "secure_code": "save_upload(secure_filename(request.files[\"file\"].filename))",
+    "expected": {
+      "should_detect": false
+    }
+  },
+  {
+    "id": "NEG-016",
+    "language": "python",
+    "secure_code": "requests.get(allowlisted_url)",
+    "expected": {
+      "should_detect": false
+    }
+  },
+  {
+    "id": "NEG-017",
+    "language": "python",
+    "secure_code": "defusedxml.ElementTree.parse(user_xml)",
+    "expected": {
+      "should_detect": false
+    }
+  },
+  {
+    "id": "NEG-018",
+    "language": "python",
+    "secure_code": "os.chmod(path, 0o600)",
+    "expected": {
+      "should_detect": false
+    }
+  },
+  {
+    "id": "NEG-019",
+    "language": "javascript",
+    "secure_code": "app.use(helmet());",
+    "expected": {
+      "should_detect": false
+    }
+  },
+  {
+    "id": "NEG-020",
+    "language": "python",
+    "secure_code": "app.run(debug=False)",
+    "expected": {
+      "should_detect": false
+    }
+  }
+]

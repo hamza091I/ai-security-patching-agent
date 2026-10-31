@@ -1,0 +1,489 @@
+{
+  "detector_count": 80,
+  "positive_pass": 80,
+  "secure_pass": 80,
+  "positive_recall": 1.0,
+  "secure_specificity": 1.0,
+  "cases": [
+    {
+      "rule_id": "CAT-021",
+      "cwe_id": "CWE-200",
+      "positive_detected": true,
+      "secure_clean": true
+    },
+    {
+      "rule_id": "CAT-022",
+      "cwe_id": "CWE-209",
+      "positive_detected": true,
+      "secure_clean": true
+    },
+    {
+      "rule_id": "CAT-023",
+      "cwe_id": "CWE-256",
+      "positive_detected": true,
+      "secure_clean": true
+    },
+    {
+      "rule_id": "CAT-024",
+      "cwe_id": "CWE-259",
+      "positive_detected": true,
+      "secure_clean": true
+    },
+    {
+      "rule_id": "CAT-025",
+      "cwe_id": "CWE-312",
+      "positive_detected": true,
+      "secure_clean": true
+    },
+    {
+      "rule_id": "CAT-026",
+      "cwe_id": "CWE-319",
+      "positive_detected": true,
+      "secure_clean": true
+    },
+    {
+      "rule_id": "CAT-027",
+      "cwe_id": "CWE-326",
+      "positive_detected": true,
+      "secure_clean": true
+    },
+    {
+      "rule_id": "CAT-028",
+      "cwe_id": "CWE-330",
+      "positive_detected": true,
+      "secure_clean": true
+    },
+    {
+      "rule_id": "CAT-029",
+      "cwe_id": "CWE-338",
+      "positive_detected": true,
+      "secure_clean": true
+    },
+    {
+      "rule_id": "CAT-030",
+      "cwe_id": "CWE-347",
+      "positive_detected": true,
+      "secure_clean": true
+    },
+    {
+      "rule_id": "CAT-031",
+      "cwe_id": "CWE-352",
+      "positive_detected": true,
+      "secure_clean": true
+    },
+    {
+      "rule_id": "CAT-032",
+      "cwe_id": "CWE-377",
+      "positive_detected": true,
+      "secure_clean": true
+    },
+    {
+      "rule_id": "CAT-033",
+      "cwe_id": "CWE-378",
+      "positive_detected": true,
+      "secure_clean": true
+    },
+    {
+      "rule_id": "CAT-034",
+      "cwe_id": "CWE-379",
+      "positive_detected": true,
+      "secure_clean": true
+    },
+    {
+      "rule_id": "CAT-035",
+      "cwe_id": "CWE-400",
+      "positive_detected": true,
+      "secure_clean": true
+    },
+    {
+      "rule_id": "CAT-036",
+      "cwe_id": "CWE-401",
+      "positive_detected": true,
+      "secure_clean": true
+    },
+    {
+      "rule_id": "CAT-037",
+      "cwe_id": "CWE-409",
+      "positive_detected": true,
+      "secure_clean": true
+    },
+    {
+      "rule_id": "CAT-038",
+      "cwe_id": "CWE-425",
+      "positive_detected": true,
+      "secure_clean": true
+    },
+    {
+      "rule_id": "CAT-039",
+      "cwe_id": "CWE-427",
+      "positive_detected": true,
+      "secure_clean": true
+    },
+    {
+      "rule_id": "CAT-040",
+      "cwe_id": "CWE-434",
+      "positive_detected": true,
+      "secure_clean": true
+    },
+    {
+      "rule_id": "CAT-041",
+      "cwe_id": "CWE-470",
+      "positive_detected": true,
+      "secure_clean": true
+    },
+    {
+      "rule_id": "CAT-042",
+      "cwe_id": "CWE-471",
+      "positive_detected": true,
+      "secure_clean": true
+    },
+    {
+      "rule_id": "CAT-043",
+      "cwe_id": "CWE-497",
+      "positive_detected": true,
+      "secure_clean": true
+    },
+    {
+      "rule_id": "CAT-044",
+      "cwe_id": "CWE-522",
+      "positive_detected": true,
+      "secure_clean": true
+    },
+    {
+      "rule_id": "CAT-045",
+      "cwe_id": "CWE-598",
+      "positive_detected": true,
+      "secure_clean": true
+    },
+    {
+      "rule_id": "CAT-046",
+      "cwe_id": "CWE-601",
+      "positive_detected": true,
+      "secure_clean": true
+    },
+    {
+      "rule_id": "CAT-047",
+      "cwe_id": "CWE-614",
+      "positive_detected": true,
+      "secure_clean": true
+    },
+    {
+      "rule_id": "CAT-048",
+      "cwe_id": "CWE-620",
+      "positive_detected": true,
+      "secure_clean": true
+    },
+    {
+      "rule_id": "CAT-049",
+      "cwe_id": "CWE-639",
+      "positive_detected": true,
+      "secure_clean": true
+    },
+    {
+      "rule_id": "CAT-050",
+      "cwe_id": "CWE-640",
+      "positive_detected": true,
+      "secure_clean": true
+    },
+    {
+      "rule_id": "CAT-051",
+      "cwe_id": "CWE-643",
+      "positive_detected": true,
+      "secure_clean": true
+    },
+    {
+      "rule_id": "CAT-052",
+      "cwe_id": "CWE-668",
+      "positive_detected": true,
+      "secure_clean": true
+    },
+    {
+      "rule_id": "CAT-053",
+      "cwe_id": "CWE-693",
+      "positive_detected": true,
+      "secure_clean": true
+    },
+    {
+      "rule_id": "CAT-054",
+      "cwe_id": "CWE-703",
+      "positive_detected": true,
+      "secure_clean": true
+    },
+    {
+      "rule_id": "CAT-055",
+      "cwe_id": "CWE-704",
+      "positive_detected": true,
+      "secure_clean": true
+    },
+    {
+      "rule_id": "CAT-056",
+      "cwe_id": "CWE-707",
+      "positive_detected": true,
+      "secure_clean": true
+    },
+    {
+      "rule_id": "CAT-057",
+      "cwe_id": "CWE-732",
+      "positive_detected": true,
+      "secure_clean": true
+    },
+    {
+      "rule_id": "CAT-058",
+      "cwe_id": "CWE-749",
+      "positive_detected": true,
+      "secure_clean": true
+    },
+    {
+      "rule_id": "CAT-059",
+      "cwe_id": "CWE-770",
+      "positive_detected": true,
+      "secure_clean": true
+    },
+    {
+      "rule_id": "CAT-060",
+      "cwe_id": "CWE-776",
+      "positive_detected": true,
+      "secure_clean": true
+    },
+    {
+      "rule_id": "CAT-061",
+      "cwe_id": "CWE-778",
+      "positive_detected": true,
+      "secure_clean": true
+    },
+    {
+      "rule_id": "CAT-062",
+      "cwe_id": "CWE-779",
+      "positive_detected": true,
+      "secure_clean": true
+    },
+    {
+      "rule_id": "CAT-063",
+      "cwe_id": "CWE-787",
+      "positive_detected": true,
+      "secure_clean": true
+    },
+    {
+      "rule_id": "CAT-064",
+      "cwe_id": "CWE-789",
+      "positive_detected": true,
+      "secure_clean": true
+    },
+    {
+      "rule_id": "CAT-065",
+      "cwe_id": "CWE-862",
+      "positive_detected": true,
+      "secure_clean": true
+    },
+    {
+      "rule_id": "CAT-066",
+      "cwe_id": "CWE-863",
+      "positive_detected": true,
+      "secure_clean": true
+    },
+    {
+      "rule_id": "CAT-067",
+      "cwe_id": "CWE-915",
+      "positive_detected": true,
+      "secure_clean": true
+    },
+    {
+      "rule_id": "CAT-068",
+      "cwe_id": "CWE-922",
+      "positive_detected": true,
+      "secure_clean": true
+    },
+    {
+      "rule_id": "CAT-069",
+      "cwe_id": "CWE-939",
+      "positive_detected": true,
+      "secure_clean": true
+    },
+    {
+      "rule_id": "CAT-070",
+      "cwe_id": "CWE-942",
+      "positive_detected": true,
+      "secure_clean": true
+    },
+    {
+      "rule_id": "CAT-071",
+      "cwe_id": "CWE-943",
+      "positive_detected": true,
+      "secure_clean": true
+    },
+    {
+      "rule_id": "CAT-072",
+      "cwe_id": "CWE-1004",
+      "positive_detected": true,
+      "secure_clean": true
+    },
+    {
+      "rule_id": "CAT-073",
+      "cwe_id": "CWE-1021",
+      "positive_detected": true,
+      "secure_clean": true
+    },
+    {
+      "rule_id": "CAT-074",
+      "cwe_id": "CWE-117",
+      "positive_detected": true,
+      "secure_clean": true
+    },
+    {
+      "rule_id": "CAT-075",
+      "cwe_id": "CWE-134",
+      "positive_detected": true,
+      "secure_clean": true
+    },
+    {
+      "rule_id": "CAT-076",
+      "cwe_id": "CWE-185",
+      "positive_detected": true,
+      "secure_clean": true
+    },
+    {
+      "rule_id": "CAT-077",
+      "cwe_id": "CWE-209",
+      "positive_detected": true,
+      "secure_clean": true
+    },
+    {
+      "rule_id": "CAT-078",
+      "cwe_id": "CWE-269",
+      "positive_detected": true,
+      "secure_clean": true
+    },
+    {
+      "rule_id": "CAT-079",
+      "cwe_id": "CWE-284",
+      "positive_detected": true,
+      "secure_clean": true
+    },
+    {
+      "rule_id": "CAT-080",
+      "cwe_id": "CWE-285",
+      "positive_detected": true,
+      "secure_clean": true
+    },
+    {
+      "rule_id": "CAT-081",
+      "cwe_id": "CWE-287",
+      "positive_detected": true,
+      "secure_clean": true
+    },
+    {
+      "rule_id": "CAT-082",
+      "cwe_id": "CWE-288",
+      "positive_detected": true,
+      "secure_clean": true
+    },
+    {
+      "rule_id": "CAT-083",
+      "cwe_id": "CWE-306",
+      "positive_detected": true,
+      "secure_clean": true
+    },
+    {
+      "rule_id": "CAT-084",
+      "cwe_id": "CWE-307",
+      "positive_detected": true,
+      "secure_clean": true
+    },
+    {
+      "rule_id": "CAT-085",
+      "cwe_id": "CWE-352",
+      "positive_detected": true,
+      "secure_clean": true
+    },
+    {
+      "rule_id": "CAT-086",
+      "cwe_id": "CWE-359",
+      "positive_detected": true,
+      "secure_clean": true
+    },
+    {
+      "rule_id": "CAT-087",
+      "cwe_id": "CWE-369",
+      "positive_detected": true,
+      "secure_clean": true
+    },
+    {
+      "rule_id": "CAT-088",
+      "cwe_id": "CWE-367",
+      "positive_detected": true,
+      "secure_clean": true
+    },
+    {
+      "rule_id": "CAT-089",
+      "cwe_id": "CWE-428",
+      "positive_detected": true,
+      "secure_clean": true
+    },
+    {
+      "rule_id": "CAT-090",
+      "cwe_id": "CWE-494",
+      "positive_detected": true,
+      "secure_clean": true
+    },
+    {
+      "rule_id": "CAT-091",
+      "cwe_id": "CWE-552",
+      "positive_detected": true,
+      "secure_clean": true
+    },
+    {
+      "rule_id": "CAT-092",
+      "cwe_id": "CWE-565",
+      "positive_detected": true,
+      "secure_clean": true
+    },
+    {
+      "rule_id": "CAT-093",
+      "cwe_id": "CWE-598",
+      "positive_detected": true,
+      "secure_clean": true
+    },
+    {
+      "rule_id": "CAT-094",
+      "cwe_id": "CWE-611",
+      "positive_detected": true,
+      "secure_clean": true
+    },
+    {
+      "rule_id": "CAT-095",
+      "cwe_id": "CWE-613",
+      "positive_detected": true,
+      "secure_clean": true
+    },
+    {
+      "rule_id": "CAT-096",
+      "cwe_id": "CWE-614",
+      "positive_detected": true,
+      "secure_clean": true
+    },
+    {
+      "rule_id": "CAT-097",
+      "cwe_id": "CWE-639",
+      "positive_detected": true,
+      "secure_clean": true
+    },
+    {
+      "rule_id": "CAT-098",
+      "cwe_id": "CWE-776",
+      "positive_detected": true,
+      "secure_clean": true
+    },
+    {
+      "rule_id": "CAT-099",
+      "cwe_id": "CWE-918",
+      "positive_detected": true,
+      "secure_clean": true
+    },
+    {
+      "rule_id": "CAT-100",
+      "cwe_id": "CWE-1321",
+      "positive_detected": true,
+      "secure_clean": true
+    }
+  ]
+}

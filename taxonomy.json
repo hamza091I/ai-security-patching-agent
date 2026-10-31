@@ -1,0 +1,1007 @@
+{
+  "version": "1.0.0",
+  "target_categories": 100,
+  "implemented_categories": 100,
+  "categories": [
+    {
+      "cwe_id": "CWE-95",
+      "title": "Eval Injection",
+      "language": "python",
+      "rule_id": "eval-injection",
+      "status": "implemented",
+      "benchmark_ids": [
+        "BENCH-001"
+      ]
+    },
+    {
+      "cwe_id": "CWE-78",
+      "title": "OS Command Injection",
+      "language": "python",
+      "rule_id": "os-system",
+      "status": "implemented",
+      "benchmark_ids": [
+        "BENCH-002"
+      ]
+    },
+    {
+      "cwe_id": "CWE-89",
+      "title": "SQL Injection",
+      "language": "python",
+      "rule_id": "sql-dynamic-query",
+      "status": "implemented",
+      "benchmark_ids": [
+        "BENCH-003"
+      ]
+    },
+    {
+      "cwe_id": "CWE-502",
+      "title": "Insecure Deserialization",
+      "language": "python",
+      "rule_id": "pickle-load",
+      "status": "implemented",
+      "benchmark_ids": [
+        "BENCH-004"
+      ]
+    },
+    {
+      "cwe_id": "CWE-22",
+      "title": "Path Traversal",
+      "language": "python",
+      "rule_id": "dynamic-open-path",
+      "status": "implemented",
+      "benchmark_ids": [
+        "BENCH-005"
+      ]
+    },
+    {
+      "cwe_id": "CWE-798",
+      "title": "Hardcoded Secrets",
+      "language": "python",
+      "rule_id": "hardcoded-secret",
+      "status": "implemented",
+      "benchmark_ids": [
+        "BENCH-006"
+      ]
+    },
+    {
+      "cwe_id": "CWE-327",
+      "title": "Weak Cryptography",
+      "language": "python",
+      "rule_id": "weak-hash",
+      "status": "implemented",
+      "benchmark_ids": [
+        "BENCH-007"
+      ]
+    },
+    {
+      "cwe_id": "CWE-295",
+      "title": "TLS Verification Disabled",
+      "language": "python",
+      "rule_id": "tls-verify-disabled",
+      "status": "implemented",
+      "benchmark_ids": [
+        "BENCH-008"
+      ]
+    },
+    {
+      "cwe_id": "CWE-79",
+      "title": "DOM XSS",
+      "language": "javascript",
+      "rule_id": "dom-xss-innerhtml",
+      "status": "implemented",
+      "benchmark_ids": [
+        "BENCH-009"
+      ]
+    },
+    {
+      "cwe_id": "CWE-95",
+      "title": "JavaScript Eval",
+      "language": "javascript",
+      "rule_id": "js-eval",
+      "status": "implemented",
+      "benchmark_ids": [
+        "BENCH-010"
+      ]
+    },
+    {
+      "cwe_id": "CWE-78",
+      "title": "Node Shell Execution",
+      "language": "javascript",
+      "rule_id": "child-process-shell",
+      "status": "implemented",
+      "benchmark_ids": [
+        "BENCH-011"
+      ]
+    },
+    {
+      "cwe_id": "CWE-798",
+      "title": "JavaScript Secret",
+      "language": "javascript",
+      "rule_id": "hardcoded-secret",
+      "status": "implemented",
+      "benchmark_ids": [
+        "BENCH-012"
+      ]
+    },
+    {
+      "cwe_id": "CWE-89",
+      "title": "Dynamic JS Query",
+      "language": "javascript",
+      "rule_id": "dynamic-query",
+      "status": "implemented",
+      "benchmark_ids": [
+        "BENCH-013"
+      ]
+    },
+    {
+      "cwe_id": "CWE-352",
+      "title": "CSRF Missing Protection",
+      "language": "python",
+      "rule_id": "csrf-missing-protection",
+      "status": "implemented",
+      "benchmark_ids": [
+        "BENCH-014"
+      ]
+    },
+    {
+      "cwe_id": "CWE-434",
+      "title": "Unrestricted Upload",
+      "language": "python",
+      "rule_id": "unrestricted-upload",
+      "status": "implemented",
+      "benchmark_ids": [
+        "BENCH-015"
+      ]
+    },
+    {
+      "cwe_id": "CWE-918",
+      "title": "SSRF",
+      "language": "python",
+      "rule_id": "server-side-request-forgery",
+      "status": "implemented",
+      "benchmark_ids": [
+        "BENCH-016"
+      ]
+    },
+    {
+      "cwe_id": "CWE-611",
+      "title": "XXE",
+      "language": "python",
+      "rule_id": "xml-external-entity",
+      "status": "implemented",
+      "benchmark_ids": [
+        "BENCH-017"
+      ]
+    },
+    {
+      "cwe_id": "CWE-732",
+      "title": "Unsafe File Permissions",
+      "language": "python",
+      "rule_id": "unsafe-file-mode",
+      "status": "implemented",
+      "benchmark_ids": [
+        "BENCH-018"
+      ]
+    },
+    {
+      "cwe_id": "CWE-693",
+      "title": "Missing Security Headers",
+      "language": "javascript",
+      "rule_id": "missing-security-headers",
+      "status": "implemented",
+      "benchmark_ids": [
+        "BENCH-019"
+      ]
+    },
+    {
+      "cwe_id": "CWE-489",
+      "title": "Debug Code",
+      "language": "python",
+      "rule_id": "debug-enabled",
+      "status": "implemented",
+      "benchmark_ids": [
+        "BENCH-020"
+      ]
+    },
+    {
+      "cwe_id": "CWE-200",
+      "title": "Sensitive information exposure",
+      "language": "python",
+      "rule_id": "CAT-021",
+      "status": "implemented",
+      "benchmark_ids": [
+        "CAT-021"
+      ]
+    },
+    {
+      "cwe_id": "CWE-209",
+      "title": "Error message information leak",
+      "language": "python",
+      "rule_id": "CAT-022",
+      "status": "implemented",
+      "benchmark_ids": [
+        "CAT-022"
+      ]
+    },
+    {
+      "cwe_id": "CWE-256",
+      "title": "Plaintext password storage",
+      "language": "python",
+      "rule_id": "CAT-023",
+      "status": "implemented",
+      "benchmark_ids": [
+        "CAT-023"
+      ]
+    },
+    {
+      "cwe_id": "CWE-259",
+      "title": "Hard-coded password",
+      "language": "python",
+      "rule_id": "CAT-024",
+      "status": "implemented",
+      "benchmark_ids": [
+        "CAT-024"
+      ]
+    },
+    {
+      "cwe_id": "CWE-312",
+      "title": "Cleartext sensitive data",
+      "language": "python",
+      "rule_id": "CAT-025",
+      "status": "implemented",
+      "benchmark_ids": [
+        "CAT-025"
+      ]
+    },
+    {
+      "cwe_id": "CWE-319",
+      "title": "Cleartext transmission",
+      "language": "python",
+      "rule_id": "CAT-026",
+      "status": "implemented",
+      "benchmark_ids": [
+        "CAT-026"
+      ]
+    },
+    {
+      "cwe_id": "CWE-326",
+      "title": "Inadequate encryption strength",
+      "language": "python",
+      "rule_id": "CAT-027",
+      "status": "implemented",
+      "benchmark_ids": [
+        "CAT-027"
+      ]
+    },
+    {
+      "cwe_id": "CWE-330",
+      "title": "Insufficiently random values",
+      "language": "python",
+      "rule_id": "CAT-028",
+      "status": "implemented",
+      "benchmark_ids": [
+        "CAT-028"
+      ]
+    },
+    {
+      "cwe_id": "CWE-338",
+      "title": "Weak PRNG",
+      "language": "python",
+      "rule_id": "CAT-029",
+      "status": "implemented",
+      "benchmark_ids": [
+        "CAT-029"
+      ]
+    },
+    {
+      "cwe_id": "CWE-347",
+      "title": "Improper signature verification",
+      "language": "python",
+      "rule_id": "CAT-030",
+      "status": "implemented",
+      "benchmark_ids": [
+        "CAT-030"
+      ]
+    },
+    {
+      "cwe_id": "CWE-352",
+      "title": "Missing CSRF protection",
+      "language": "python",
+      "rule_id": "CAT-031",
+      "status": "implemented",
+      "benchmark_ids": [
+        "CAT-031"
+      ]
+    },
+    {
+      "cwe_id": "CWE-377",
+      "title": "Insecure temporary file",
+      "language": "python",
+      "rule_id": "CAT-032",
+      "status": "implemented",
+      "benchmark_ids": [
+        "CAT-032"
+      ]
+    },
+    {
+      "cwe_id": "CWE-378",
+      "title": "Insecure temp file permissions",
+      "language": "python",
+      "rule_id": "CAT-033",
+      "status": "implemented",
+      "benchmark_ids": [
+        "CAT-033"
+      ]
+    },
+    {
+      "cwe_id": "CWE-379",
+      "title": "Temp directory permissions",
+      "language": "python",
+      "rule_id": "CAT-034",
+      "status": "implemented",
+      "benchmark_ids": [
+        "CAT-034"
+      ]
+    },
+    {
+      "cwe_id": "CWE-400",
+      "title": "Uncontrolled resource consumption",
+      "language": "python",
+      "rule_id": "CAT-035",
+      "status": "implemented",
+      "benchmark_ids": [
+        "CAT-035"
+      ]
+    },
+    {
+      "cwe_id": "CWE-401",
+      "title": "Memory leak pattern",
+      "language": "python",
+      "rule_id": "CAT-036",
+      "status": "implemented",
+      "benchmark_ids": [
+        "CAT-036"
+      ]
+    },
+    {
+      "cwe_id": "CWE-409",
+      "title": "Compression bomb",
+      "language": "python",
+      "rule_id": "CAT-037",
+      "status": "implemented",
+      "benchmark_ids": [
+        "CAT-037"
+      ]
+    },
+    {
+      "cwe_id": "CWE-425",
+      "title": "Direct request attack",
+      "language": "python",
+      "rule_id": "CAT-038",
+      "status": "implemented",
+      "benchmark_ids": [
+        "CAT-038"
+      ]
+    },
+    {
+      "cwe_id": "CWE-427",
+      "title": "Uncontrolled search path",
+      "language": "python",
+      "rule_id": "CAT-039",
+      "status": "implemented",
+      "benchmark_ids": [
+        "CAT-039"
+      ]
+    },
+    {
+      "cwe_id": "CWE-434",
+      "title": "Unrestricted upload",
+      "language": "python",
+      "rule_id": "CAT-040",
+      "status": "implemented",
+      "benchmark_ids": [
+        "CAT-040"
+      ]
+    },
+    {
+      "cwe_id": "CWE-470",
+      "title": "Unsafe reflection",
+      "language": "python",
+      "rule_id": "CAT-041",
+      "status": "implemented",
+      "benchmark_ids": [
+        "CAT-041"
+      ]
+    },
+    {
+      "cwe_id": "CWE-471",
+      "title": "Modification of assumed immutable data",
+      "language": "python",
+      "rule_id": "CAT-042",
+      "status": "implemented",
+      "benchmark_ids": [
+        "CAT-042"
+      ]
+    },
+    {
+      "cwe_id": "CWE-497",
+      "title": "Exposure of system data",
+      "language": "python",
+      "rule_id": "CAT-043",
+      "status": "implemented",
+      "benchmark_ids": [
+        "CAT-043"
+      ]
+    },
+    {
+      "cwe_id": "CWE-522",
+      "title": "Insufficiently protected credentials",
+      "language": "python",
+      "rule_id": "CAT-044",
+      "status": "implemented",
+      "benchmark_ids": [
+        "CAT-044"
+      ]
+    },
+    {
+      "cwe_id": "CWE-598",
+      "title": "GET password exposure",
+      "language": "python",
+      "rule_id": "CAT-045",
+      "status": "implemented",
+      "benchmark_ids": [
+        "CAT-045"
+      ]
+    },
+    {
+      "cwe_id": "CWE-601",
+      "title": "Open redirect",
+      "language": "python",
+      "rule_id": "CAT-046",
+      "status": "implemented",
+      "benchmark_ids": [
+        "CAT-046"
+      ]
+    },
+    {
+      "cwe_id": "CWE-614",
+      "title": "Insecure cookie",
+      "language": "python",
+      "rule_id": "CAT-047",
+      "status": "implemented",
+      "benchmark_ids": [
+        "CAT-047"
+      ]
+    },
+    {
+      "cwe_id": "CWE-620",
+      "title": "Unverified password change",
+      "language": "python",
+      "rule_id": "CAT-048",
+      "status": "implemented",
+      "benchmark_ids": [
+        "CAT-048"
+      ]
+    },
+    {
+      "cwe_id": "CWE-639",
+      "title": "Authorization bypass",
+      "language": "python",
+      "rule_id": "CAT-049",
+      "status": "implemented",
+      "benchmark_ids": [
+        "CAT-049"
+      ]
+    },
+    {
+      "cwe_id": "CWE-640",
+      "title": "Weak password recovery",
+      "language": "python",
+      "rule_id": "CAT-050",
+      "status": "implemented",
+      "benchmark_ids": [
+        "CAT-050"
+      ]
+    },
+    {
+      "cwe_id": "CWE-643",
+      "title": "XPath injection",
+      "language": "python",
+      "rule_id": "CAT-051",
+      "status": "implemented",
+      "benchmark_ids": [
+        "CAT-051"
+      ]
+    },
+    {
+      "cwe_id": "CWE-668",
+      "title": "Exposure to wrong sphere",
+      "language": "python",
+      "rule_id": "CAT-052",
+      "status": "implemented",
+      "benchmark_ids": [
+        "CAT-052"
+      ]
+    },
+    {
+      "cwe_id": "CWE-693",
+      "title": "Missing security headers",
+      "language": "python",
+      "rule_id": "CAT-053",
+      "status": "implemented",
+      "benchmark_ids": [
+        "CAT-053"
+      ]
+    },
+    {
+      "cwe_id": "CWE-703",
+      "title": "Improper exception handling",
+      "language": "python",
+      "rule_id": "CAT-054",
+      "status": "implemented",
+      "benchmark_ids": [
+        "CAT-054"
+      ]
+    },
+    {
+      "cwe_id": "CWE-704",
+      "title": "Incorrect type conversion",
+      "language": "python",
+      "rule_id": "CAT-055",
+      "status": "implemented",
+      "benchmark_ids": [
+        "CAT-055"
+      ]
+    },
+    {
+      "cwe_id": "CWE-707",
+      "title": "Improper neutralization",
+      "language": "python",
+      "rule_id": "CAT-056",
+      "status": "implemented",
+      "benchmark_ids": [
+        "CAT-056"
+      ]
+    },
+    {
+      "cwe_id": "CWE-732",
+      "title": "Unsafe file permissions",
+      "language": "python",
+      "rule_id": "CAT-057",
+      "status": "implemented",
+      "benchmark_ids": [
+        "CAT-057"
+      ]
+    },
+    {
+      "cwe_id": "CWE-749",
+      "title": "Exposed dangerous method",
+      "language": "python",
+      "rule_id": "CAT-058",
+      "status": "implemented",
+      "benchmark_ids": [
+        "CAT-058"
+      ]
+    },
+    {
+      "cwe_id": "CWE-770",
+      "title": "Allocation without limits",
+      "language": "python",
+      "rule_id": "CAT-059",
+      "status": "implemented",
+      "benchmark_ids": [
+        "CAT-059"
+      ]
+    },
+    {
+      "cwe_id": "CWE-776",
+      "title": "XML entity expansion",
+      "language": "python",
+      "rule_id": "CAT-060",
+      "status": "implemented",
+      "benchmark_ids": [
+        "CAT-060"
+      ]
+    },
+    {
+      "cwe_id": "CWE-778",
+      "title": "Insufficient logging",
+      "language": "python",
+      "rule_id": "CAT-061",
+      "status": "implemented",
+      "benchmark_ids": [
+        "CAT-061"
+      ]
+    },
+    {
+      "cwe_id": "CWE-779",
+      "title": "Logging of sensitive data",
+      "language": "python",
+      "rule_id": "CAT-062",
+      "status": "implemented",
+      "benchmark_ids": [
+        "CAT-062"
+      ]
+    },
+    {
+      "cwe_id": "CWE-787",
+      "title": "Out-of-bounds write",
+      "language": "python",
+      "rule_id": "CAT-063",
+      "status": "implemented",
+      "benchmark_ids": [
+        "CAT-063"
+      ]
+    },
+    {
+      "cwe_id": "CWE-789",
+      "title": "Uncontrolled memory allocation",
+      "language": "python",
+      "rule_id": "CAT-064",
+      "status": "implemented",
+      "benchmark_ids": [
+        "CAT-064"
+      ]
+    },
+    {
+      "cwe_id": "CWE-862",
+      "title": "Missing authorization",
+      "language": "python",
+      "rule_id": "CAT-065",
+      "status": "implemented",
+      "benchmark_ids": [
+        "CAT-065"
+      ]
+    },
+    {
+      "cwe_id": "CWE-863",
+      "title": "Incorrect authorization",
+      "language": "python",
+      "rule_id": "CAT-066",
+      "status": "implemented",
+      "benchmark_ids": [
+        "CAT-066"
+      ]
+    },
+    {
+      "cwe_id": "CWE-915",
+      "title": "Mass assignment",
+      "language": "python",
+      "rule_id": "CAT-067",
+      "status": "implemented",
+      "benchmark_ids": [
+        "CAT-067"
+      ]
+    },
+    {
+      "cwe_id": "CWE-922",
+      "title": "Insecure storage",
+      "language": "python",
+      "rule_id": "CAT-068",
+      "status": "implemented",
+      "benchmark_ids": [
+        "CAT-068"
+      ]
+    },
+    {
+      "cwe_id": "CWE-939",
+      "title": "Weak authentication",
+      "language": "python",
+      "rule_id": "CAT-069",
+      "status": "implemented",
+      "benchmark_ids": [
+        "CAT-069"
+      ]
+    },
+    {
+      "cwe_id": "CWE-942",
+      "title": "Permissive CORS",
+      "language": "python",
+      "rule_id": "CAT-070",
+      "status": "implemented",
+      "benchmark_ids": [
+        "CAT-070"
+      ]
+    },
+    {
+      "cwe_id": "CWE-943",
+      "title": "NoSQL injection",
+      "language": "python",
+      "rule_id": "CAT-071",
+      "status": "implemented",
+      "benchmark_ids": [
+        "CAT-071"
+      ]
+    },
+    {
+      "cwe_id": "CWE-1004",
+      "title": "Sensitive cookie without HttpOnly",
+      "language": "python",
+      "rule_id": "CAT-072",
+      "status": "implemented",
+      "benchmark_ids": [
+        "CAT-072"
+      ]
+    },
+    {
+      "cwe_id": "CWE-1021",
+      "title": "Clickjacking",
+      "language": "python",
+      "rule_id": "CAT-073",
+      "status": "implemented",
+      "benchmark_ids": [
+        "CAT-073"
+      ]
+    },
+    {
+      "cwe_id": "CWE-117",
+      "title": "Log injection",
+      "language": "python",
+      "rule_id": "CAT-074",
+      "status": "implemented",
+      "benchmark_ids": [
+        "CAT-074"
+      ]
+    },
+    {
+      "cwe_id": "CWE-134",
+      "title": "Format string injection",
+      "language": "python",
+      "rule_id": "CAT-075",
+      "status": "implemented",
+      "benchmark_ids": [
+        "CAT-075"
+      ]
+    },
+    {
+      "cwe_id": "CWE-185",
+      "title": "Incorrect regular expression",
+      "language": "python",
+      "rule_id": "CAT-076",
+      "status": "implemented",
+      "benchmark_ids": [
+        "CAT-076"
+      ]
+    },
+    {
+      "cwe_id": "CWE-209",
+      "title": "Verbose exception leak",
+      "language": "python",
+      "rule_id": "CAT-077",
+      "status": "implemented",
+      "benchmark_ids": [
+        "CAT-077"
+      ]
+    },
+    {
+      "cwe_id": "CWE-269",
+      "title": "Improper privilege management",
+      "language": "python",
+      "rule_id": "CAT-078",
+      "status": "implemented",
+      "benchmark_ids": [
+        "CAT-078"
+      ]
+    },
+    {
+      "cwe_id": "CWE-284",
+      "title": "Improper access control",
+      "language": "python",
+      "rule_id": "CAT-079",
+      "status": "implemented",
+      "benchmark_ids": [
+        "CAT-079"
+      ]
+    },
+    {
+      "cwe_id": "CWE-285",
+      "title": "Improper authorization",
+      "language": "python",
+      "rule_id": "CAT-080",
+      "status": "implemented",
+      "benchmark_ids": [
+        "CAT-080"
+      ]
+    },
+    {
+      "cwe_id": "CWE-287",
+      "title": "Improper authentication",
+      "language": "python",
+      "rule_id": "CAT-081",
+      "status": "implemented",
+      "benchmark_ids": [
+        "CAT-081"
+      ]
+    },
+    {
+      "cwe_id": "CWE-288",
+      "title": "Authentication bypass",
+      "language": "python",
+      "rule_id": "CAT-082",
+      "status": "implemented",
+      "benchmark_ids": [
+        "CAT-082"
+      ]
+    },
+    {
+      "cwe_id": "CWE-306",
+      "title": "Missing authentication",
+      "language": "python",
+      "rule_id": "CAT-083",
+      "status": "implemented",
+      "benchmark_ids": [
+        "CAT-083"
+      ]
+    },
+    {
+      "cwe_id": "CWE-307",
+      "title": "Brute force",
+      "language": "python",
+      "rule_id": "CAT-084",
+      "status": "implemented",
+      "benchmark_ids": [
+        "CAT-084"
+      ]
+    },
+    {
+      "cwe_id": "CWE-352",
+      "title": "CSRF token missing",
+      "language": "python",
+      "rule_id": "CAT-085",
+      "status": "implemented",
+      "benchmark_ids": [
+        "CAT-085"
+      ]
+    },
+    {
+      "cwe_id": "CWE-359",
+      "title": "Privacy violation",
+      "language": "python",
+      "rule_id": "CAT-086",
+      "status": "implemented",
+      "benchmark_ids": [
+        "CAT-086"
+      ]
+    },
+    {
+      "cwe_id": "CWE-369",
+      "title": "Divide by zero",
+      "language": "python",
+      "rule_id": "CAT-087",
+      "status": "implemented",
+      "benchmark_ids": [
+        "CAT-087"
+      ]
+    },
+    {
+      "cwe_id": "CWE-367",
+      "title": "TOCTOU race",
+      "language": "python",
+      "rule_id": "CAT-088",
+      "status": "implemented",
+      "benchmark_ids": [
+        "CAT-088"
+      ]
+    },
+    {
+      "cwe_id": "CWE-428",
+      "title": "Unquoted search path",
+      "language": "python",
+      "rule_id": "CAT-089",
+      "status": "implemented",
+      "benchmark_ids": [
+        "CAT-089"
+      ]
+    },
+    {
+      "cwe_id": "CWE-494",
+      "title": "Download without integrity",
+      "language": "python",
+      "rule_id": "CAT-090",
+      "status": "implemented",
+      "benchmark_ids": [
+        "CAT-090"
+      ]
+    },
+    {
+      "cwe_id": "CWE-552",
+      "title": "Files accessible to external parties",
+      "language": "python",
+      "rule_id": "CAT-091",
+      "status": "implemented",
+      "benchmark_ids": [
+        "CAT-091"
+      ]
+    },
+    {
+      "cwe_id": "CWE-565",
+      "title": "Reliance on cookies",
+      "language": "python",
+      "rule_id": "CAT-092",
+      "status": "implemented",
+      "benchmark_ids": [
+        "CAT-092"
+      ]
+    },
+    {
+      "cwe_id": "CWE-598",
+      "title": "GET sensitive query",
+      "language": "python",
+      "rule_id": "CAT-093",
+      "status": "implemented",
+      "benchmark_ids": [
+        "CAT-093"
+      ]
+    },
+    {
+      "cwe_id": "CWE-611",
+      "title": "XXE parser",
+      "language": "python",
+      "rule_id": "CAT-094",
+      "status": "implemented",
+      "benchmark_ids": [
+        "CAT-094"
+      ]
+    },
+    {
+      "cwe_id": "CWE-613",
+      "title": "Insufficient session expiration",
+      "language": "python",
+      "rule_id": "CAT-095",
+      "status": "implemented",
+      "benchmark_ids": [
+        "CAT-095"
+      ]
+    },
+    {
+      "cwe_id": "CWE-614",
+      "title": "Secure flag missing",
+      "language": "python",
+      "rule_id": "CAT-096",
+      "status": "implemented",
+      "benchmark_ids": [
+        "CAT-096"
+      ]
+    },
+    {
+      "cwe_id": "CWE-639",
+      "title": "IDOR",
+      "language": "python",
+      "rule_id": "CAT-097",
+      "status": "implemented",
+      "benchmark_ids": [
+        "CAT-097"
+      ]
+    },
+    {
+      "cwe_id": "CWE-776",
+      "title": "Billion laughs",
+      "language": "python",
+      "rule_id": "CAT-098",
+      "status": "implemented",
+      "benchmark_ids": [
+        "CAT-098"
+      ]
+    },
+    {
+      "cwe_id": "CWE-918",
+      "title": "SSRF request",
+      "language": "python",
+      "rule_id": "CAT-099",
+      "status": "implemented",
+      "benchmark_ids": [
+        "CAT-099"
+      ]
+    },
+    {
+      "cwe_id": "CWE-1321",
+      "title": "Prototype pollution",
+      "language": "javascript",
+      "rule_id": "CAT-100",
+      "status": "implemented",
+      "benchmark_ids": [
+        "CAT-100"
+      ]
+    }
+  ]
+}

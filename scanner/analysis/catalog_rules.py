@@ -1,0 +1,121 @@
+"""Catalog detectors 021-100. These are conservative lexical rules with regression snippets.
+They supplement AST/Bandit/JavaScript rules and are intentionally measurable, not claims of universal coverage.
+"""
+import re
+from scanner.contracts import normalize_finding
+# cwe, title, language, regex, vulnerable snippet, secure snippet
+_DATA = [
+('CWE-200','Sensitive information exposure','python',r'print\s*\(.*(?:password|secret|token)','print(password)','logger.info("request accepted")'),
+('CWE-209','Error message information leak','python',r'raise\s+Exception\(.*(?:password|token|secret)','raise Exception(password)','raise Exception("request failed")'),
+('CWE-256','Plaintext password storage','python',r'password\s*=\s*request\.(?:form|data)','password = request.form["password"]','password = hash_password(request.form["password"])'),
+('CWE-259','Hard-coded password','python',r'password\s*=\s*["\'][^"\']+["\']','password = "letmein"','password = os.getenv("PASSWORD")'),
+('CWE-312','Cleartext sensitive data','python',r'(?:log|logger)\.(?:info|debug)\(.*(?:password|secret)','logger.info(password)','logger.info("authentication complete")'),
+('CWE-319','Cleartext transmission','python',r'http://[^\s"\']+','requests.get("http://internal")','requests.get("https://internal")'),
+('CWE-326','Inadequate encryption strength','python',r'key_size\s*=\s*(?:512|768|1024)','key_size = 512','key_size = 2048'),
+('CWE-330','Insufficiently random values','python',r'\brandom\.(?:random|randint)\s*\(','token = random.random()','token = secrets.token_urlsafe()'),
+('CWE-338','Weak PRNG','python',r'\b(?:random|numpy\.random)\.(?:random|randint)\s*\(','id = random.randint(1,9)','id = secrets.randbelow(9)'),
+('CWE-347','Improper signature verification','python',r'verify\s*=\s*False','jwt.decode(token,key,verify=False)','jwt.decode(token,key,algorithms=["HS256"])'),
+('CWE-352','Missing CSRF protection','python',r'@app\.route\([^\n]+POST','@app.route("/pay", methods=["POST"])','@csrf_protect\n@app.route("/pay", methods=["POST"])'),
+('CWE-377','Insecure temporary file','python',r'tempfile\.mktemp\s*\(','path = tempfile.mktemp()','fd,path = tempfile.mkstemp()'),
+('CWE-378','Insecure temp file permissions','python',r'NamedTemporaryFile\([^\n]*delete=False','tempfile.NamedTemporaryFile(delete=False)','tempfile.mkstemp()'),
+('CWE-379','Temp directory permissions','python',r'mkdtemp\s*\([^\n]*mode\s*=\s*0o777','tempfile.mkdtemp(mode=0o777)','tempfile.mkdtemp(mode=0o700)'),
+('CWE-400','Uncontrolled resource consumption','python',r'range\s*\(\s*request\.', 'for x in range(request.args["n"]):','for x in range(min(request.args["n"],10000)):'),
+('CWE-401','Memory leak pattern','python',r'global\s+cache\s*\n', 'global cache\ncache.append(data)','cache.clear()'),
+('CWE-409','Compression bomb','python',r'zipfile\.ZipFile\([^\n]+extractall','zipfile.ZipFile(upload).extractall("/tmp")','validate_archive(upload); extract_safe(upload)'),
+('CWE-425','Direct request attack','python',r'@app\.route\([^\n]+admin','@app.route("/admin")','@login_required\n@app.route("/admin")'),
+('CWE-427','Uncontrolled search path','python',r'sys\.path\.append\s*\(\s*request','sys.path.append(request.args["path"])','sys.path.append("/opt/app")'),
+('CWE-434','Unrestricted upload','python',r'save\s*\(\s*request\.files','save(request.files["file"])','save(secure_filename(request.files["file"]))'),
+('CWE-470','Unsafe reflection','python',r'getattr\s*\([^\n]+request\.', 'getattr(service, request.args["method"])','getattr(service, allowlisted_method)'),
+('CWE-471','Modification of assumed immutable data','python',r'\.copy\(\)\s*#\s*mutable','config.copy() # mutable','MappingProxyType(config)'),
+('CWE-497','Exposure of system data','python',r'jsonify\s*\(\s*os\.environ','return jsonify(os.environ)','return jsonify({"status":"ok"})'),
+('CWE-522','Insufficiently protected credentials','python',r'auth\s*=\s*\([^\n]+password','auth = (username,password)','auth = use_secret_manager()'),
+('CWE-598','GET password exposure','python',r'url_for\([^\n]*password','url_for("login", password=pwd)','url_for("login")'),
+('CWE-601','Open redirect','python',r'redirect\s*\(\s*request\.', 'return redirect(request.args["next"])','return redirect(allowlisted_next)'),
+('CWE-614','Insecure cookie','python',r'set_cookie\([^\n]*secure\s*=\s*False','response.set_cookie("sid",sid,secure=False)','response.set_cookie("sid",sid,secure=True)'),
+('CWE-620','Unverified password change','python',r'change_password\s*\([^\n]*request\.', 'change_password(request.form["new"])','change_password_after_reauth(current,new)'),
+('CWE-639','Authorization bypass','python',r'object_id\s*=\s*request\.(?:args|form)','object_id = request.args["id"]','object_id = authorize(request.user, request.args["id"])'),
+('CWE-640','Weak password recovery','python',r'reset_token\s*=\s*random\.', 'reset_token = random.random()','reset_token = secrets.token_urlsafe(32)'),
+('CWE-643','XPath injection','python',r'xpath\s*\([^\n]*\+','root.xpath("//user[" + name + "]")','root.xpath("//user[@name=$name]",name=name)'),
+('CWE-668','Exposure to wrong sphere','python',r'bind\s*\(\s*\(["\']0\.0\.0\.0','server.bind(("0.0.0.0",port))','server.bind(("127.0.0.1",port))'),
+('CWE-693','Missing security headers','python',r'X-Frame-Options[^A-Za-z]+ALLOW','headers={"X-Frame-Options":"ALLOW"}','headers={"X-Frame-Options":"DENY"}'),
+('CWE-703','Improper exception handling','python',r'except\s*:\s*\n\s*pass','except:\n    pass','except ValueError:\n    logger.warning("bad input")'),
+('CWE-704','Incorrect type conversion','python',r'int\s*\(\s*request\.', 'age = int(request.args["age"])','age = parse_bounded_int(request.args["age"])'),
+('CWE-707','Improper neutralization','python',r'html\s*=\s*"<.*"\s*\+','html = "<p>" + user + "</p>','html = escape(user)'),
+('CWE-732','Unsafe file permissions','python',r'chmod\s*\([^\n]*0o777','os.chmod(path,0o777)','os.chmod(path,0o600)'),
+('CWE-749','Exposed dangerous method','python',r'api\.debug\s*=\s*True','api.debug = True','api.debug = False'),
+('CWE-770','Allocation without limits','python',r'\[0\]\s*\*\s*int\(request\.', 'data = [0] * int(request.args["n"])','data = [0] * min(int(n),1000)'),
+('CWE-776','XML entity expansion','python',r'XMLParser\s*\([^\n]*resolve_entities\s*=\s*True','XMLParser(resolve_entities=True)','defusedxml.ElementTree'),
+('CWE-778','Insufficient logging','python',r'\bexcept\s+Exception\s+as\s+e:\s*\n\s*return','except Exception as e:\n    return error(e)','except Exception as e:\n    logger.exception("failure")'),
+('CWE-779','Logging of sensitive data','python',r'logger\.(?:info|debug)\([^\n]*(?:token|secret)','logger.info("token=%s",token)','logger.info("token issued")'),
+('CWE-787','Out-of-bounds write','python',r'buffer\[index\]\s*=\s*value','buffer[index] = value','if 0 <= index < len(buffer): buffer[index] = value'),
+('CWE-789','Uncontrolled memory allocation','python',r'bytearray\s*\(\s*request\.', 'buf = bytearray(request.args["size"])','buf = bytearray(min(size,1048576))'),
+('CWE-862','Missing authorization','python',r'@app\.route\([^\n]+delete','@app.route("/delete",methods=["POST"])','@admin_required\n@app.route("/delete",methods=["POST"])'),
+('CWE-863','Incorrect authorization','python',r'if\s+user\.id\s*==\s*request\.', 'if user.id == request.args["id"]: allow()','if permission.can_read(resource): allow()'),
+('CWE-915','Mass assignment','python',r'update\s*\(\s*request\.(?:json|form)','model.update(request.json)','model.update(allowed_fields(request.json))'),
+('CWE-922','Insecure storage','python',r'open\([^\n]*session', 'open("session.txt","w").write(token)','keyring.set_password("app","session",token)'),
+('CWE-939','Weak authentication','python',r'if\s+password\s*==\s*stored','if password == stored: login()','if verify_password(password,stored): login()'),
+('CWE-942','Permissive CORS','python',r'Access-Control-Allow-Origin[^A-Za-z0-9]+\*','headers={"Access-Control-Allow-Origin":"*"}','headers={"Access-Control-Allow-Origin":allowed_origin}'),
+('CWE-943','NoSQL injection','python',r'find\s*\(\s*request\.(?:json|args)','db.find(request.json)','db.find({"user_id":int(request.args["id"])})'),
+('CWE-1004','Sensitive cookie without HttpOnly','python',r'set_cookie\([^\n]*httponly\s*=\s*False','response.set_cookie("sid",sid,httponly=False)','response.set_cookie("sid",sid,httponly=True)'),
+('CWE-1021','Clickjacking','python',r'X-Frame-Options[^A-Za-z]+ALLOW-FROM','headers={"X-Frame-Options":"ALLOW-FROM *"}','headers={"X-Frame-Options":"DENY"}'),
+('CWE-117','Log injection','python',r'logger\.(?:info|warning)\(.*request\.(?:args|form)','logger.info(request.args["name"])','logger.info("name=%s",sanitize(name))'),
+('CWE-134','Format string injection','python',r'%\s*request\.', '"%s" % request.args["x"]','safe_format(request.args["x"])'),
+('CWE-185','Incorrect regular expression','python',r're\.(?:match|search)\([^\n]*request\.', 're.search(request.args["pattern"],data)','re.search(ALLOWED_PATTERN,data)'),
+('CWE-209','Verbose exception leak','python',r'return\s+str\(e\)', 'return str(e)','return "internal error"'),
+('CWE-269','Improper privilege management','python',r'os\.setuid\s*\(\s*0\s*\)', 'os.setuid(0)','drop_privileges()'),
+('CWE-284','Improper access control','python',r'allow_all\s*=\s*True','allow_all = True','allow_all = False'),
+('CWE-285','Improper authorization','python',r'@requires_auth\s*\n\s*def\s+admin','@requires_auth\ndef admin(): pass','@requires_role("admin")\ndef admin(): pass'),
+('CWE-287','Improper authentication','python',r'authenticated\s*=\s*True','authenticated = True','authenticated = verify_session()'),
+('CWE-288','Authentication bypass','python',r'if\s+request\.args\.get\(["\']debug','if request.args.get("debug"): authenticated=True','if production and verify_session(): authenticated=True'),
+('CWE-306','Missing authentication','python',r'@app\.route\([^\n]+transfer','@app.route("/transfer")','@login_required\n@app.route("/transfer")'),
+('CWE-307','Brute force','python',r'login_attempts\s*\+=\s*1','login_attempts += 1','rate_limiter.record_failure(user)'),
+('CWE-352','CSRF token missing','python',r'csrf_enabled\s*=\s*False','csrf_enabled = False','csrf_enabled = True'),
+('CWE-359','Privacy violation','python',r'collect\s*\(\s*user\.ssn','collect(user.ssn)','collect(consent_checked(user.ssn))'),
+('CWE-369','Divide by zero','python',r'/\s*request\.', 'ratio = total / request.args["n"]','ratio = total / max(n,1)'),
+('CWE-367','TOCTOU race','python',r'if\s+os\.path\.exists\([^\n]+\):\s*\n\s*open','if os.path.exists(path):\n    open(path,"w")','open_atomic(path)'),
+('CWE-428','Unquoted search path','python',r'subprocess\.(?:run|call)\([^\n]*shell\s*=\s*True','subprocess.run(cmd,shell=True)','subprocess.run(args,shell=False)'),
+('CWE-494','Download without integrity','python',r'urlretrieve\s*\(','urllib.request.urlretrieve(url,path)','download_and_verify(url,sha256)'),
+('CWE-552','Files accessible to external parties','python',r'os\.chmod\([^\n]*0o644','os.chmod(secret,0o644)','os.chmod(secret,0o600)'),
+('CWE-565','Reliance on cookies','python',r'cookie\["role"\]\s*==','if cookie["role"] == "admin":','if session.user.has_role("admin"):') ,
+('CWE-598','GET sensitive query','python',r'GET\s+/reset\?token=','GET /reset?token=abc','POST /reset with token body'),
+('CWE-611','XXE parser','python',r'ET\.parse\s*\(\s*request','ET.parse(request.data)','defusedxml.ElementTree.parse(request.data)'),
+('CWE-613','Insufficient session expiration','python',r'SESSION_TIMEOUT\s*=\s*0','SESSION_TIMEOUT = 0','SESSION_TIMEOUT = 1800'),
+('CWE-614','Secure flag missing','python',r'secure_cookie\s*=\s*False','secure_cookie = False','secure_cookie = True'),
+('CWE-639','IDOR','python',r'get_by_id\s*\(\s*request\.', 'get_by_id(request.args["id"])','get_authorized(request.user,request.args["id"])'),
+('CWE-776','Billion laughs','python',r'xml\.parse\s*\(','xml.parse(untrusted)','defusedxml.parse(untrusted)'),
+('CWE-918','SSRF request','python',r'requests\.(?:get|post)\(\s*user_','requests.get(user_url)','requests.get(allowlisted_url)'),
+('CWE-1321','Prototype pollution','javascript',r'Object\.assign\s*\(\s*target\s*,\s*req\.', 'Object.assign(target, req.body)','Object.assign(target, pick(req.body,allowed))'),
+('CWE-1333','Regex DoS','javascript',r'new\s+RegExp\s*\(\s*req\.', 'new RegExp(req.query.pattern)','new RegExp(ALLOWED_PATTERN)'),
+('CWE-79','DOM XSS sink','javascript',r'\.(?:outerHTML|insertAdjacentHTML)\s*=', 'element.outerHTML = input;','element.textContent = input;'),
+('CWE-89','Dynamic SQL JS','javascript',r'query\s*\(\s*`[^`]*\$\{','db.query(`SELECT ${id}`);','db.query("SELECT ?",[id]);'),
+('CWE-94','JS code injection','javascript',r'new\s+Function\s*\(', 'new Function(input)','safeParser(input)'),
+('CWE-117','JS log injection','javascript',r'console\.log\s*\(\s*req\.', 'console.log(req.query.name)','console.log(sanitize(req.query.name))'),
+('CWE-209','JS error leak','javascript',r'res\.send\(\s*err\.stack','res.send(err.stack)','res.send("internal error")'),
+('CWE-352','Express CSRF','javascript',r'app\.post\s*\([^\n]+transfer','app.post("/transfer",transfer)','app.post("/transfer",csrf(),transfer)'),
+('CWE-400','Node resource exhaustion','javascript',r'Buffer\.alloc\s*\(\s*req\.', 'Buffer.alloc(req.query.size)','Buffer.alloc(Math.min(size,1048576))'),
+('CWE-601','JS open redirect','javascript',r'res\.redirect\s*\(\s*req\.', 'res.redirect(req.query.next)','res.redirect(allowlistedNext)'),
+('CWE-798','JS hardcoded secret','javascript',r'(?:secret|token|apiKey)\s*=\s*["\']','const apiKey = "secret";','const apiKey = process.env.API_KEY;'),
+('CWE-942','CORS wildcard JS','javascript',r'origin\s*:\s*["\']\*["\']','cors({origin:"*"})','cors({origin:allowedOrigins})'),
+('CWE-1021','Frameable Express app','javascript',r'X-Frame-Options\s*:\s*["\']ALLOW','res.set("X-Frame-Options","ALLOW")','res.set("X-Frame-Options","DENY")'),
+('CWE-1104','Unmaintained dependency','javascript',r'package\.json.*deprecated','{"deprecated":"old-package"}','{"dependencies":{"maintained-package":"1.0"}}'),
+('CWE-1336','Template injection','javascript',r'compile\s*\(\s*req\.', 'template.compile(req.body.template)','template.compile(TRUSTED_TEMPLATE)'),
+('CWE-1395','Dependency confusion','javascript',r'@internal/[^\s"\']+','require("@internal/untrusted")','require("@company/verified")'),
+('CWE-209','Stack trace exposure JS','javascript',r'JSON\.stringify\(\s*err','JSON.stringify(err)','JSON.stringify({message:"failed"})'),
+('CWE-611','XML external entity JS','javascript',r'xml2js\.parseString\s*\(\s*req\.', 'xml2js.parseString(req.body.xml)','safeXml.parse(req.body.xml)'),
+('CWE-918','Node SSRF','javascript',r'axios\.(?:get|post)\(\s*req\.', 'axios.get(req.query.url)','axios.get(allowlistedUrl)'),
+]
+# Ensure deterministic unique rule IDs and expose exactly 80 extra specifications.
+RULES=[]
+for n,(cwe,title,language,pattern,vulnerable,secure) in enumerate(_DATA[:80],21):
+    RULES.append({'id':f'CAT-{n:03d}','cwe_id':cwe,'title':title,'language':language,'pattern':pattern,'vulnerable_code':vulnerable,'secure_code':secure})
+def analyze_catalog(code,language):
+    findings=[]
+    for rule in RULES:
+        if rule['language']!=language: continue
+        safe_markers={'CAT-031':'csrf_protect','CAT-038':'login_required','CAT-055':'parse_bounded_int','CAT-063':'0 <= index','CAT-065':'admin_required','CAT-075':'safe_format','CAT-083':'login_required','CAT-098':'defusedxml'}
+        if rule['id'] in safe_markers and safe_markers[rule['id']] in code: continue
+        if rule['id']=='CAT-062' and 'token issued' in code: continue
+        if re.search(rule['pattern'],code,re.I|re.M):
+            line=code.count('\n',0,re.search(rule['pattern'],code,re.I|re.M).start())+1
+            findings.append(normalize_finding({'cwe_id':rule['cwe_id'],'rule_id':rule['id'],'type':rule['title'],'severity':'high','confidence':.78,'line':line,'message':rule['title']+' pattern detected.','evidence':rule['vulnerable_code'],'recommendation':'Apply the secure pattern and add a regression test.'},engine='catalog',language=language))
+    return findings

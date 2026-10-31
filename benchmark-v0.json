@@ -1,0 +1,382 @@
+[
+  {
+    "id": "BENCH-001",
+    "cwe_id": "CWE-95",
+    "title": "Eval Injection",
+    "language": "python",
+    "rule_id": "eval-injection",
+    "severity": "critical",
+    "vulnerable_code": "result = eval(user_input)",
+    "secure_code": "import ast\nresult = ast.literal_eval(user_input)",
+    "expected": {
+      "cwe_id": "CWE-95",
+      "rule_id": "eval-injection",
+      "should_detect": true
+    },
+    "tags": [
+      "positive",
+      "v0"
+    ]
+  },
+  {
+    "id": "BENCH-002",
+    "cwe_id": "CWE-78",
+    "title": "OS Command Injection",
+    "language": "python",
+    "rule_id": "os-system",
+    "severity": "critical",
+    "vulnerable_code": "os.system(user_input)",
+    "secure_code": "subprocess.run([\"echo\", user_input], check=True)",
+    "expected": {
+      "cwe_id": "CWE-78",
+      "rule_id": "os-system",
+      "should_detect": true
+    },
+    "tags": [
+      "positive",
+      "v0"
+    ]
+  },
+  {
+    "id": "BENCH-003",
+    "cwe_id": "CWE-89",
+    "title": "SQL Injection",
+    "language": "python",
+    "rule_id": "sql-dynamic-query",
+    "severity": "high",
+    "vulnerable_code": "cursor.execute(f\"SELECT * FROM users WHERE id={user_id}\")",
+    "secure_code": "cursor.execute(\"SELECT * FROM users WHERE id=?\", (user_id,))",
+    "expected": {
+      "cwe_id": "CWE-89",
+      "rule_id": "sql-dynamic-query",
+      "should_detect": true
+    },
+    "tags": [
+      "positive",
+      "v0"
+    ]
+  },
+  {
+    "id": "BENCH-004",
+    "cwe_id": "CWE-502",
+    "title": "Insecure Deserialization",
+    "language": "python",
+    "rule_id": "pickle-load",
+    "severity": "critical",
+    "vulnerable_code": "pickle.loads(payload)",
+    "secure_code": "json.loads(payload)",
+    "expected": {
+      "cwe_id": "CWE-502",
+      "rule_id": "pickle-load",
+      "should_detect": true
+    },
+    "tags": [
+      "positive",
+      "v0"
+    ]
+  },
+  {
+    "id": "BENCH-005",
+    "cwe_id": "CWE-22",
+    "title": "Path Traversal",
+    "language": "python",
+    "rule_id": "dynamic-open-path",
+    "severity": "high",
+    "vulnerable_code": "open(\"/tmp/\" + filename)",
+    "secure_code": "open(os.path.join(\"/tmp\", os.path.basename(filename)))",
+    "expected": {
+      "cwe_id": "CWE-22",
+      "rule_id": "dynamic-open-path",
+      "should_detect": true
+    },
+    "tags": [
+      "positive",
+      "v0"
+    ]
+  },
+  {
+    "id": "BENCH-006",
+    "cwe_id": "CWE-798",
+    "title": "Hardcoded Secrets",
+    "language": "python",
+    "rule_id": "hardcoded-secret",
+    "severity": "high",
+    "vulnerable_code": "API_SECRET = \"abc123\"",
+    "secure_code": "API_SECRET = os.environ.get(\"API_SECRET\")",
+    "expected": {
+      "cwe_id": "CWE-798",
+      "rule_id": "hardcoded-secret",
+      "should_detect": true
+    },
+    "tags": [
+      "positive",
+      "v0"
+    ]
+  },
+  {
+    "id": "BENCH-007",
+    "cwe_id": "CWE-327",
+    "title": "Weak Cryptography",
+    "language": "python",
+    "rule_id": "weak-hash",
+    "severity": "medium",
+    "vulnerable_code": "hashlib.md5(data)",
+    "secure_code": "hashlib.sha256(data)",
+    "expected": {
+      "cwe_id": "CWE-327",
+      "rule_id": "weak-hash",
+      "should_detect": true
+    },
+    "tags": [
+      "positive",
+      "v0"
+    ]
+  },
+  {
+    "id": "BENCH-008",
+    "cwe_id": "CWE-295",
+    "title": "TLS Verification Disabled",
+    "language": "python",
+    "rule_id": "tls-verify-disabled",
+    "severity": "high",
+    "vulnerable_code": "requests.get(url, verify=False)",
+    "secure_code": "requests.get(url, verify=True)",
+    "expected": {
+      "cwe_id": "CWE-295",
+      "rule_id": "tls-verify-disabled",
+      "should_detect": true
+    },
+    "tags": [
+      "positive",
+      "v0"
+    ]
+  },
+  {
+    "id": "BENCH-009",
+    "cwe_id": "CWE-79",
+    "title": "DOM XSS",
+    "language": "javascript",
+    "rule_id": "dom-xss-innerhtml",
+    "severity": "high",
+    "vulnerable_code": "element.innerHTML = userInput;",
+    "secure_code": "element.textContent = userInput;",
+    "expected": {
+      "cwe_id": "CWE-79",
+      "rule_id": "dom-xss-innerhtml",
+      "should_detect": true
+    },
+    "tags": [
+      "positive",
+      "v0"
+    ]
+  },
+  {
+    "id": "BENCH-010",
+    "cwe_id": "CWE-95",
+    "title": "JavaScript Eval",
+    "language": "javascript",
+    "rule_id": "js-eval",
+    "severity": "critical",
+    "vulnerable_code": "const x = eval(input);",
+    "secure_code": "const x = JSON.parse(input);",
+    "expected": {
+      "cwe_id": "CWE-95",
+      "rule_id": "js-eval",
+      "should_detect": true
+    },
+    "tags": [
+      "positive",
+      "v0"
+    ]
+  },
+  {
+    "id": "BENCH-011",
+    "cwe_id": "CWE-78",
+    "title": "Node Shell Execution",
+    "language": "javascript",
+    "rule_id": "child-process-shell",
+    "severity": "critical",
+    "vulnerable_code": "exec(userInput);",
+    "secure_code": "spawn(\"echo\", [userInput], {shell:false});",
+    "expected": {
+      "cwe_id": "CWE-78",
+      "rule_id": "child-process-shell",
+      "should_detect": true
+    },
+    "tags": [
+      "positive",
+      "v0"
+    ]
+  },
+  {
+    "id": "BENCH-012",
+    "cwe_id": "CWE-798",
+    "title": "JavaScript Secret",
+    "language": "javascript",
+    "rule_id": "hardcoded-secret",
+    "severity": "high",
+    "vulnerable_code": "const apiKey = \"secret\";",
+    "secure_code": "const apiKey = process.env.API_KEY;",
+    "expected": {
+      "cwe_id": "CWE-798",
+      "rule_id": "hardcoded-secret",
+      "should_detect": true
+    },
+    "tags": [
+      "positive",
+      "v0"
+    ]
+  },
+  {
+    "id": "BENCH-013",
+    "cwe_id": "CWE-89",
+    "title": "Dynamic JS Query",
+    "language": "javascript",
+    "rule_id": "dynamic-query",
+    "severity": "high",
+    "vulnerable_code": "db.query(`SELECT * FROM t WHERE id=${id}`);",
+    "secure_code": "db.query(\"SELECT * FROM t WHERE id=?\", [id]);",
+    "expected": {
+      "cwe_id": "CWE-89",
+      "rule_id": "dynamic-query",
+      "should_detect": true
+    },
+    "tags": [
+      "positive",
+      "v0"
+    ]
+  },
+  {
+    "id": "BENCH-014",
+    "cwe_id": "CWE-352",
+    "title": "CSRF Missing Protection",
+    "language": "python",
+    "rule_id": "csrf-missing-protection",
+    "severity": "high",
+    "vulnerable_code": "@app.route(\"/transfer\", methods=[\"POST\"])\ndef transfer(): pass",
+    "secure_code": "@csrf_protect\n@app.route(\"/transfer\", methods=[\"POST\"])\ndef transfer(): pass",
+    "expected": {
+      "cwe_id": "CWE-352",
+      "rule_id": "csrf-missing-protection",
+      "should_detect": true
+    },
+    "tags": [
+      "positive",
+      "v0"
+    ]
+  },
+  {
+    "id": "BENCH-015",
+    "cwe_id": "CWE-434",
+    "title": "Unrestricted Upload",
+    "language": "python",
+    "rule_id": "unrestricted-upload",
+    "severity": "high",
+    "vulnerable_code": "save_upload(request.files[\"file\"].filename)",
+    "secure_code": "save_upload(secure_filename(request.files[\"file\"].filename))",
+    "expected": {
+      "cwe_id": "CWE-434",
+      "rule_id": "unrestricted-upload",
+      "should_detect": true
+    },
+    "tags": [
+      "positive",
+      "v0"
+    ]
+  },
+  {
+    "id": "BENCH-016",
+    "cwe_id": "CWE-918",
+    "title": "SSRF",
+    "language": "python",
+    "rule_id": "server-side-request-forgery",
+    "severity": "high",
+    "vulnerable_code": "requests.get(user_url)",
+    "secure_code": "requests.get(allowlisted_url)",
+    "expected": {
+      "cwe_id": "CWE-918",
+      "rule_id": "server-side-request-forgery",
+      "should_detect": true
+    },
+    "tags": [
+      "positive",
+      "v0"
+    ]
+  },
+  {
+    "id": "BENCH-017",
+    "cwe_id": "CWE-611",
+    "title": "XXE",
+    "language": "python",
+    "rule_id": "xml-external-entity",
+    "severity": "high",
+    "vulnerable_code": "etree.parse(user_xml)",
+    "secure_code": "defusedxml.ElementTree.parse(user_xml)",
+    "expected": {
+      "cwe_id": "CWE-611",
+      "rule_id": "xml-external-entity",
+      "should_detect": true
+    },
+    "tags": [
+      "positive",
+      "v0"
+    ]
+  },
+  {
+    "id": "BENCH-018",
+    "cwe_id": "CWE-732",
+    "title": "Unsafe File Permissions",
+    "language": "python",
+    "rule_id": "unsafe-file-mode",
+    "severity": "medium",
+    "vulnerable_code": "os.chmod(path, 0o777)",
+    "secure_code": "os.chmod(path, 0o600)",
+    "expected": {
+      "cwe_id": "CWE-732",
+      "rule_id": "unsafe-file-mode",
+      "should_detect": true
+    },
+    "tags": [
+      "positive",
+      "v0"
+    ]
+  },
+  {
+    "id": "BENCH-019",
+    "cwe_id": "CWE-693",
+    "title": "Missing Security Headers",
+    "language": "javascript",
+    "rule_id": "missing-security-headers",
+    "severity": "medium",
+    "vulnerable_code": "app.use(express.static(\"public\"));",
+    "secure_code": "app.use(helmet());",
+    "expected": {
+      "cwe_id": "CWE-693",
+      "rule_id": "missing-security-headers",
+      "should_detect": true
+    },
+    "tags": [
+      "positive",
+      "v0"
+    ]
+  },
+  {
+    "id": "BENCH-020",
+    "cwe_id": "CWE-489",
+    "title": "Debug Code",
+    "language": "python",
+    "rule_id": "debug-enabled",
+    "severity": "low",
+    "vulnerable_code": "app.run(debug=True)",
+    "secure_code": "app.run(debug=False)",
+    "expected": {
+      "cwe_id": "CWE-489",
+      "rule_id": "debug-enabled",
+      "should_detect": true
+    },
+    "tags": [
+      "positive",
+      "v0"
+    ]
+  }
+]

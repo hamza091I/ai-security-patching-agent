@@ -1,0 +1,15 @@
+image: python:3.12-slim
+stages: [validate, test]
+cache:
+  paths: [.cache/pip]
+install:
+  stage: validate
+  script:
+    - pip install -r requirements.txt
+    - python manage.py check
+unit_tests:
+  stage: test
+  script:
+    - pip install -r requirements.txt
+    - python manage.py test --verbosity 1
+    - python scanner/evaluator.py

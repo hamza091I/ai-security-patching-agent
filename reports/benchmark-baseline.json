@@ -1,0 +1,285 @@
+{
+  "counts": {
+    "tp": 20,
+    "fp": 3,
+    "fn": 0,
+    "tn": 17
+  },
+  "metrics": {
+    "precision": 0.8696,
+    "recall": 1.0,
+    "accuracy": 0.925,
+    "f1": 0.9302,
+    "false_positive_rate": 0.15
+  },
+  "cases": [
+    {
+      "id": "BENCH-001",
+      "expected": "CWE-95",
+      "predicted": [
+        "CWE-95"
+      ],
+      "detected": true
+    },
+    {
+      "id": "BENCH-002",
+      "expected": "CWE-78",
+      "predicted": [
+        "CWE-78"
+      ],
+      "detected": true
+    },
+    {
+      "id": "BENCH-003",
+      "expected": "CWE-89",
+      "predicted": [
+        "CWE-89"
+      ],
+      "detected": true
+    },
+    {
+      "id": "BENCH-004",
+      "expected": "CWE-502",
+      "predicted": [
+        "CWE-502"
+      ],
+      "detected": true
+    },
+    {
+      "id": "BENCH-005",
+      "expected": "CWE-22",
+      "predicted": [
+        "CWE-22"
+      ],
+      "detected": true
+    },
+    {
+      "id": "BENCH-006",
+      "expected": "CWE-798",
+      "predicted": [
+        "CWE-798"
+      ],
+      "detected": true
+    },
+    {
+      "id": "BENCH-007",
+      "expected": "CWE-327",
+      "predicted": [
+        "CWE-327"
+      ],
+      "detected": true
+    },
+    {
+      "id": "BENCH-008",
+      "expected": "CWE-295",
+      "predicted": [
+        "CWE-295"
+      ],
+      "detected": true
+    },
+    {
+      "id": "BENCH-009",
+      "expected": "CWE-79",
+      "predicted": [
+        "CWE-79"
+      ],
+      "detected": true
+    },
+    {
+      "id": "BENCH-010",
+      "expected": "CWE-95",
+      "predicted": [
+        "CWE-95"
+      ],
+      "detected": true
+    },
+    {
+      "id": "BENCH-011",
+      "expected": "CWE-78",
+      "predicted": [
+        "CWE-78"
+      ],
+      "detected": true
+    },
+    {
+      "id": "BENCH-012",
+      "expected": "CWE-798",
+      "predicted": [
+        "CWE-798"
+      ],
+      "detected": true
+    },
+    {
+      "id": "BENCH-013",
+      "expected": "CWE-89",
+      "predicted": [
+        "CWE-89"
+      ],
+      "detected": true
+    },
+    {
+      "id": "BENCH-014",
+      "expected": "CWE-352",
+      "predicted": [
+        "CWE-352"
+      ],
+      "detected": true
+    },
+    {
+      "id": "BENCH-015",
+      "expected": "CWE-434",
+      "predicted": [
+        "CWE-434"
+      ],
+      "detected": true
+    },
+    {
+      "id": "BENCH-016",
+      "expected": "CWE-918",
+      "predicted": [
+        "CWE-918"
+      ],
+      "detected": true
+    },
+    {
+      "id": "BENCH-017",
+      "expected": "CWE-611",
+      "predicted": [
+        "CWE-611"
+      ],
+      "detected": true
+    },
+    {
+      "id": "BENCH-018",
+      "expected": "CWE-732",
+      "predicted": [
+        "CWE-732"
+      ],
+      "detected": true
+    },
+    {
+      "id": "BENCH-019",
+      "expected": "CWE-693",
+      "predicted": [
+        "CWE-693"
+      ],
+      "detected": true
+    },
+    {
+      "id": "BENCH-020",
+      "expected": "CWE-489",
+      "predicted": [
+        "CWE-489"
+      ],
+      "detected": true
+    }
+  ],
+  "negative_cases": [
+    {
+      "id": "NEG-001",
+      "predicted": [],
+      "clean": true
+    },
+    {
+      "id": "NEG-002",
+      "predicted": [],
+      "clean": true
+    },
+    {
+      "id": "NEG-003",
+      "predicted": [],
+      "clean": true
+    },
+    {
+      "id": "NEG-004",
+      "predicted": [],
+      "clean": true
+    },
+    {
+      "id": "NEG-005",
+      "predicted": [],
+      "clean": true
+    },
+    {
+      "id": "NEG-006",
+      "predicted": [],
+      "clean": true
+    },
+    {
+      "id": "NEG-007",
+      "predicted": [],
+      "clean": true
+    },
+    {
+      "id": "NEG-008",
+      "predicted": [
+        "CWE-918"
+      ],
+      "clean": false
+    },
+    {
+      "id": "NEG-009",
+      "predicted": [],
+      "clean": true
+    },
+    {
+      "id": "NEG-010",
+      "predicted": [],
+      "clean": true
+    },
+    {
+      "id": "NEG-011",
+      "predicted": [],
+      "clean": true
+    },
+    {
+      "id": "NEG-012",
+      "predicted": [],
+      "clean": true
+    },
+    {
+      "id": "NEG-013",
+      "predicted": [],
+      "clean": true
+    },
+    {
+      "id": "NEG-014",
+      "predicted": [],
+      "clean": true
+    },
+    {
+      "id": "NEG-015",
+      "predicted": [
+        "CWE-434"
+      ],
+      "clean": false
+    },
+    {
+      "id": "NEG-016",
+      "predicted": [
+        "CWE-918"
+      ],
+      "clean": false
+    },
+    {
+      "id": "NEG-017",
+      "predicted": [],
+      "clean": true
+    },
+    {
+      "id": "NEG-018",
+      "predicted": [],
+      "clean": true
+    },
+    {
+      "id": "NEG-019",
+      "predicted": [],
+      "clean": true
+    },
+    {
+      "id": "NEG-020",
+      "predicted": [],
+      "clean": true
+    }
+  ]
+}

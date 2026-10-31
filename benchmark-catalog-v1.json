@@ -1,0 +1,1202 @@
+[
+  {
+    "id": "CAT-021",
+    "cwe_id": "CWE-200",
+    "title": "Sensitive information exposure",
+    "language": "python",
+    "rule_id": "CAT-021",
+    "severity": "high",
+    "vulnerable_code": "print(password)",
+    "secure_code": "logger.info(\"request accepted\")",
+    "expected": {
+      "cwe_id": "CWE-200",
+      "rule_id": "CAT-021",
+      "should_detect": true
+    }
+  },
+  {
+    "id": "CAT-022",
+    "cwe_id": "CWE-209",
+    "title": "Error message information leak",
+    "language": "python",
+    "rule_id": "CAT-022",
+    "severity": "high",
+    "vulnerable_code": "raise Exception(password)",
+    "secure_code": "raise Exception(\"request failed\")",
+    "expected": {
+      "cwe_id": "CWE-209",
+      "rule_id": "CAT-022",
+      "should_detect": true
+    }
+  },
+  {
+    "id": "CAT-023",
+    "cwe_id": "CWE-256",
+    "title": "Plaintext password storage",
+    "language": "python",
+    "rule_id": "CAT-023",
+    "severity": "high",
+    "vulnerable_code": "password = request.form[\"password\"]",
+    "secure_code": "password = hash_password(request.form[\"password\"])",
+    "expected": {
+      "cwe_id": "CWE-256",
+      "rule_id": "CAT-023",
+      "should_detect": true
+    }
+  },
+  {
+    "id": "CAT-024",
+    "cwe_id": "CWE-259",
+    "title": "Hard-coded password",
+    "language": "python",
+    "rule_id": "CAT-024",
+    "severity": "high",
+    "vulnerable_code": "password = \"letmein\"",
+    "secure_code": "password = os.getenv(\"PASSWORD\")",
+    "expected": {
+      "cwe_id": "CWE-259",
+      "rule_id": "CAT-024",
+      "should_detect": true
+    }
+  },
+  {
+    "id": "CAT-025",
+    "cwe_id": "CWE-312",
+    "title": "Cleartext sensitive data",
+    "language": "python",
+    "rule_id": "CAT-025",
+    "severity": "high",
+    "vulnerable_code": "logger.info(password)",
+    "secure_code": "logger.info(\"authentication complete\")",
+    "expected": {
+      "cwe_id": "CWE-312",
+      "rule_id": "CAT-025",
+      "should_detect": true
+    }
+  },
+  {
+    "id": "CAT-026",
+    "cwe_id": "CWE-319",
+    "title": "Cleartext transmission",
+    "language": "python",
+    "rule_id": "CAT-026",
+    "severity": "high",
+    "vulnerable_code": "requests.get(\"http://internal\")",
+    "secure_code": "requests.get(\"https://internal\")",
+    "expected": {
+      "cwe_id": "CWE-319",
+      "rule_id": "CAT-026",
+      "should_detect": true
+    }
+  },
+  {
+    "id": "CAT-027",
+    "cwe_id": "CWE-326",
+    "title": "Inadequate encryption strength",
+    "language": "python",
+    "rule_id": "CAT-027",
+    "severity": "high",
+    "vulnerable_code": "key_size = 512",
+    "secure_code": "key_size = 2048",
+    "expected": {
+      "cwe_id": "CWE-326",
+      "rule_id": "CAT-027",
+      "should_detect": true
+    }
+  },
+  {
+    "id": "CAT-028",
+    "cwe_id": "CWE-330",
+    "title": "Insufficiently random values",
+    "language": "python",
+    "rule_id": "CAT-028",
+    "severity": "high",
+    "vulnerable_code": "token = random.random()",
+    "secure_code": "token = secrets.token_urlsafe()",
+    "expected": {
+      "cwe_id": "CWE-330",
+      "rule_id": "CAT-028",
+      "should_detect": true
+    }
+  },
+  {
+    "id": "CAT-029",
+    "cwe_id": "CWE-338",
+    "title": "Weak PRNG",
+    "language": "python",
+    "rule_id": "CAT-029",
+    "severity": "high",
+    "vulnerable_code": "id = random.randint(1,9)",
+    "secure_code": "id = secrets.randbelow(9)",
+    "expected": {
+      "cwe_id": "CWE-338",
+      "rule_id": "CAT-029",
+      "should_detect": true
+    }
+  },
+  {
+    "id": "CAT-030",
+    "cwe_id": "CWE-347",
+    "title": "Improper signature verification",
+    "language": "python",
+    "rule_id": "CAT-030",
+    "severity": "high",
+    "vulnerable_code": "jwt.decode(token,key,verify=False)",
+    "secure_code": "jwt.decode(token,key,algorithms=[\"HS256\"])",
+    "expected": {
+      "cwe_id": "CWE-347",
+      "rule_id": "CAT-030",
+      "should_detect": true
+    }
+  },
+  {
+    "id": "CAT-031",
+    "cwe_id": "CWE-352",
+    "title": "Missing CSRF protection",
+    "language": "python",
+    "rule_id": "CAT-031",
+    "severity": "high",
+    "vulnerable_code": "@app.route(\"/pay\", methods=[\"POST\"])",
+    "secure_code": "@csrf_protect\n@app.route(\"/pay\", methods=[\"POST\"])",
+    "expected": {
+      "cwe_id": "CWE-352",
+      "rule_id": "CAT-031",
+      "should_detect": true
+    }
+  },
+  {
+    "id": "CAT-032",
+    "cwe_id": "CWE-377",
+    "title": "Insecure temporary file",
+    "language": "python",
+    "rule_id": "CAT-032",
+    "severity": "high",
+    "vulnerable_code": "path = tempfile.mktemp()",
+    "secure_code": "fd,path = tempfile.mkstemp()",
+    "expected": {
+      "cwe_id": "CWE-377",
+      "rule_id": "CAT-032",
+      "should_detect": true
+    }
+  },
+  {
+    "id": "CAT-033",
+    "cwe_id": "CWE-378",
+    "title": "Insecure temp file permissions",
+    "language": "python",
+    "rule_id": "CAT-033",
+    "severity": "high",
+    "vulnerable_code": "tempfile.NamedTemporaryFile(delete=False)",
+    "secure_code": "tempfile.mkstemp()",
+    "expected": {
+      "cwe_id": "CWE-378",
+      "rule_id": "CAT-033",
+      "should_detect": true
+    }
+  },
+  {
+    "id": "CAT-034",
+    "cwe_id": "CWE-379",
+    "title": "Temp directory permissions",
+    "language": "python",
+    "rule_id": "CAT-034",
+    "severity": "high",
+    "vulnerable_code": "tempfile.mkdtemp(mode=0o777)",
+    "secure_code": "tempfile.mkdtemp(mode=0o700)",
+    "expected": {
+      "cwe_id": "CWE-379",
+      "rule_id": "CAT-034",
+      "should_detect": true
+    }
+  },
+  {
+    "id": "CAT-035",
+    "cwe_id": "CWE-400",
+    "title": "Uncontrolled resource consumption",
+    "language": "python",
+    "rule_id": "CAT-035",
+    "severity": "high",
+    "vulnerable_code": "for x in range(request.args[\"n\"]):",
+    "secure_code": "for x in range(min(request.args[\"n\"],10000)):",
+    "expected": {
+      "cwe_id": "CWE-400",
+      "rule_id": "CAT-035",
+      "should_detect": true
+    }
+  },
+  {
+    "id": "CAT-036",
+    "cwe_id": "CWE-401",
+    "title": "Memory leak pattern",
+    "language": "python",
+    "rule_id": "CAT-036",
+    "severity": "high",
+    "vulnerable_code": "global cache\ncache.append(data)",
+    "secure_code": "cache.clear()",
+    "expected": {
+      "cwe_id": "CWE-401",
+      "rule_id": "CAT-036",
+      "should_detect": true
+    }
+  },
+  {
+    "id": "CAT-037",
+    "cwe_id": "CWE-409",
+    "title": "Compression bomb",
+    "language": "python",
+    "rule_id": "CAT-037",
+    "severity": "high",
+    "vulnerable_code": "zipfile.ZipFile(upload).extractall(\"/tmp\")",
+    "secure_code": "validate_archive(upload); extract_safe(upload)",
+    "expected": {
+      "cwe_id": "CWE-409",
+      "rule_id": "CAT-037",
+      "should_detect": true
+    }
+  },
+  {
+    "id": "CAT-038",
+    "cwe_id": "CWE-425",
+    "title": "Direct request attack",
+    "language": "python",
+    "rule_id": "CAT-038",
+    "severity": "high",
+    "vulnerable_code": "@app.route(\"/admin\")",
+    "secure_code": "@login_required\n@app.route(\"/admin\")",
+    "expected": {
+      "cwe_id": "CWE-425",
+      "rule_id": "CAT-038",
+      "should_detect": true
+    }
+  },
+  {
+    "id": "CAT-039",
+    "cwe_id": "CWE-427",
+    "title": "Uncontrolled search path",
+    "language": "python",
+    "rule_id": "CAT-039",
+    "severity": "high",
+    "vulnerable_code": "sys.path.append(request.args[\"path\"])",
+    "secure_code": "sys.path.append(\"/opt/app\")",
+    "expected": {
+      "cwe_id": "CWE-427",
+      "rule_id": "CAT-039",
+      "should_detect": true
+    }
+  },
+  {
+    "id": "CAT-040",
+    "cwe_id": "CWE-434",
+    "title": "Unrestricted upload",
+    "language": "python",
+    "rule_id": "CAT-040",
+    "severity": "high",
+    "vulnerable_code": "save(request.files[\"file\"])",
+    "secure_code": "save(secure_filename(request.files[\"file\"]))",
+    "expected": {
+      "cwe_id": "CWE-434",
+      "rule_id": "CAT-040",
+      "should_detect": true
+    }
+  },
+  {
+    "id": "CAT-041",
+    "cwe_id": "CWE-470",
+    "title": "Unsafe reflection",
+    "language": "python",
+    "rule_id": "CAT-041",
+    "severity": "high",
+    "vulnerable_code": "getattr(service, request.args[\"method\"])",
+    "secure_code": "getattr(service, allowlisted_method)",
+    "expected": {
+      "cwe_id": "CWE-470",
+      "rule_id": "CAT-041",
+      "should_detect": true
+    }
+  },
+  {
+    "id": "CAT-042",
+    "cwe_id": "CWE-471",
+    "title": "Modification of assumed immutable data",
+    "language": "python",
+    "rule_id": "CAT-042",
+    "severity": "high",
+    "vulnerable_code": "config.copy() # mutable",
+    "secure_code": "MappingProxyType(config)",
+    "expected": {
+      "cwe_id": "CWE-471",
+      "rule_id": "CAT-042",
+      "should_detect": true
+    }
+  },
+  {
+    "id": "CAT-043",
+    "cwe_id": "CWE-497",
+    "title": "Exposure of system data",
+    "language": "python",
+    "rule_id": "CAT-043",
+    "severity": "high",
+    "vulnerable_code": "return jsonify(os.environ)",
+    "secure_code": "return jsonify({\"status\":\"ok\"})",
+    "expected": {
+      "cwe_id": "CWE-497",
+      "rule_id": "CAT-043",
+      "should_detect": true
+    }
+  },
+  {
+    "id": "CAT-044",
+    "cwe_id": "CWE-522",
+    "title": "Insufficiently protected credentials",
+    "language": "python",
+    "rule_id": "CAT-044",
+    "severity": "high",
+    "vulnerable_code": "auth = (username,password)",
+    "secure_code": "auth = use_secret_manager()",
+    "expected": {
+      "cwe_id": "CWE-522",
+      "rule_id": "CAT-044",
+      "should_detect": true
+    }
+  },
+  {
+    "id": "CAT-045",
+    "cwe_id": "CWE-598",
+    "title": "GET password exposure",
+    "language": "python",
+    "rule_id": "CAT-045",
+    "severity": "high",
+    "vulnerable_code": "url_for(\"login\", password=pwd)",
+    "secure_code": "url_for(\"login\")",
+    "expected": {
+      "cwe_id": "CWE-598",
+      "rule_id": "CAT-045",
+      "should_detect": true
+    }
+  },
+  {
+    "id": "CAT-046",
+    "cwe_id": "CWE-601",
+    "title": "Open redirect",
+    "language": "python",
+    "rule_id": "CAT-046",
+    "severity": "high",
+    "vulnerable_code": "return redirect(request.args[\"next\"])",
+    "secure_code": "return redirect(allowlisted_next)",
+    "expected": {
+      "cwe_id": "CWE-601",
+      "rule_id": "CAT-046",
+      "should_detect": true
+    }
+  },
+  {
+    "id": "CAT-047",
+    "cwe_id": "CWE-614",
+    "title": "Insecure cookie",
+    "language": "python",
+    "rule_id": "CAT-047",
+    "severity": "high",
+    "vulnerable_code": "response.set_cookie(\"sid\",sid,secure=False)",
+    "secure_code": "response.set_cookie(\"sid\",sid,secure=True)",
+    "expected": {
+      "cwe_id": "CWE-614",
+      "rule_id": "CAT-047",
+      "should_detect": true
+    }
+  },
+  {
+    "id": "CAT-048",
+    "cwe_id": "CWE-620",
+    "title": "Unverified password change",
+    "language": "python",
+    "rule_id": "CAT-048",
+    "severity": "high",
+    "vulnerable_code": "change_password(request.form[\"new\"])",
+    "secure_code": "change_password_after_reauth(current,new)",
+    "expected": {
+      "cwe_id": "CWE-620",
+      "rule_id": "CAT-048",
+      "should_detect": true
+    }
+  },
+  {
+    "id": "CAT-049",
+    "cwe_id": "CWE-639",
+    "title": "Authorization bypass",
+    "language": "python",
+    "rule_id": "CAT-049",
+    "severity": "high",
+    "vulnerable_code": "object_id = request.args[\"id\"]",
+    "secure_code": "object_id = authorize(request.user, request.args[\"id\"])",
+    "expected": {
+      "cwe_id": "CWE-639",
+      "rule_id": "CAT-049",
+      "should_detect": true
+    }
+  },
+  {
+    "id": "CAT-050",
+    "cwe_id": "CWE-640",
+    "title": "Weak password recovery",
+    "language": "python",
+    "rule_id": "CAT-050",
+    "severity": "high",
+    "vulnerable_code": "reset_token = random.random()",
+    "secure_code": "reset_token = secrets.token_urlsafe(32)",
+    "expected": {
+      "cwe_id": "CWE-640",
+      "rule_id": "CAT-050",
+      "should_detect": true
+    }
+  },
+  {
+    "id": "CAT-051",
+    "cwe_id": "CWE-643",
+    "title": "XPath injection",
+    "language": "python",
+    "rule_id": "CAT-051",
+    "severity": "high",
+    "vulnerable_code": "root.xpath(\"//user[\" + name + \"]\")",
+    "secure_code": "root.xpath(\"//user[@name=$name]\",name=name)",
+    "expected": {
+      "cwe_id": "CWE-643",
+      "rule_id": "CAT-051",
+      "should_detect": true
+    }
+  },
+  {
+    "id": "CAT-052",
+    "cwe_id": "CWE-668",
+    "title": "Exposure to wrong sphere",
+    "language": "python",
+    "rule_id": "CAT-052",
+    "severity": "high",
+    "vulnerable_code": "server.bind((\"0.0.0.0\",port))",
+    "secure_code": "server.bind((\"127.0.0.1\",port))",
+    "expected": {
+      "cwe_id": "CWE-668",
+      "rule_id": "CAT-052",
+      "should_detect": true
+    }
+  },
+  {
+    "id": "CAT-053",
+    "cwe_id": "CWE-693",
+    "title": "Missing security headers",
+    "language": "python",
+    "rule_id": "CAT-053",
+    "severity": "high",
+    "vulnerable_code": "headers={\"X-Frame-Options\":\"ALLOW\"}",
+    "secure_code": "headers={\"X-Frame-Options\":\"DENY\"}",
+    "expected": {
+      "cwe_id": "CWE-693",
+      "rule_id": "CAT-053",
+      "should_detect": true
+    }
+  },
+  {
+    "id": "CAT-054",
+    "cwe_id": "CWE-703",
+    "title": "Improper exception handling",
+    "language": "python",
+    "rule_id": "CAT-054",
+    "severity": "high",
+    "vulnerable_code": "except:\n    pass",
+    "secure_code": "except ValueError:\n    logger.warning(\"bad input\")",
+    "expected": {
+      "cwe_id": "CWE-703",
+      "rule_id": "CAT-054",
+      "should_detect": true
+    }
+  },
+  {
+    "id": "CAT-055",
+    "cwe_id": "CWE-704",
+    "title": "Incorrect type conversion",
+    "language": "python",
+    "rule_id": "CAT-055",
+    "severity": "high",
+    "vulnerable_code": "age = int(request.args[\"age\"])",
+    "secure_code": "age = parse_bounded_int(request.args[\"age\"])",
+    "expected": {
+      "cwe_id": "CWE-704",
+      "rule_id": "CAT-055",
+      "should_detect": true
+    }
+  },
+  {
+    "id": "CAT-056",
+    "cwe_id": "CWE-707",
+    "title": "Improper neutralization",
+    "language": "python",
+    "rule_id": "CAT-056",
+    "severity": "high",
+    "vulnerable_code": "html = \"<p>\" + user + \"</p>",
+    "secure_code": "html = escape(user)",
+    "expected": {
+      "cwe_id": "CWE-707",
+      "rule_id": "CAT-056",
+      "should_detect": true
+    }
+  },
+  {
+    "id": "CAT-057",
+    "cwe_id": "CWE-732",
+    "title": "Unsafe file permissions",
+    "language": "python",
+    "rule_id": "CAT-057",
+    "severity": "high",
+    "vulnerable_code": "os.chmod(path,0o777)",
+    "secure_code": "os.chmod(path,0o600)",
+    "expected": {
+      "cwe_id": "CWE-732",
+      "rule_id": "CAT-057",
+      "should_detect": true
+    }
+  },
+  {
+    "id": "CAT-058",
+    "cwe_id": "CWE-749",
+    "title": "Exposed dangerous method",
+    "language": "python",
+    "rule_id": "CAT-058",
+    "severity": "high",
+    "vulnerable_code": "api.debug = True",
+    "secure_code": "api.debug = False",
+    "expected": {
+      "cwe_id": "CWE-749",
+      "rule_id": "CAT-058",
+      "should_detect": true
+    }
+  },
+  {
+    "id": "CAT-059",
+    "cwe_id": "CWE-770",
+    "title": "Allocation without limits",
+    "language": "python",
+    "rule_id": "CAT-059",
+    "severity": "high",
+    "vulnerable_code": "data = [0] * int(request.args[\"n\"])",
+    "secure_code": "data = [0] * min(int(n),1000)",
+    "expected": {
+      "cwe_id": "CWE-770",
+      "rule_id": "CAT-059",
+      "should_detect": true
+    }
+  },
+  {
+    "id": "CAT-060",
+    "cwe_id": "CWE-776",
+    "title": "XML entity expansion",
+    "language": "python",
+    "rule_id": "CAT-060",
+    "severity": "high",
+    "vulnerable_code": "XMLParser(resolve_entities=True)",
+    "secure_code": "defusedxml.ElementTree",
+    "expected": {
+      "cwe_id": "CWE-776",
+      "rule_id": "CAT-060",
+      "should_detect": true
+    }
+  },
+  {
+    "id": "CAT-061",
+    "cwe_id": "CWE-778",
+    "title": "Insufficient logging",
+    "language": "python",
+    "rule_id": "CAT-061",
+    "severity": "high",
+    "vulnerable_code": "except Exception as e:\n    return error(e)",
+    "secure_code": "except Exception as e:\n    logger.exception(\"failure\")",
+    "expected": {
+      "cwe_id": "CWE-778",
+      "rule_id": "CAT-061",
+      "should_detect": true
+    }
+  },
+  {
+    "id": "CAT-062",
+    "cwe_id": "CWE-779",
+    "title": "Logging of sensitive data",
+    "language": "python",
+    "rule_id": "CAT-062",
+    "severity": "high",
+    "vulnerable_code": "logger.info(\"token=%s\",token)",
+    "secure_code": "logger.info(\"token issued\")",
+    "expected": {
+      "cwe_id": "CWE-779",
+      "rule_id": "CAT-062",
+      "should_detect": true
+    }
+  },
+  {
+    "id": "CAT-063",
+    "cwe_id": "CWE-787",
+    "title": "Out-of-bounds write",
+    "language": "python",
+    "rule_id": "CAT-063",
+    "severity": "high",
+    "vulnerable_code": "buffer[index] = value",
+    "secure_code": "if 0 <= index < len(buffer): buffer[index] = value",
+    "expected": {
+      "cwe_id": "CWE-787",
+      "rule_id": "CAT-063",
+      "should_detect": true
+    }
+  },
+  {
+    "id": "CAT-064",
+    "cwe_id": "CWE-789",
+    "title": "Uncontrolled memory allocation",
+    "language": "python",
+    "rule_id": "CAT-064",
+    "severity": "high",
+    "vulnerable_code": "buf = bytearray(request.args[\"size\"])",
+    "secure_code": "buf = bytearray(min(size,1048576))",
+    "expected": {
+      "cwe_id": "CWE-789",
+      "rule_id": "CAT-064",
+      "should_detect": true
+    }
+  },
+  {
+    "id": "CAT-065",
+    "cwe_id": "CWE-862",
+    "title": "Missing authorization",
+    "language": "python",
+    "rule_id": "CAT-065",
+    "severity": "high",
+    "vulnerable_code": "@app.route(\"/delete\",methods=[\"POST\"])",
+    "secure_code": "@admin_required\n@app.route(\"/delete\",methods=[\"POST\"])",
+    "expected": {
+      "cwe_id": "CWE-862",
+      "rule_id": "CAT-065",
+      "should_detect": true
+    }
+  },
+  {
+    "id": "CAT-066",
+    "cwe_id": "CWE-863",
+    "title": "Incorrect authorization",
+    "language": "python",
+    "rule_id": "CAT-066",
+    "severity": "high",
+    "vulnerable_code": "if user.id == request.args[\"id\"]: allow()",
+    "secure_code": "if permission.can_read(resource): allow()",
+    "expected": {
+      "cwe_id": "CWE-863",
+      "rule_id": "CAT-066",
+      "should_detect": true
+    }
+  },
+  {
+    "id": "CAT-067",
+    "cwe_id": "CWE-915",
+    "title": "Mass assignment",
+    "language": "python",
+    "rule_id": "CAT-067",
+    "severity": "high",
+    "vulnerable_code": "model.update(request.json)",
+    "secure_code": "model.update(allowed_fields(request.json))",
+    "expected": {
+      "cwe_id": "CWE-915",
+      "rule_id": "CAT-067",
+      "should_detect": true
+    }
+  },
+  {
+    "id": "CAT-068",
+    "cwe_id": "CWE-922",
+    "title": "Insecure storage",
+    "language": "python",
+    "rule_id": "CAT-068",
+    "severity": "high",
+    "vulnerable_code": "open(\"session.txt\",\"w\").write(token)",
+    "secure_code": "keyring.set_password(\"app\",\"session\",token)",
+    "expected": {
+      "cwe_id": "CWE-922",
+      "rule_id": "CAT-068",
+      "should_detect": true
+    }
+  },
+  {
+    "id": "CAT-069",
+    "cwe_id": "CWE-939",
+    "title": "Weak authentication",
+    "language": "python",
+    "rule_id": "CAT-069",
+    "severity": "high",
+    "vulnerable_code": "if password == stored: login()",
+    "secure_code": "if verify_password(password,stored): login()",
+    "expected": {
+      "cwe_id": "CWE-939",
+      "rule_id": "CAT-069",
+      "should_detect": true
+    }
+  },
+  {
+    "id": "CAT-070",
+    "cwe_id": "CWE-942",
+    "title": "Permissive CORS",
+    "language": "python",
+    "rule_id": "CAT-070",
+    "severity": "high",
+    "vulnerable_code": "headers={\"Access-Control-Allow-Origin\":\"*\"}",
+    "secure_code": "headers={\"Access-Control-Allow-Origin\":allowed_origin}",
+    "expected": {
+      "cwe_id": "CWE-942",
+      "rule_id": "CAT-070",
+      "should_detect": true
+    }
+  },
+  {
+    "id": "CAT-071",
+    "cwe_id": "CWE-943",
+    "title": "NoSQL injection",
+    "language": "python",
+    "rule_id": "CAT-071",
+    "severity": "high",
+    "vulnerable_code": "db.find(request.json)",
+    "secure_code": "db.find({\"user_id\":int(request.args[\"id\"])})",
+    "expected": {
+      "cwe_id": "CWE-943",
+      "rule_id": "CAT-071",
+      "should_detect": true
+    }
+  },
+  {
+    "id": "CAT-072",
+    "cwe_id": "CWE-1004",
+    "title": "Sensitive cookie without HttpOnly",
+    "language": "python",
+    "rule_id": "CAT-072",
+    "severity": "high",
+    "vulnerable_code": "response.set_cookie(\"sid\",sid,httponly=False)",
+    "secure_code": "response.set_cookie(\"sid\",sid,httponly=True)",
+    "expected": {
+      "cwe_id": "CWE-1004",
+      "rule_id": "CAT-072",
+      "should_detect": true
+    }
+  },
+  {
+    "id": "CAT-073",
+    "cwe_id": "CWE-1021",
+    "title": "Clickjacking",
+    "language": "python",
+    "rule_id": "CAT-073",
+    "severity": "high",
+    "vulnerable_code": "headers={\"X-Frame-Options\":\"ALLOW-FROM *\"}",
+    "secure_code": "headers={\"X-Frame-Options\":\"DENY\"}",
+    "expected": {
+      "cwe_id": "CWE-1021",
+      "rule_id": "CAT-073",
+      "should_detect": true
+    }
+  },
+  {
+    "id": "CAT-074",
+    "cwe_id": "CWE-117",
+    "title": "Log injection",
+    "language": "python",
+    "rule_id": "CAT-074",
+    "severity": "high",
+    "vulnerable_code": "logger.info(request.args[\"name\"])",
+    "secure_code": "logger.info(\"name=%s\",sanitize(name))",
+    "expected": {
+      "cwe_id": "CWE-117",
+      "rule_id": "CAT-074",
+      "should_detect": true
+    }
+  },
+  {
+    "id": "CAT-075",
+    "cwe_id": "CWE-134",
+    "title": "Format string injection",
+    "language": "python",
+    "rule_id": "CAT-075",
+    "severity": "high",
+    "vulnerable_code": "\"%s\" % request.args[\"x\"]",
+    "secure_code": "safe_format(request.args[\"x\"])",
+    "expected": {
+      "cwe_id": "CWE-134",
+      "rule_id": "CAT-075",
+      "should_detect": true
+    }
+  },
+  {
+    "id": "CAT-076",
+    "cwe_id": "CWE-185",
+    "title": "Incorrect regular expression",
+    "language": "python",
+    "rule_id": "CAT-076",
+    "severity": "high",
+    "vulnerable_code": "re.search(request.args[\"pattern\"],data)",
+    "secure_code": "re.search(ALLOWED_PATTERN,data)",
+    "expected": {
+      "cwe_id": "CWE-185",
+      "rule_id": "CAT-076",
+      "should_detect": true
+    }
+  },
+  {
+    "id": "CAT-077",
+    "cwe_id": "CWE-209",
+    "title": "Verbose exception leak",
+    "language": "python",
+    "rule_id": "CAT-077",
+    "severity": "high",
+    "vulnerable_code": "return str(e)",
+    "secure_code": "return \"internal error\"",
+    "expected": {
+      "cwe_id": "CWE-209",
+      "rule_id": "CAT-077",
+      "should_detect": true
+    }
+  },
+  {
+    "id": "CAT-078",
+    "cwe_id": "CWE-269",
+    "title": "Improper privilege management",
+    "language": "python",
+    "rule_id": "CAT-078",
+    "severity": "high",
+    "vulnerable_code": "os.setuid(0)",
+    "secure_code": "drop_privileges()",
+    "expected": {
+      "cwe_id": "CWE-269",
+      "rule_id": "CAT-078",
+      "should_detect": true
+    }
+  },
+  {
+    "id": "CAT-079",
+    "cwe_id": "CWE-284",
+    "title": "Improper access control",
+    "language": "python",
+    "rule_id": "CAT-079",
+    "severity": "high",
+    "vulnerable_code": "allow_all = True",
+    "secure_code": "allow_all = False",
+    "expected": {
+      "cwe_id": "CWE-284",
+      "rule_id": "CAT-079",
+      "should_detect": true
+    }
+  },
+  {
+    "id": "CAT-080",
+    "cwe_id": "CWE-285",
+    "title": "Improper authorization",
+    "language": "python",
+    "rule_id": "CAT-080",
+    "severity": "high",
+    "vulnerable_code": "@requires_auth\ndef admin(): pass",
+    "secure_code": "@requires_role(\"admin\")\ndef admin(): pass",
+    "expected": {
+      "cwe_id": "CWE-285",
+      "rule_id": "CAT-080",
+      "should_detect": true
+    }
+  },
+  {
+    "id": "CAT-081",
+    "cwe_id": "CWE-287",
+    "title": "Improper authentication",
+    "language": "python",
+    "rule_id": "CAT-081",
+    "severity": "high",
+    "vulnerable_code": "authenticated = True",
+    "secure_code": "authenticated = verify_session()",
+    "expected": {
+      "cwe_id": "CWE-287",
+      "rule_id": "CAT-081",
+      "should_detect": true
+    }
+  },
+  {
+    "id": "CAT-082",
+    "cwe_id": "CWE-288",
+    "title": "Authentication bypass",
+    "language": "python",
+    "rule_id": "CAT-082",
+    "severity": "high",
+    "vulnerable_code": "if request.args.get(\"debug\"): authenticated=True",
+    "secure_code": "if production and verify_session(): authenticated=True",
+    "expected": {
+      "cwe_id": "CWE-288",
+      "rule_id": "CAT-082",
+      "should_detect": true
+    }
+  },
+  {
+    "id": "CAT-083",
+    "cwe_id": "CWE-306",
+    "title": "Missing authentication",
+    "language": "python",
+    "rule_id": "CAT-083",
+    "severity": "high",
+    "vulnerable_code": "@app.route(\"/transfer\")",
+    "secure_code": "@login_required\n@app.route(\"/transfer\")",
+    "expected": {
+      "cwe_id": "CWE-306",
+      "rule_id": "CAT-083",
+      "should_detect": true
+    }
+  },
+  {
+    "id": "CAT-084",
+    "cwe_id": "CWE-307",
+    "title": "Brute force",
+    "language": "python",
+    "rule_id": "CAT-084",
+    "severity": "high",
+    "vulnerable_code": "login_attempts += 1",
+    "secure_code": "rate_limiter.record_failure(user)",
+    "expected": {
+      "cwe_id": "CWE-307",
+      "rule_id": "CAT-084",
+      "should_detect": true
+    }
+  },
+  {
+    "id": "CAT-085",
+    "cwe_id": "CWE-352",
+    "title": "CSRF token missing",
+    "language": "python",
+    "rule_id": "CAT-085",
+    "severity": "high",
+    "vulnerable_code": "csrf_enabled = False",
+    "secure_code": "csrf_enabled = True",
+    "expected": {
+      "cwe_id": "CWE-352",
+      "rule_id": "CAT-085",
+      "should_detect": true
+    }
+  },
+  {
+    "id": "CAT-086",
+    "cwe_id": "CWE-359",
+    "title": "Privacy violation",
+    "language": "python",
+    "rule_id": "CAT-086",
+    "severity": "high",
+    "vulnerable_code": "collect(user.ssn)",
+    "secure_code": "collect(consent_checked(user.ssn))",
+    "expected": {
+      "cwe_id": "CWE-359",
+      "rule_id": "CAT-086",
+      "should_detect": true
+    }
+  },
+  {
+    "id": "CAT-087",
+    "cwe_id": "CWE-369",
+    "title": "Divide by zero",
+    "language": "python",
+    "rule_id": "CAT-087",
+    "severity": "high",
+    "vulnerable_code": "ratio = total / request.args[\"n\"]",
+    "secure_code": "ratio = total / max(n,1)",
+    "expected": {
+      "cwe_id": "CWE-369",
+      "rule_id": "CAT-087",
+      "should_detect": true
+    }
+  },
+  {
+    "id": "CAT-088",
+    "cwe_id": "CWE-367",
+    "title": "TOCTOU race",
+    "language": "python",
+    "rule_id": "CAT-088",
+    "severity": "high",
+    "vulnerable_code": "if os.path.exists(path):\n    open(path,\"w\")",
+    "secure_code": "open_atomic(path)",
+    "expected": {
+      "cwe_id": "CWE-367",
+      "rule_id": "CAT-088",
+      "should_detect": true
+    }
+  },
+  {
+    "id": "CAT-089",
+    "cwe_id": "CWE-428",
+    "title": "Unquoted search path",
+    "language": "python",
+    "rule_id": "CAT-089",
+    "severity": "high",
+    "vulnerable_code": "subprocess.run(cmd,shell=True)",
+    "secure_code": "subprocess.run(args,shell=False)",
+    "expected": {
+      "cwe_id": "CWE-428",
+      "rule_id": "CAT-089",
+      "should_detect": true
+    }
+  },
+  {
+    "id": "CAT-090",
+    "cwe_id": "CWE-494",
+    "title": "Download without integrity",
+    "language": "python",
+    "rule_id": "CAT-090",
+    "severity": "high",
+    "vulnerable_code": "urllib.request.urlretrieve(url,path)",
+    "secure_code": "download_and_verify(url,sha256)",
+    "expected": {
+      "cwe_id": "CWE-494",
+      "rule_id": "CAT-090",
+      "should_detect": true
+    }
+  },
+  {
+    "id": "CAT-091",
+    "cwe_id": "CWE-552",
+    "title": "Files accessible to external parties",
+    "language": "python",
+    "rule_id": "CAT-091",
+    "severity": "high",
+    "vulnerable_code": "os.chmod(secret,0o644)",
+    "secure_code": "os.chmod(secret,0o600)",
+    "expected": {
+      "cwe_id": "CWE-552",
+      "rule_id": "CAT-091",
+      "should_detect": true
+    }
+  },
+  {
+    "id": "CAT-092",
+    "cwe_id": "CWE-565",
+    "title": "Reliance on cookies",
+    "language": "python",
+    "rule_id": "CAT-092",
+    "severity": "high",
+    "vulnerable_code": "if cookie[\"role\"] == \"admin\":",
+    "secure_code": "if session.user.has_role(\"admin\"):",
+    "expected": {
+      "cwe_id": "CWE-565",
+      "rule_id": "CAT-092",
+      "should_detect": true
+    }
+  },
+  {
+    "id": "CAT-093",
+    "cwe_id": "CWE-598",
+    "title": "GET sensitive query",
+    "language": "python",
+    "rule_id": "CAT-093",
+    "severity": "high",
+    "vulnerable_code": "GET /reset?token=abc",
+    "secure_code": "POST /reset with token body",
+    "expected": {
+      "cwe_id": "CWE-598",
+      "rule_id": "CAT-093",
+      "should_detect": true
+    }
+  },
+  {
+    "id": "CAT-094",
+    "cwe_id": "CWE-611",
+    "title": "XXE parser",
+    "language": "python",
+    "rule_id": "CAT-094",
+    "severity": "high",
+    "vulnerable_code": "ET.parse(request.data)",
+    "secure_code": "defusedxml.ElementTree.parse(request.data)",
+    "expected": {
+      "cwe_id": "CWE-611",
+      "rule_id": "CAT-094",
+      "should_detect": true
+    }
+  },
+  {
+    "id": "CAT-095",
+    "cwe_id": "CWE-613",
+    "title": "Insufficient session expiration",
+    "language": "python",
+    "rule_id": "CAT-095",
+    "severity": "high",
+    "vulnerable_code": "SESSION_TIMEOUT = 0",
+    "secure_code": "SESSION_TIMEOUT = 1800",
+    "expected": {
+      "cwe_id": "CWE-613",
+      "rule_id": "CAT-095",
+      "should_detect": true
+    }
+  },
+  {
+    "id": "CAT-096",
+    "cwe_id": "CWE-614",
+    "title": "Secure flag missing",
+    "language": "python",
+    "rule_id": "CAT-096",
+    "severity": "high",
+    "vulnerable_code": "secure_cookie = False",
+    "secure_code": "secure_cookie = True",
+    "expected": {
+      "cwe_id": "CWE-614",
+      "rule_id": "CAT-096",
+      "should_detect": true
+    }
+  },
+  {
+    "id": "CAT-097",
+    "cwe_id": "CWE-639",
+    "title": "IDOR",
+    "language": "python",
+    "rule_id": "CAT-097",
+    "severity": "high",
+    "vulnerable_code": "get_by_id(request.args[\"id\"])",
+    "secure_code": "get_authorized(request.user,request.args[\"id\"])",
+    "expected": {
+      "cwe_id": "CWE-639",
+      "rule_id": "CAT-097",
+      "should_detect": true
+    }
+  },
+  {
+    "id": "CAT-098",
+    "cwe_id": "CWE-776",
+    "title": "Billion laughs",
+    "language": "python",
+    "rule_id": "CAT-098",
+    "severity": "high",
+    "vulnerable_code": "xml.parse(untrusted)",
+    "secure_code": "defusedxml.parse(untrusted)",
+    "expected": {
+      "cwe_id": "CWE-776",
+      "rule_id": "CAT-098",
+      "should_detect": true
+    }
+  },
+  {
+    "id": "CAT-099",
+    "cwe_id": "CWE-918",
+    "title": "SSRF request",
+    "language": "python",
+    "rule_id": "CAT-099",
+    "severity": "high",
+    "vulnerable_code": "requests.get(user_url)",
+    "secure_code": "requests.get(allowlisted_url)",
+    "expected": {
+      "cwe_id": "CWE-918",
+      "rule_id": "CAT-099",
+      "should_detect": true
+    }
+  },
+  {
+    "id": "CAT-100",
+    "cwe_id": "CWE-1321",
+    "title": "Prototype pollution",
+    "language": "javascript",
+    "rule_id": "CAT-100",
+    "severity": "high",
+    "vulnerable_code": "Object.assign(target, req.body)",
+    "secure_code": "Object.assign(target, pick(req.body,allowed))",
+    "expected": {
+      "cwe_id": "CWE-1321",
+      "rule_id": "CAT-100",
+      "should_detect": true
+    }
+  }
+]
