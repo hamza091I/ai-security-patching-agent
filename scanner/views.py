@@ -7,7 +7,6 @@ from rest_framework import status
 from rest_framework.permissions import AllowAny
 
 from scanner.analysis.ast_parser import analyze_code_string
-from scanner.core.rag_engine import SecurityRAGEngine
 from scanner.core.patcher import run_patcher_on_code
 from .models import CodeScan, VulnerabilityReport
 
@@ -17,10 +16,10 @@ try:
 except ImportError:
     GITHUB_AVAILABLE = False
 
-rag_engine = SecurityRAGEngine()
 
 def home_view(request):
     return render(request, 'scanner/index.html')
+
 
 @method_decorator(csrf_exempt, name='dispatch')
 class ScanCodeAPIView(APIView):
@@ -29,7 +28,7 @@ class ScanCodeAPIView(APIView):
 
     def post(self, request):
         code = request.data.get('code', '') or request.POST.get('code', '')
-        
+
         github_config = request.data.get('github_config', {})
         push_to_github = github_config.get('enable_push', False)
         repo_name = github_config.get('repo', '')
@@ -38,73 +37,99 @@ class ScanCodeAPIView(APIView):
 
         if not code.strip():
             return Response(
-                {"status": "error", "message": "Please provide Python code to scan."}, 
+                {"status": "error", "message": "Please provide Python code to scan."},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
         try:
-            vulnerabilities_found = analyze_code_string(code)
-            
-            syntax_errors = [v for v in vulnerabilities_found if v.get("cwe_id") == "SYNTAX"]
+            raw_results = analyze_code_string(code)
+
+            syntax_errors = [v for v in raw_results if "error" in v]
             if syntax_errors:
                 return Response(
-                    {"status": "error", "message": syntax_errors[0].get("message", "Syntax error in code.")}, 
+                    {"status": "error", "message": syntax_errors[0]["error"]},
                     status=status.HTTP_400_BAD_REQUEST
                 )
 
-            is_vulnerable = len(vulnerabilities_found) > 0
-            
-            patcher_result = run_patcher_on_code(code)
-            patched_code = patcher_result.get("patched_code", code)
-            retrieved_fixes = patcher_result.get("retrieved_fixes", [])
+            vulnerabilities_found = []
 
-            detected_cwe = "None"
-            vulnerability_type = "Secure"
-            description = "The code appears safe. No vulnerabilities detected in static analysis."
-            recommendation = "No recommendations required. Code complies with basic security standards."
-            github_status = {"success": False, "error": "Push not enabled or skipped."}
+            for item in raw_results:
+                cwe = item.get("cwe", "N/A")
+
+                vulnerabilities_found.append({
+                    "cwe_id": cwe,
+                    "type": (
+                        "Command Injection" if cwe == "CWE-78"
+                        else "Code Injection" if cwe == "CWE-95"
+                        else "Security Issue"
+                    ),
+                    "line": item.get("line"),
+                    "description": item.get("issue", "Security vulnerability detected."),
+                    "severity": item.get("severity", "High"),
+                    "recommendation": (
+                        "Avoid shell=True. Use subprocess with an argument list "
+                        "and shell=False."
+                        if cwe == "CWE-78"
+                        else "Use ast.literal_eval() instead of eval() when parsing literal data."
+                        if cwe == "CWE-95"
+                        else "Review the code and apply secure coding practices."
+                    )
+                })
+
+            is_vulnerable = len(vulnerabilities_found) > 0
+
+            patched_code = code
+            retrieved_fixes = []
 
             if is_vulnerable:
-                first_vuln = vulnerabilities_found[0]
-                detected_cwe = first_vuln.get("cwe_id", "CWE-General")
-                vulnerability_type = first_vuln.get("type", "Security Issue")
-                description = f"{first_vuln.get('message', '')} (Line: {first_vuln.get('line', 0)})"
-                
-                if retrieved_fixes and len(retrieved_fixes) > 0:
-                    recommendation = retrieved_fixes[0].get("recommended_fix", first_vuln.get("recommendation", "Apply secure coding standards."))
-                else:
-                    recommendation = first_vuln.get("recommendation", "Apply secure coding standards.")
+                patcher_result = run_patcher_on_code(code)
+                patched_code = patcher_result.get("patched_code", code)
+                retrieved_fixes = patcher_result.get("retrieved_fixes", [])
+
+            github_status = {
+                "success": False,
+                "error": "Push not enabled or skipped."
+            }
 
             if push_to_github and is_vulnerable and GITHUB_AVAILABLE:
                 if not github_token or not repo_name or not file_path:
-                    github_status = {"success": False, "error": "GitHub Token, Repository Name, and File Path are required."}
+                    github_status = {
+                        "success": False,
+                        "error": "GitHub Token, Repository Name, and File Path are required."
+                    }
                 else:
                     try:
                         g = Github(github_token)
                         repo = g.get_repo(repo_name)
-                        
+
                         try:
                             file_obj = repo.get_contents(file_path)
                             commit = repo.update_file(
                                 path=file_path,
-                                message=f"AI Security Agent: Automated patch for {detected_cwe}",
+                                message="AI Security Agent: Automated security patch",
                                 content=patched_code,
                                 sha=file_obj.sha
                             )
-                            commit_sha = commit.get('commit').sha if isinstance(commit, dict) else getattr(commit.get('commit'), 'sha', 'Pushed')
-                            github_status = {"success": True, "commit_sha": commit_sha}
                         except Exception:
                             commit = repo.create_file(
                                 path=file_path,
-                                message=f"AI Security Agent: Created secure patch for {detected_cwe}",
+                                message="AI Security Agent: Created security patch",
                                 content=patched_code
                             )
-                            commit_sha = commit.get('commit').sha if isinstance(commit, dict) else getattr(commit.get('commit'), 'sha', 'Pushed')
-                            github_status = {"success": True, "commit_sha": commit_sha}
+
+                        github_status = {"success": True}
+
                     except Exception as gh_err:
-                        github_status = {"success": False, "error": str(gh_err)}
+                        github_status = {
+                            "success": False,
+                            "error": str(gh_err)
+                        }
+
             elif push_to_github and not GITHUB_AVAILABLE:
-                github_status = {"success": False, "error": "PyGithub library is not installed."}
+                github_status = {
+                    "success": False,
+                    "error": "PyGithub library is not installed."
+                }
 
             scan_session = CodeScan.objects.create(
                 original_code=code,
@@ -113,14 +138,15 @@ class ScanCodeAPIView(APIView):
                 is_vulnerable=is_vulnerable
             )
 
-            if is_vulnerable:
+            for vuln in vulnerabilities_found:
                 VulnerabilityReport.objects.create(
                     scan=scan_session,
-                    cwe_id=detected_cwe,
-                    vulnerability_type=vulnerability_type,
-                    severity='CRITICAL',
-                    description=description,
-                    recommendation=recommendation
+                    cwe_id=vuln["cwe_id"],
+                    vulnerability_type=vuln["type"],
+                    severity=vuln["severity"].upper(),
+                    line_number=vuln.get("line"),
+                    description=vuln["description"],
+                    recommendation=vuln["recommendation"]
                 )
 
             response_data = {
@@ -132,10 +158,10 @@ class ScanCodeAPIView(APIView):
                 "github_status": github_status,
                 "vulnerabilities": vulnerabilities_found,
                 "result": {
-                    "cwe_id": detected_cwe,
-                    "type": vulnerability_type,
-                    "description": description,
-                    "recommendation": recommendation,
+                    "cwe_id": vulnerabilities_found[0]["cwe_id"] if is_vulnerable else "None",
+                    "type": vulnerabilities_found[0]["type"] if is_vulnerable else "Secure",
+                    "description": vulnerabilities_found[0]["description"] if is_vulnerable else "No vulnerabilities detected.",
+                    "recommendation": vulnerabilities_found[0]["recommendation"] if is_vulnerable else "No recommendations required.",
                     "vulnerabilities_count": len(vulnerabilities_found)
                 }
             }
@@ -144,6 +170,6 @@ class ScanCodeAPIView(APIView):
 
         except Exception as e:
             return Response(
-                {"status": "error", "message": f"Internal server error during analysis: {str(e)}"}, 
+                {"status": "error", "message": f"Internal server error during analysis: {str(e)}"},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
