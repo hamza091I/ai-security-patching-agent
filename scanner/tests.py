@@ -7,6 +7,7 @@ from scanner.analysis.bandit_scanner import scan_code as bandit_scan
 from scanner.analysis.security_scanner import full_security_scan
 from scanner.contracts import validate_finding
 from scanner.core.patcher import propose_patch
+from scanner.views import summarize_findings
 class ContractAndRulesTests(TestCase):
     def test_contract_contains_security_fields(self):
         f=analyze_code_string('value = eval(user_input)')[0]
@@ -36,6 +37,8 @@ class APITests(TestCase):
         self.client.force_authenticate(user=self.user)
     def test_scan_endpoint(self):
         r=self.client.post('/api/scan/',{'code':'import os\nos.system(user_input)','filename':'x.py'},format='json'); self.assertEqual(r.status_code,200); self.assertTrue(r.data['is_vulnerable']); self.assertIn('engines',r.data)
+        self.assertIn('summary', r.data)
+        self.assertEqual(r.data['summary']['total_findings'], len(r.data['vulnerabilities']))
     def test_compare_and_history(self):
         r=self.client.post('/api/compare/',{'code':'value = eval(input)','filename':'x.py'},format='json'); self.assertEqual(r.status_code,200); self.assertIn('ast_findings',r.data['counts']); self.client.post('/api/scan/',{'code':'safe=True'},format='json'); self.assertEqual(self.client.get('/api/history/').status_code,200)
     def test_empty_and_syntax(self):
@@ -56,3 +59,15 @@ class APITests(TestCase):
 
         self.assertEqual(response.status_code, 302)
         self.assertIn("/login/", response["Location"])
+
+    def test_finding_summary_counts_severity_language_and_engine(self):
+        summary = summarize_findings([
+            {"severity": "HIGH", "language": "python", "engine": "ast"},
+            {"severity": "medium", "language": "python", "engine": "bandit"},
+        ], duration_ms=12.5)
+        self.assertEqual(summary["total_findings"], 2)
+        self.assertEqual(summary["severity_counts"]["high"], 1)
+        self.assertEqual(summary["severity_counts"]["medium"], 1)
+        self.assertEqual(summary["languages"], ["python"])
+        self.assertEqual(summary["engines"], ["ast", "bandit"])
+        self.assertEqual(summary["duration_ms"], 12.5)

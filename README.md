@@ -15,6 +15,16 @@ python scanner/evaluator.py
 python manage.py runserver
 ```
 
+The evaluation pipeline can also be run directly with:
+
+```bash
+python scanner/evaluation/benchmark_runner.py
+```
+
+It runs the positive and negative benchmark files through the real combined
+scanner (`full_security_scan`) and reports TP, TN, FP, FN, precision, recall,
+F1-score, accuracy, and the failed benchmark cases.
+
 ## APIs
 
 - `POST /api/scan/` — scan, normalize, save history, and return a validated patch proposal.
