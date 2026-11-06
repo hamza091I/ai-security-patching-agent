@@ -1,0 +1,874 @@
+{
+  "total_cases": 40,
+  "passed_cases": 36,
+  "failed_cases": 4,
+  "counts": {
+    "true_positives": 20,
+    "true_negatives": 16,
+    "false_positives": 4,
+    "false_negatives": 0
+  },
+  "metrics": {
+    "true_positives": 20,
+    "true_negatives": 16,
+    "false_positives": 4,
+    "false_negatives": 0,
+    "precision": 0.8333,
+    "recall": 1.0,
+    "f1_score": 0.9091,
+    "accuracy": 0.9,
+    "false_positive_rate": 0.2,
+    "false_negative_rate": 0.0,
+    "total": 40
+  },
+  "cases": [
+    {
+      "id": "BENCH-001",
+      "language": "python",
+      "filename": "benchmark.py",
+      "expected_cwes": [
+        "CWE-95"
+      ],
+      "detected_cwes": [
+        "CWE-95"
+      ],
+      "findings_count": 1,
+      "should_detect": true,
+      "passed": true,
+      "counts": {
+        "true_positives": 1,
+        "true_negatives": 0,
+        "false_positives": 0,
+        "false_negatives": 0
+      },
+      "true_positive_cwes": 1,
+      "false_positive_cwes": 0,
+      "false_negative_cwes": 0
+    },
+    {
+      "id": "BENCH-002",
+      "language": "python",
+      "filename": "benchmark.py",
+      "expected_cwes": [
+        "CWE-78"
+      ],
+      "detected_cwes": [
+        "CWE-78"
+      ],
+      "findings_count": 1,
+      "should_detect": true,
+      "passed": true,
+      "counts": {
+        "true_positives": 1,
+        "true_negatives": 0,
+        "false_positives": 0,
+        "false_negatives": 0
+      },
+      "true_positive_cwes": 1,
+      "false_positive_cwes": 0,
+      "false_negative_cwes": 0
+    },
+    {
+      "id": "BENCH-003",
+      "language": "python",
+      "filename": "benchmark.py",
+      "expected_cwes": [
+        "CWE-89"
+      ],
+      "detected_cwes": [
+        "CWE-89"
+      ],
+      "findings_count": 1,
+      "should_detect": true,
+      "passed": true,
+      "counts": {
+        "true_positives": 1,
+        "true_negatives": 0,
+        "false_positives": 0,
+        "false_negatives": 0
+      },
+      "true_positive_cwes": 1,
+      "false_positive_cwes": 0,
+      "false_negative_cwes": 0
+    },
+    {
+      "id": "BENCH-004",
+      "language": "python",
+      "filename": "benchmark.py",
+      "expected_cwes": [
+        "CWE-502"
+      ],
+      "detected_cwes": [
+        "CWE-502"
+      ],
+      "findings_count": 1,
+      "should_detect": true,
+      "passed": true,
+      "counts": {
+        "true_positives": 1,
+        "true_negatives": 0,
+        "false_positives": 0,
+        "false_negatives": 0
+      },
+      "true_positive_cwes": 1,
+      "false_positive_cwes": 0,
+      "false_negative_cwes": 0
+    },
+    {
+      "id": "BENCH-005",
+      "language": "python",
+      "filename": "benchmark.py",
+      "expected_cwes": [
+        "CWE-22"
+      ],
+      "detected_cwes": [
+        "CWE-22"
+      ],
+      "findings_count": 1,
+      "should_detect": true,
+      "passed": true,
+      "counts": {
+        "true_positives": 1,
+        "true_negatives": 0,
+        "false_positives": 0,
+        "false_negatives": 0
+      },
+      "true_positive_cwes": 1,
+      "false_positive_cwes": 0,
+      "false_negative_cwes": 0
+    },
+    {
+      "id": "BENCH-006",
+      "language": "python",
+      "filename": "benchmark.py",
+      "expected_cwes": [
+        "CWE-798"
+      ],
+      "detected_cwes": [
+        "CWE-798"
+      ],
+      "findings_count": 1,
+      "should_detect": true,
+      "passed": true,
+      "counts": {
+        "true_positives": 1,
+        "true_negatives": 0,
+        "false_positives": 0,
+        "false_negatives": 0
+      },
+      "true_positive_cwes": 1,
+      "false_positive_cwes": 0,
+      "false_negative_cwes": 0
+    },
+    {
+      "id": "BENCH-007",
+      "language": "python",
+      "filename": "benchmark.py",
+      "expected_cwes": [
+        "CWE-327"
+      ],
+      "detected_cwes": [
+        "CWE-327"
+      ],
+      "findings_count": 1,
+      "should_detect": true,
+      "passed": true,
+      "counts": {
+        "true_positives": 1,
+        "true_negatives": 0,
+        "false_positives": 0,
+        "false_negatives": 0
+      },
+      "true_positive_cwes": 1,
+      "false_positive_cwes": 0,
+      "false_negative_cwes": 0
+    },
+    {
+      "id": "BENCH-008",
+      "language": "python",
+      "filename": "benchmark.py",
+      "expected_cwes": [
+        "CWE-295"
+      ],
+      "detected_cwes": [
+        "CWE-295"
+      ],
+      "findings_count": 1,
+      "should_detect": true,
+      "passed": true,
+      "counts": {
+        "true_positives": 1,
+        "true_negatives": 0,
+        "false_positives": 0,
+        "false_negatives": 0
+      },
+      "true_positive_cwes": 1,
+      "false_positive_cwes": 0,
+      "false_negative_cwes": 0
+    },
+    {
+      "id": "BENCH-009",
+      "language": "javascript",
+      "filename": "benchmark.js",
+      "expected_cwes": [
+        "CWE-79"
+      ],
+      "detected_cwes": [
+        "CWE-79"
+      ],
+      "findings_count": 1,
+      "should_detect": true,
+      "passed": true,
+      "counts": {
+        "true_positives": 1,
+        "true_negatives": 0,
+        "false_positives": 0,
+        "false_negatives": 0
+      },
+      "true_positive_cwes": 1,
+      "false_positive_cwes": 0,
+      "false_negative_cwes": 0
+    },
+    {
+      "id": "BENCH-010",
+      "language": "javascript",
+      "filename": "benchmark.js",
+      "expected_cwes": [
+        "CWE-95"
+      ],
+      "detected_cwes": [
+        "CWE-95"
+      ],
+      "findings_count": 1,
+      "should_detect": true,
+      "passed": true,
+      "counts": {
+        "true_positives": 1,
+        "true_negatives": 0,
+        "false_positives": 0,
+        "false_negatives": 0
+      },
+      "true_positive_cwes": 1,
+      "false_positive_cwes": 0,
+      "false_negative_cwes": 0
+    },
+    {
+      "id": "BENCH-011",
+      "language": "javascript",
+      "filename": "benchmark.js",
+      "expected_cwes": [
+        "CWE-78"
+      ],
+      "detected_cwes": [
+        "CWE-78"
+      ],
+      "findings_count": 1,
+      "should_detect": true,
+      "passed": true,
+      "counts": {
+        "true_positives": 1,
+        "true_negatives": 0,
+        "false_positives": 0,
+        "false_negatives": 0
+      },
+      "true_positive_cwes": 1,
+      "false_positive_cwes": 0,
+      "false_negative_cwes": 0
+    },
+    {
+      "id": "BENCH-012",
+      "language": "javascript",
+      "filename": "benchmark.js",
+      "expected_cwes": [
+        "CWE-798"
+      ],
+      "detected_cwes": [
+        "CWE-798"
+      ],
+      "findings_count": 1,
+      "should_detect": true,
+      "passed": true,
+      "counts": {
+        "true_positives": 1,
+        "true_negatives": 0,
+        "false_positives": 0,
+        "false_negatives": 0
+      },
+      "true_positive_cwes": 1,
+      "false_positive_cwes": 0,
+      "false_negative_cwes": 0
+    },
+    {
+      "id": "BENCH-013",
+      "language": "javascript",
+      "filename": "benchmark.js",
+      "expected_cwes": [
+        "CWE-89"
+      ],
+      "detected_cwes": [
+        "CWE-89"
+      ],
+      "findings_count": 1,
+      "should_detect": true,
+      "passed": true,
+      "counts": {
+        "true_positives": 1,
+        "true_negatives": 0,
+        "false_positives": 0,
+        "false_negatives": 0
+      },
+      "true_positive_cwes": 1,
+      "false_positive_cwes": 0,
+      "false_negative_cwes": 0
+    },
+    {
+      "id": "BENCH-014",
+      "language": "python",
+      "filename": "benchmark.py",
+      "expected_cwes": [
+        "CWE-352"
+      ],
+      "detected_cwes": [
+        "CWE-352"
+      ],
+      "findings_count": 1,
+      "should_detect": true,
+      "passed": true,
+      "counts": {
+        "true_positives": 1,
+        "true_negatives": 0,
+        "false_positives": 0,
+        "false_negatives": 0
+      },
+      "true_positive_cwes": 1,
+      "false_positive_cwes": 0,
+      "false_negative_cwes": 0
+    },
+    {
+      "id": "BENCH-015",
+      "language": "python",
+      "filename": "benchmark.py",
+      "expected_cwes": [
+        "CWE-434"
+      ],
+      "detected_cwes": [
+        "CWE-434"
+      ],
+      "findings_count": 1,
+      "should_detect": true,
+      "passed": true,
+      "counts": {
+        "true_positives": 1,
+        "true_negatives": 0,
+        "false_positives": 0,
+        "false_negatives": 0
+      },
+      "true_positive_cwes": 1,
+      "false_positive_cwes": 0,
+      "false_negative_cwes": 0
+    },
+    {
+      "id": "BENCH-016",
+      "language": "python",
+      "filename": "benchmark.py",
+      "expected_cwes": [
+        "CWE-918"
+      ],
+      "detected_cwes": [
+        "CWE-918"
+      ],
+      "findings_count": 1,
+      "should_detect": true,
+      "passed": true,
+      "counts": {
+        "true_positives": 1,
+        "true_negatives": 0,
+        "false_positives": 0,
+        "false_negatives": 0
+      },
+      "true_positive_cwes": 1,
+      "false_positive_cwes": 0,
+      "false_negative_cwes": 0
+    },
+    {
+      "id": "BENCH-017",
+      "language": "python",
+      "filename": "benchmark.py",
+      "expected_cwes": [
+        "CWE-611"
+      ],
+      "detected_cwes": [
+        "CWE-611"
+      ],
+      "findings_count": 1,
+      "should_detect": true,
+      "passed": true,
+      "counts": {
+        "true_positives": 1,
+        "true_negatives": 0,
+        "false_positives": 0,
+        "false_negatives": 0
+      },
+      "true_positive_cwes": 1,
+      "false_positive_cwes": 0,
+      "false_negative_cwes": 0
+    },
+    {
+      "id": "BENCH-018",
+      "language": "python",
+      "filename": "benchmark.py",
+      "expected_cwes": [
+        "CWE-732"
+      ],
+      "detected_cwes": [
+        "CWE-732"
+      ],
+      "findings_count": 1,
+      "should_detect": true,
+      "passed": true,
+      "counts": {
+        "true_positives": 1,
+        "true_negatives": 0,
+        "false_positives": 0,
+        "false_negatives": 0
+      },
+      "true_positive_cwes": 1,
+      "false_positive_cwes": 0,
+      "false_negative_cwes": 0
+    },
+    {
+      "id": "BENCH-019",
+      "language": "javascript",
+      "filename": "benchmark.js",
+      "expected_cwes": [
+        "CWE-693"
+      ],
+      "detected_cwes": [
+        "CWE-693"
+      ],
+      "findings_count": 1,
+      "should_detect": true,
+      "passed": true,
+      "counts": {
+        "true_positives": 1,
+        "true_negatives": 0,
+        "false_positives": 0,
+        "false_negatives": 0
+      },
+      "true_positive_cwes": 1,
+      "false_positive_cwes": 0,
+      "false_negative_cwes": 0
+    },
+    {
+      "id": "BENCH-020",
+      "language": "python",
+      "filename": "benchmark.py",
+      "expected_cwes": [
+        "CWE-489"
+      ],
+      "detected_cwes": [
+        "CWE-489"
+      ],
+      "findings_count": 1,
+      "should_detect": true,
+      "passed": true,
+      "counts": {
+        "true_positives": 1,
+        "true_negatives": 0,
+        "false_positives": 0,
+        "false_negatives": 0
+      },
+      "true_positive_cwes": 1,
+      "false_positive_cwes": 0,
+      "false_negative_cwes": 0
+    },
+    {
+      "id": "NEG-001",
+      "language": "python",
+      "filename": "benchmark.py",
+      "expected_cwes": [],
+      "detected_cwes": [],
+      "findings_count": 0,
+      "should_detect": false,
+      "passed": true,
+      "counts": {
+        "true_positives": 0,
+        "true_negatives": 1,
+        "false_positives": 0,
+        "false_negatives": 0
+      },
+      "true_positive_cwes": 0,
+      "false_positive_cwes": 0,
+      "false_negative_cwes": 0
+    },
+    {
+      "id": "NEG-002",
+      "language": "python",
+      "filename": "benchmark.py",
+      "expected_cwes": [],
+      "detected_cwes": [
+        "CWE-78"
+      ],
+      "findings_count": 1,
+      "should_detect": false,
+      "passed": false,
+      "counts": {
+        "true_positives": 0,
+        "true_negatives": 0,
+        "false_positives": 1,
+        "false_negatives": 0
+      },
+      "true_positive_cwes": 0,
+      "false_positive_cwes": 1,
+      "false_negative_cwes": 0
+    },
+    {
+      "id": "NEG-003",
+      "language": "python",
+      "filename": "benchmark.py",
+      "expected_cwes": [],
+      "detected_cwes": [],
+      "findings_count": 0,
+      "should_detect": false,
+      "passed": true,
+      "counts": {
+        "true_positives": 0,
+        "true_negatives": 1,
+        "false_positives": 0,
+        "false_negatives": 0
+      },
+      "true_positive_cwes": 0,
+      "false_positive_cwes": 0,
+      "false_negative_cwes": 0
+    },
+    {
+      "id": "NEG-004",
+      "language": "python",
+      "filename": "benchmark.py",
+      "expected_cwes": [],
+      "detected_cwes": [],
+      "findings_count": 0,
+      "should_detect": false,
+      "passed": true,
+      "counts": {
+        "true_positives": 0,
+        "true_negatives": 1,
+        "false_positives": 0,
+        "false_negatives": 0
+      },
+      "true_positive_cwes": 0,
+      "false_positive_cwes": 0,
+      "false_negative_cwes": 0
+    },
+    {
+      "id": "NEG-005",
+      "language": "python",
+      "filename": "benchmark.py",
+      "expected_cwes": [],
+      "detected_cwes": [],
+      "findings_count": 0,
+      "should_detect": false,
+      "passed": true,
+      "counts": {
+        "true_positives": 0,
+        "true_negatives": 1,
+        "false_positives": 0,
+        "false_negatives": 0
+      },
+      "true_positive_cwes": 0,
+      "false_positive_cwes": 0,
+      "false_negative_cwes": 0
+    },
+    {
+      "id": "NEG-006",
+      "language": "python",
+      "filename": "benchmark.py",
+      "expected_cwes": [],
+      "detected_cwes": [],
+      "findings_count": 0,
+      "should_detect": false,
+      "passed": true,
+      "counts": {
+        "true_positives": 0,
+        "true_negatives": 1,
+        "false_positives": 0,
+        "false_negatives": 0
+      },
+      "true_positive_cwes": 0,
+      "false_positive_cwes": 0,
+      "false_negative_cwes": 0
+    },
+    {
+      "id": "NEG-007",
+      "language": "python",
+      "filename": "benchmark.py",
+      "expected_cwes": [],
+      "detected_cwes": [],
+      "findings_count": 0,
+      "should_detect": false,
+      "passed": true,
+      "counts": {
+        "true_positives": 0,
+        "true_negatives": 1,
+        "false_positives": 0,
+        "false_negatives": 0
+      },
+      "true_positive_cwes": 0,
+      "false_positive_cwes": 0,
+      "false_negative_cwes": 0
+    },
+    {
+      "id": "NEG-008",
+      "language": "python",
+      "filename": "benchmark.py",
+      "expected_cwes": [],
+      "detected_cwes": [
+        "CWE-918"
+      ],
+      "findings_count": 1,
+      "should_detect": false,
+      "passed": false,
+      "counts": {
+        "true_positives": 0,
+        "true_negatives": 0,
+        "false_positives": 1,
+        "false_negatives": 0
+      },
+      "true_positive_cwes": 0,
+      "false_positive_cwes": 1,
+      "false_negative_cwes": 0
+    },
+    {
+      "id": "NEG-009",
+      "language": "javascript",
+      "filename": "benchmark.js",
+      "expected_cwes": [],
+      "detected_cwes": [],
+      "findings_count": 0,
+      "should_detect": false,
+      "passed": true,
+      "counts": {
+        "true_positives": 0,
+        "true_negatives": 1,
+        "false_positives": 0,
+        "false_negatives": 0
+      },
+      "true_positive_cwes": 0,
+      "false_positive_cwes": 0,
+      "false_negative_cwes": 0
+    },
+    {
+      "id": "NEG-010",
+      "language": "javascript",
+      "filename": "benchmark.js",
+      "expected_cwes": [],
+      "detected_cwes": [],
+      "findings_count": 0,
+      "should_detect": false,
+      "passed": true,
+      "counts": {
+        "true_positives": 0,
+        "true_negatives": 1,
+        "false_positives": 0,
+        "false_negatives": 0
+      },
+      "true_positive_cwes": 0,
+      "false_positive_cwes": 0,
+      "false_negative_cwes": 0
+    },
+    {
+      "id": "NEG-011",
+      "language": "javascript",
+      "filename": "benchmark.js",
+      "expected_cwes": [],
+      "detected_cwes": [],
+      "findings_count": 0,
+      "should_detect": false,
+      "passed": true,
+      "counts": {
+        "true_positives": 0,
+        "true_negatives": 1,
+        "false_positives": 0,
+        "false_negatives": 0
+      },
+      "true_positive_cwes": 0,
+      "false_positive_cwes": 0,
+      "false_negative_cwes": 0
+    },
+    {
+      "id": "NEG-012",
+      "language": "javascript",
+      "filename": "benchmark.js",
+      "expected_cwes": [],
+      "detected_cwes": [],
+      "findings_count": 0,
+      "should_detect": false,
+      "passed": true,
+      "counts": {
+        "true_positives": 0,
+        "true_negatives": 1,
+        "false_positives": 0,
+        "false_negatives": 0
+      },
+      "true_positive_cwes": 0,
+      "false_positive_cwes": 0,
+      "false_negative_cwes": 0
+    },
+    {
+      "id": "NEG-013",
+      "language": "javascript",
+      "filename": "benchmark.js",
+      "expected_cwes": [],
+      "detected_cwes": [],
+      "findings_count": 0,
+      "should_detect": false,
+      "passed": true,
+      "counts": {
+        "true_positives": 0,
+        "true_negatives": 1,
+        "false_positives": 0,
+        "false_negatives": 0
+      },
+      "true_positive_cwes": 0,
+      "false_positive_cwes": 0,
+      "false_negative_cwes": 0
+    },
+    {
+      "id": "NEG-014",
+      "language": "python",
+      "filename": "benchmark.py",
+      "expected_cwes": [],
+      "detected_cwes": [],
+      "findings_count": 0,
+      "should_detect": false,
+      "passed": true,
+      "counts": {
+        "true_positives": 0,
+        "true_negatives": 1,
+        "false_positives": 0,
+        "false_negatives": 0
+      },
+      "true_positive_cwes": 0,
+      "false_positive_cwes": 0,
+      "false_negative_cwes": 0
+    },
+    {
+      "id": "NEG-015",
+      "language": "python",
+      "filename": "benchmark.py",
+      "expected_cwes": [],
+      "detected_cwes": [
+        "CWE-434"
+      ],
+      "findings_count": 1,
+      "should_detect": false,
+      "passed": false,
+      "counts": {
+        "true_positives": 0,
+        "true_negatives": 0,
+        "false_positives": 1,
+        "false_negatives": 0
+      },
+      "true_positive_cwes": 0,
+      "false_positive_cwes": 1,
+      "false_negative_cwes": 0
+    },
+    {
+      "id": "NEG-016",
+      "language": "python",
+      "filename": "benchmark.py",
+      "expected_cwes": [],
+      "detected_cwes": [
+        "CWE-918"
+      ],
+      "findings_count": 1,
+      "should_detect": false,
+      "passed": false,
+      "counts": {
+        "true_positives": 0,
+        "true_negatives": 0,
+        "false_positives": 1,
+        "false_negatives": 0
+      },
+      "true_positive_cwes": 0,
+      "false_positive_cwes": 1,
+      "false_negative_cwes": 0
+    },
+    {
+      "id": "NEG-017",
+      "language": "python",
+      "filename": "benchmark.py",
+      "expected_cwes": [],
+      "detected_cwes": [],
+      "findings_count": 0,
+      "should_detect": false,
+      "passed": true,
+      "counts": {
+        "true_positives": 0,
+        "true_negatives": 1,
+        "false_positives": 0,
+        "false_negatives": 0
+      },
+      "true_positive_cwes": 0,
+      "false_positive_cwes": 0,
+      "false_negative_cwes": 0
+    },
+    {
+      "id": "NEG-018",
+      "language": "python",
+      "filename": "benchmark.py",
+      "expected_cwes": [],
+      "detected_cwes": [],
+      "findings_count": 0,
+      "should_detect": false,
+      "passed": true,
+      "counts": {
+        "true_positives": 0,
+        "true_negatives": 1,
+        "false_positives": 0,
+        "false_negatives": 0
+      },
+      "true_positive_cwes": 0,
+      "false_positive_cwes": 0,
+      "false_negative_cwes": 0
+    },
+    {
+      "id": "NEG-019",
+      "language": "javascript",
+      "filename": "benchmark.js",
+      "expected_cwes": [],
+      "detected_cwes": [],
+      "findings_count": 0,
+      "should_detect": false,
+      "passed": true,
+      "counts": {
+        "true_positives": 0,
+        "true_negatives": 1,
+        "false_positives": 0,
+        "false_negatives": 0
+      },
+      "true_positive_cwes": 0,
+      "false_positive_cwes": 0,
+      "false_negative_cwes": 0
+    },
+    {
+      "id": "NEG-020",
+      "language": "python",
+      "filename": "benchmark.py",
+      "expected_cwes": [],
+      "detected_cwes": [],
+      "findings_count": 0,
+      "should_detect": false,
+      "passed": true,
+      "counts": {
+        "true_positives": 0,
+        "true_negatives": 1,
+        "false_positives": 0,
+        "false_negatives": 0
+      },
+      "true_positive_cwes": 0,
+      "false_positive_cwes": 0,
+      "false_negative_cwes": 0
+    }
+  ]
+}

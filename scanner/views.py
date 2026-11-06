@@ -1,3 +1,5 @@
+import time
+
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
@@ -46,10 +48,42 @@ def _save_scan(user, code, patched, findings):
     return scan
 
 
+def summarize_findings(findings, duration_ms=None):
+    """Build a stable summary for the dashboard and API clients."""
+    severity_counts = {
+        "critical": 0,
+        "high": 0,
+        "medium": 0,
+        "low": 0,
+    }
+    languages = set()
+    engines = set()
+
+    for finding in findings:
+        severity = str(finding.get("severity", "low")).lower()
+        if severity in severity_counts:
+            severity_counts[severity] += 1
+        if finding.get("language"):
+            languages.add(str(finding["language"]))
+        if finding.get("engine"):
+            engines.add(str(finding["engine"]))
+
+    summary = {
+        "total_findings": len(findings),
+        "severity_counts": severity_counts,
+        "languages": sorted(languages),
+        "engines": sorted(engines),
+    }
+    if duration_ms is not None:
+        summary["duration_ms"] = duration_ms
+    return summary
+
+
 class ScanCodeAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
+        started_at = time.perf_counter()
         try:
             code = request.data.get("code", "") or request.POST.get("code", "")
             filename = request.data.get("filename", "sample.py")
@@ -71,6 +105,10 @@ class ScanCodeAPIView(APIView):
             )
 
             findings = result["all_findings"]
+            summary = summarize_findings(
+                findings,
+                duration_ms=round((time.perf_counter() - started_at) * 1000, 2),
+            )
 
             syntax_findings = [
                 finding
@@ -117,7 +155,9 @@ class ScanCodeAPIView(APIView):
                     },
                     "result": {
                         "vulnerabilities_count": len(findings),
+                        "summary": summary,
                     },
+                    "summary": summary,
                 },
                 status=status.HTTP_200_OK,
             )
