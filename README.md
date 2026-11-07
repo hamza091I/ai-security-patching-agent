@@ -39,6 +39,21 @@ curl -X POST http://127.0.0.1:8000/api/scan/ -H 'Content-Type: application/json'
 
 All findings include engine, language, CWE, rule, severity, confidence, risk score, line range, evidence, recommendation, and validation fields. Ollama is optional and is never required for the deterministic baseline. Patches are proposals only; this project does not push to GitHub/GitLab automatically.
 
+## Phase 2 SaaS workflow
+
+The merged SaaS foundation supports SQLite for local work and PostgreSQL through `DATABASE_URL` for deployment. The dashboard now exposes workspace-scoped Projects, Findings workflow, and Reports sections.
+
+```text
+GET/POST /api/v1/projects/
+GET      /api/v1/findings/?status=OPEN
+PATCH    /api/v1/findings/<id>/
+GET/POST /api/v1/api-keys/
+POST     /api/v1/api-keys/<prefix>/revoke/
+GET      /api/v1/reports/export/?type=json|csv|sarif
+```
+
+API keys are created once and stored as SHA-256 digests. CI clients can authenticate with `Authorization: Bearer sa_...`. SARIF output is suitable for a later GitHub Code Scanning integration. See `docs/PHASE2_RELEASE_NOTES.md` for the complete contract and boundaries.
+
 ## Scope status
 
 The current implementation has the complete baseline workflow and 100 taxonomy slots, with benchmark-backed rules and metrics. Production hardening still requires deeper rule coverage, authenticated users/projects, formal GitLab merge-request integration, and broader regression data.
