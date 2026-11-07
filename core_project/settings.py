@@ -110,3 +110,4 @@ SECURE_HSTS_SECONDS = int(os.getenv("SECURE_HSTS_SECONDS", "0"))
 SECURE_SSL_REDIRECT = os.getenv("DJANGO_SECURE_SSL_REDIRECT", "0").lower() in {"1", "true", "yes"}
 
 REQUEST_ID_HEADER = "X-Request-ID"
+MAX_SCAN_BYTES = int(os.getenv("MAX_SCAN_BYTES", "1000000"))

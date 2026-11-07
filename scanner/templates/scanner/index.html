@@ -15,130 +15,53 @@ const $=id=>document.getElementById(id);const esc=s=>String(s??'').replace(/[&<>
 
 async function runScan() {
     const code = $("sourceCode").value.trim();
-
-    if (!code) {
-        toast("Paste code before starting a scan.");
-        return;
-    }
-
-    const csrfToken = document.querySelector(
-        "[name=csrfmiddlewaretoken]"
-    )?.value;
-
-    $("scanState").textContent = "Analyzing...";
+    if (!code) { toast("Paste code before starting a scan."); return; }
+    const csrfToken = document.querySelector("[name=csrfmiddlewaretoken]")?.value;
+    $("scanState").textContent = "Queued…";
     $("scanButton").disabled = true;
-
     try {
-        const response = await fetch("/api/scan/", {
-            method: "POST",
-            credentials: "same-origin",
-            headers: {
-                "Content-Type": "application/json",
-                "X-CSRFToken": csrfToken,
-            },
-            body: JSON.stringify({
-                code: code,
-                filename: $("fileName").value,
-                engines: selectedEngines(),
-            }),
+        const response = await fetch("/api/v1/scan-jobs/", {
+            method: "POST", credentials: "same-origin",
+            headers: {"Content-Type":"application/json", "X-CSRFToken":csrfToken, "Idempotency-Key":"ui-" + Date.now() + "-" + Math.random().toString(36).slice(2)},
+            body: JSON.stringify({code:code, filename:$("fileName").value, engines:selectedEngines()})
         });
-
-        const responseText = await response.text();
-
-        let data;
-
-        try {
-            data = JSON.parse(responseText);
-        } catch (parseError) {
-            throw new Error(
-                `Server returned non-JSON response (HTTP ${response.status}).`
-            );
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.message || data.detail || `Job failed with HTTP ${response.status}.`);
+        const jobId = data.job.id;
+        let attempts = 0;
+        while (attempts++ < 120) {
+            await new Promise(resolve => setTimeout(resolve, 500));
+            const poll = await fetch(`/api/v1/scan-jobs/${jobId}/`, {credentials:"same-origin"});
+            const current = await poll.json();
+            if (!poll.ok) throw new Error(current.message || "Could not read job status.");
+            $("scanState").textContent = `${current.job.status} · ${current.job.progress}%`;
+            if (current.job.status === "SUCCEEDED") {
+                const result = current.job.result || {};
+                const vulnerabilities = result.vulnerabilities || [];
+                renderFindings(vulnerabilities);
+                $("patchedCode").textContent = result.patched_code || code;
+                $("patchStatus").textContent = result.patch?.validation?.rescan ? "Validated rescan" : "Review required";
+                $("statFindings").textContent = vulnerabilities.length;
+                $("statCritical").textContent = vulnerabilities.filter(f => ["critical","high"].includes(f.severity)).length;
+                $("statConfidence").textContent = vulnerabilities.length ? Math.round(vulnerabilities.reduce((t,f) => t + Number(f.confidence || 0), 0) / vulnerabilities.length * 100) + "%" : "100%";
+                const engines = result.engines || {};
+                const values = [engines.ast || [], engines.bandit || [], engines.javascript || []];
+                const maxFindings = Math.max(1, ...values.map(items => items.length));
+                [["Ast","ast"],["Bandit","bandit"],["Js","javascript"]].forEach(([label,key]) => { const count=(engines[key]||[]).length; $("bar"+label).style.width=`${count/maxFindings*100}%`; $("count"+label).textContent=count; });
+                $("scanState").textContent = `Scan complete · ${result.language || "source"}`;
+                toast(`Scan complete — ${vulnerabilities.length} finding(s)`);
+                loadHistory();
+                return;
+            }
+            if (["FAILED","CANCELLED"].includes(current.job.status)) throw new Error(current.job.error || `Scan job ${current.job.status.toLowerCase()}.`);
         }
-
-        if (!response.ok) {
-            throw new Error(
-                data.message ||
-                data.detail ||
-                `Scan failed with HTTP ${response.status}.`
-            );
-        }
-
-        const vulnerabilities = data.vulnerabilities || [];
-
-        renderFindings(vulnerabilities);
-
-        $("patchedCode").textContent =
-            data.patched_code || code;
-
-        $("patchStatus").textContent =
-            data.patch?.validation?.rescan
-                ? "Validated rescan"
-                : "Review required";
-
-        $("statFindings").textContent =
-            vulnerabilities.length;
-
-        $("statCritical").textContent =
-            vulnerabilities.filter((finding) =>
-                ["critical", "high"].includes(finding.severity)
-            ).length;
-
-        $("statConfidence").textContent =
-            vulnerabilities.length
-                ? Math.round(
-                    vulnerabilities.reduce(
-                        (total, finding) =>
-                            total + Number(finding.confidence || 0),
-                        0
-                    ) / vulnerabilities.length * 100
-                ) + "%"
-                : "100%";
-
-        const engines = data.engines || {};
-
-        const engineValues = [
-            engines.ast || [],
-            engines.bandit || [],
-            engines.javascript || [],
-        ];
-
-        const maxFindings = Math.max(
-            1,
-            ...engineValues.map((items) => items.length)
-        );
-
-        const engineDisplay = [
-            ["Ast", "ast"],
-            ["Bandit", "bandit"],
-            ["Js", "javascript"],
-        ];
-
-        engineDisplay.forEach(([label, key]) => {
-            const count = (engines[key] || []).length;
-
-            $("bar" + label).style.width =
-                `${(count / maxFindings) * 100}%`;
-
-            $("count" + label).textContent = count;
-        });
-
-        $("scanState").textContent =
-            `Scan complete · ${data.language}`;
-
-        toast(
-            `Scan complete — ${vulnerabilities.length} finding(s)`
-        );
-
-        loadHistory();
-
+        throw new Error("Scan job timed out while waiting for a worker.");
     } catch (error) {
         $("scanState").textContent = "Scan failed";
-        toast(error.message);
-        console.error("Scan request failed:", error);
-    } finally {
-        $("scanButton").disabled = false;
-    }
+        toast(error.message); console.error("Scan job failed:", error);
+    } finally { $("scanButton").disabled = false; }
 }
+
 
 async function loadHistory() {
     try {

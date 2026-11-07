@@ -21,7 +21,8 @@
 - [x] Projects, Findings, Reports sections added to the Dashboard.
 - [x] Finding workflow: status changes and workspace-safe assignment endpoint.
 - [x] JSON, CSV, and SARIF exports.
-- [ ] Celery/Redis queue with progress, retry, cancel, timeout, file-size and plan limits.
+- [x] Durable ScanJob API with progress, cancel, idempotency, file-size limit, and worker command.
+- [ ] Redis/Celery adapter with retries, stale-job recovery, timeout enforcement, and plan quotas.
 - [ ] Non-root Docker sandbox with no network, read-only filesystem, CPU/memory limits, timeout, and cleanup.
 - [ ] GitHub/GitLab OAuth, repository selection, push/branch/PR scans, comments, and merge blocking.
 - [ ] Java, Go, PHP, C#, and Ruby language adapters.

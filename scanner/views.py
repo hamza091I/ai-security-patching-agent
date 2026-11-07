@@ -5,12 +5,14 @@ import hashlib
 import io
 from pathlib import Path
 
+from django.conf import settings
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.db import connection
 from django.http import HttpResponse, JsonResponse
+from django.utils import timezone
 from django.utils.text import slugify
 
 from rest_framework.views import APIView
@@ -20,7 +22,7 @@ from rest_framework.permissions import IsAuthenticated
 
 from scanner.analysis.security_scanner import full_security_scan
 from scanner.core.patcher import propose_patch
-from .models import APIKey, AuditLog, CodeScan, Membership, Organization, Project, VulnerabilityReport
+from .models import APIKey, AuditLog, CodeScan, Membership, Organization, Project, ScanJob, VulnerabilityReport
 
 
 def health_view(request):
@@ -470,6 +472,97 @@ class ReportExportAPIView(APIView):
             sarif = {"version": "2.1.0", "$schema": "https://json.schemastore.org/sarif-2.1.0.json", "runs": [{"tool": {"driver": {"name": "AI Security Patching Agent"}}, "results": [{"ruleId": row["cwe_id"], "level": row["severity"].lower(), "message": {"text": row["description"]}, "locations": [{"physicalLocation": {"artifactLocation": {"uri": f"scan/{row['scan_id']}"}, "region": {"startLine": row["line"] or 1}}}]} for row in rows]}]}
             response = HttpResponse(json.dumps(sarif, indent=2), content_type="application/sarif+json"); response["Content-Disposition"] = "attachment; filename=security-findings.sarif"; return response
         return Response({"status": "success", "generated_at": time.time(), "findings": rows})
+
+
+def _serialize_scan_job(job, include_source=False):
+    payload = {
+        "id": job.id,
+        "status": job.status,
+        "progress": job.progress,
+        "filename": job.filename,
+        "engines": job.engines,
+        "project_id": job.project_id,
+        "result": job.result,
+        "error": job.error_message or None,
+        "created_at": job.created_at.isoformat(),
+        "started_at": job.started_at.isoformat() if job.started_at else None,
+        "completed_at": job.completed_at.isoformat() if job.completed_at else None,
+    }
+    if include_source:
+        payload["source_code"] = job.source_code
+    return payload
+
+
+class ScanJobListCreateAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        organization = _workspace_for_user(request.user)
+        if not organization:
+            return Response({"status": "success", "jobs": []})
+        jobs = organization.scan_jobs.select_related("project").order_by("-created_at")[:50]
+        return Response({"status": "success", "jobs": [_serialize_scan_job(job) for job in jobs]})
+
+    def post(self, request):
+        organization = _workspace_for_user(request.user)
+        if not organization:
+            return Response({"status": "error", "message": "Create or join a workspace first."}, status=403)
+        source_code = request.data.get("code", "")
+        if not isinstance(source_code, str) or not source_code.strip():
+            return Response({"status": "error", "message": "Please provide code to scan."}, status=400)
+        max_bytes = settings.MAX_SCAN_BYTES
+        if len(source_code.encode("utf-8")) > max_bytes:
+            return Response({"status": "error", "message": "Source code exceeds the 1 MB plan limit."}, status=413)
+        project = None
+        project_id = request.data.get("project_id")
+        if project_id:
+            project = Project.objects.filter(id=project_id, organization=organization).first()
+            if not project:
+                return Response({"status": "error", "message": "Project not found in your workspace."}, status=404)
+        idempotency_key = request.headers.get("Idempotency-Key") or request.data.get("idempotency_key")
+        if idempotency_key:
+            idempotency_key = str(idempotency_key).strip()[:120]
+            existing = ScanJob.objects.filter(organization=organization, idempotency_key=idempotency_key).first()
+            if existing:
+                return Response({"status": "accepted", "replayed": True, "job": _serialize_scan_job(existing)}, status=200)
+        job = ScanJob.objects.create(
+            organization=organization,
+            project=project,
+            requested_by=request.user,
+            filename=str(request.data.get("filename", "sample.py"))[:255],
+            engines=request.data.get("engines") or ["ast", "bandit", "javascript"],
+            source_code=source_code,
+            idempotency_key=idempotency_key,
+        )
+        AuditLog.objects.create(organization=organization, actor=request.user, action="scan_job.created", metadata={"job_id": job.id, "project_id": project.id if project else None})
+        return Response({"status": "accepted", "replayed": False, "job": _serialize_scan_job(job)}, status=202)
+
+
+class ScanJobDetailAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def _job(self, request, job_id):
+        organization = _workspace_for_user(request.user)
+        return ScanJob.objects.filter(id=job_id, organization=organization).select_related("project").first(), organization
+
+    def get(self, request, job_id):
+        job, _ = self._job(request, job_id)
+        if not job:
+            return Response({"status": "error", "message": "Scan job not found."}, status=404)
+        return Response({"status": "success", "job": _serialize_scan_job(job, include_source=False)})
+
+    def post(self, request, job_id):
+        job, organization = self._job(request, job_id)
+        if not job:
+            return Response({"status": "error", "message": "Scan job not found."}, status=404)
+        if job.status != "PENDING":
+            return Response({"status": "error", "message": "Only pending jobs can be cancelled."}, status=409)
+        job.status = "CANCELLED"
+        job.progress = 100
+        job.completed_at = timezone.now()
+        job.save(update_fields=["status", "progress", "completed_at"])
+        AuditLog.objects.create(organization=organization, actor=request.user, action="scan_job.cancelled", metadata={"job_id": job.id})
+        return Response({"status": "success", "job": _serialize_scan_job(job)})
 
 
 def login_view(request):
