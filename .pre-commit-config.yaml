@@ -1,0 +1,23 @@
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.8.4
+    hooks:
+      - id: ruff
+      - id: ruff-format
+  - repo: https://github.com/PyCQA/bandit
+    rev: 1.8.0
+    hooks:
+      - id: bandit
+        args: ["-r", "scanner", "core_project", "-x", "scanner/migrations"]
+  - repo: local
+    hooks:
+      - id: django-check
+        name: django-check
+        entry: python manage.py check
+        language: system
+        pass_filenames: false
+      - id: django-tests
+        name: django-tests
+        entry: python manage.py test
+        language: system
+        pass_filenames: false
