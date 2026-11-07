@@ -103,6 +103,10 @@ class ScanJob(models.Model):
     idempotency_key = models.CharField(max_length=120, null=True, blank=True)
     result = models.JSONField(default=dict, blank=True)
     error_message = models.TextField(blank=True)
+    retry_count = models.PositiveSmallIntegerField(default=0)
+    max_retries = models.PositiveSmallIntegerField(default=2)
+    timeout_seconds = models.PositiveIntegerField(default=300)
+    heartbeat_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     started_at = models.DateTimeField(null=True, blank=True)
     completed_at = models.DateTimeField(null=True, blank=True)
@@ -115,7 +119,8 @@ class ScanJob(models.Model):
             )
         ]
         indexes = [
-            models.Index(fields=["organization", "status", "-created_at"], name="scanjob_org_status_created")
+            models.Index(fields=["organization", "status", "-created_at"], name="scanjob_org_status_created"),
+            models.Index(fields=["status", "heartbeat_at"], name="scanjob_status_heartbeat"),
         ]
 
 

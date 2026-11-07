@@ -1,6 +1,9 @@
-from django.test import TestCase
+from datetime import timedelta
+
+from django.test import TestCase, override_settings
 from django.core.management import call_command
 from django.contrib.auth.models import User
+from django.utils import timezone
 from rest_framework.test import APIClient
 from scanner.analysis.ast_parser import analyze_code_string
 from scanner.analysis.javascript_parser import analyze_javascript
@@ -9,7 +12,8 @@ from scanner.analysis.security_scanner import full_security_scan
 from scanner.contracts import validate_finding
 from scanner.core.patcher import propose_patch
 from scanner.views import summarize_findings
-from scanner.models import Membership, Organization, Project, ScanJob
+from scanner.models import AuditLog, Membership, Organization, Project, ScanJob
+from scanner.services.scan_jobs import recover_stale_jobs, requeue_failed_jobs
 class ContractAndRulesTests(TestCase):
     def test_contract_contains_security_fields(self):
         f=analyze_code_string('value = eval(user_input)')[0]
@@ -216,3 +220,54 @@ class RAGVectorStoreTests(TestCase):
             result[0]["rag_suggested_fix"]["cwe_id"],
             "CWE-89"
         )
+
+
+class Phase4ReliabilityTests(TestCase):
+
+    def setUp(self):
+        self.user = User.objects.create_user(username="phase4-user", password="strong-pass-123")
+        self.organization = Organization.objects.create(name="Phase 4 Workspace", slug="phase4-workspace", owner=self.user)
+        Membership.objects.create(organization=self.organization, user=self.user, role="OWNER")
+
+    def make_job(self, status="PENDING", retry_count=0):
+        return ScanJob.objects.create(
+            organization=self.organization,
+            requested_by=self.user,
+            source_code="safe = True",
+            status=status,
+            retry_count=retry_count,
+            heartbeat_at=timezone.now() - timedelta(hours=1) if status == "RUNNING" else None,
+        )
+
+    def test_request_has_canonical_tenant_context(self):
+        client = APIClient()
+        client.force_authenticate(user=self.user)
+        response = client.get("/api/v1/projects/")
+        self.assertEqual(response.status_code, 200)
+
+    @override_settings(SCAN_JOB_STALE_SECONDS=60)
+    def test_stale_running_job_is_recovered_with_audit_event(self):
+        job = self.make_job(status="RUNNING")
+        self.assertEqual(recover_stale_jobs(), 1)
+        job.refresh_from_db()
+        self.assertEqual(job.status, "PENDING")
+        self.assertEqual(job.retry_count, 1)
+        self.assertTrue(AuditLog.objects.filter(action="scan_job.recovered", metadata__job_id=job.id).exists())
+
+    @override_settings(SCAN_JOB_MAX_RETRIES=2)
+    def test_failed_jobs_can_be_requeued_with_a_retry_budget(self):
+        job = self.make_job(status="FAILED", retry_count=0)
+        self.assertEqual(requeue_failed_jobs(), 1)
+        job.refresh_from_db()
+        self.assertEqual(job.status, "PENDING")
+        self.assertEqual(job.error_message, "Queued for retry by worker policy.")
+
+    @override_settings(SCAN_JOB_MAX_RETRIES=1)
+    def test_stale_job_with_exhausted_budget_fails_permanently(self):
+        job = self.make_job(status="RUNNING", retry_count=1)
+        job.max_retries = 1
+        job.save(update_fields=["max_retries"])
+        self.assertEqual(recover_stale_jobs(stale_after_seconds=60), 1)
+        job.refresh_from_db()
+        self.assertEqual(job.status, "FAILED")
+        self.assertIn("retry budget", job.error_message)

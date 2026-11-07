@@ -10,7 +10,7 @@
 - [x] Add Organization, Membership, Project, APIKey, AuditLog models.
 - [x] Add finding status and assignment fields.
 - [x] Generate and review the migration for the new SaaS models.
-- [ ] Add tenant selection middleware and enforce organization-level query isolation.
+- [x] Add tenant context middleware; continue centralized organization-level query audit.
 
 ## Product outcomes
 
@@ -22,12 +22,12 @@
 - [x] Finding workflow: status changes and workspace-safe assignment endpoint.
 - [x] JSON, CSV, and SARIF exports.
 - [x] Durable ScanJob API with progress, cancel, idempotency, file-size limit, and worker command.
-- [ ] Redis/Celery adapter with retries, stale-job recovery, timeout enforcement, and plan quotas.
-- [ ] Non-root Docker sandbox with no network, read-only filesystem, CPU/memory limits, timeout, and cleanup.
+- [ ] Redis/Celery adapter and distributed locking; [x] local retries, stale-job recovery, timeout guard, and worker controls.
+- [x] Add non-root Docker application baseline; [ ] hardened no-network scan sandbox with read-only filesystem, CPU/memory limits, timeout, and cleanup.
 - [ ] GitHub/GitLab OAuth, repository selection, push/branch/PR scans, comments, and merge blocking.
 - [ ] Java, Go, PHP, C#, and Ruby language adapters.
 - [ ] SCA, secrets, IaC, container, DAST, and license scanning modules.
 - [ ] AI Security Assistant with evidence, safe exploit explanation, patch diff, rescan, regression gate, and human approval.
 - [ ] Usage tracking, Free/Pro/Enterprise plans, billing, SSO, SLA, and private deployment.
-- [ ] OpenAPI/Swagger, pagination, filtering, sorting, consistent errors, rate limits, structured logging, error tracking, and backups.
-- [ ] CI gates for lint, tests, migrations, benchmark regression, security checks, coverage, Docker build, Bandit, and pip-audit.
+- [ ] OpenAPI/Swagger, pagination, filtering, sorting, consistent errors, plan-aware rate limits, error tracking, and backups; [x] request IDs, baseline throttling, structured request logging.
+- [x] CI baseline for Django check, tests, migration check, and Bandit; [ ] benchmark regression, coverage, Docker build, pip-audit, and full release gates.

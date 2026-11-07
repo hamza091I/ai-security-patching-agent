@@ -31,6 +31,8 @@ MIDDLEWARE = [
     "core_project.middleware.RequestIDMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "core_project.middleware.TenantContextMiddleware",
+    "core_project.middleware.StructuredRequestLoggingMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
@@ -111,3 +113,14 @@ SECURE_SSL_REDIRECT = os.getenv("DJANGO_SECURE_SSL_REDIRECT", "0").lower() in {"
 
 REQUEST_ID_HEADER = "X-Request-ID"
 MAX_SCAN_BYTES = int(os.getenv("MAX_SCAN_BYTES", "1000000"))
+SCAN_JOB_TIMEOUT_SECONDS = int(os.getenv("SCAN_JOB_TIMEOUT_SECONDS", "300"))
+SCAN_JOB_MAX_RETRIES = int(os.getenv("SCAN_JOB_MAX_RETRIES", "2"))
+SCAN_JOB_STALE_SECONDS = int(os.getenv("SCAN_JOB_STALE_SECONDS", "900"))
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {"structured": {"format": "%(message)s"}},
+    "handlers": {"console": {"class": "logging.StreamHandler", "formatter": "structured"}},
+    "loggers": {"security_platform": {"handlers": ["console"], "level": os.getenv("LOG_LEVEL", "INFO")}},
+}

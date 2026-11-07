@@ -64,6 +64,16 @@ python manage.py process_scan_jobs --limit 10
 
 Run the worker in a separate process during local development. It persists the final scan, findings, patch proposal, and engine breakdown. The dashboard uses this job API and polls progress instead of waiting for the scanner in the request. `MAX_SCAN_BYTES` defaults to 1 MB and can be changed in `.env`. See `docs/PHASE3_RELEASE_NOTES.md` for the full contract.
 
+## Phase 4 reliability and hardening
+
+Phase 4 adds tenant request context, structured request logging, ScanJob heartbeat and retry metadata, stale-job recovery, failed-job requeue, and elapsed-time timeout guards. The worker can be run with:
+
+```bash
+python manage.py process_scan_jobs --limit 10 --recover-stale --retry-failed
+```
+
+Configuration is available in `.env.example` through `SCAN_JOB_TIMEOUT_SECONDS`, `SCAN_JOB_MAX_RETRIES`, `SCAN_JOB_STALE_SECONDS`, and `LOG_LEVEL`. A non-root Docker application baseline is provided in `Dockerfile` and `docker-compose.yml`. Pull requests are checked by `.github/workflows/quality.yml` for Django checks, migration drift, tests, and Bandit. See `docs/PHASE4_RELEASE_NOTES.md` for boundaries and verification.
+
 ## Scope status
 
 The current implementation has the complete baseline workflow and 100 taxonomy slots, with benchmark-backed rules and metrics. Production hardening still requires deeper rule coverage, authenticated users/projects, formal GitLab merge-request integration, and broader regression data.
