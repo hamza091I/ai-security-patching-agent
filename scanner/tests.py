@@ -1,4 +1,5 @@
 from django.test import TestCase
+from django.core.management import call_command
 from django.contrib.auth.models import User
 from rest_framework.test import APIClient
 from scanner.analysis.ast_parser import analyze_code_string
@@ -8,7 +9,7 @@ from scanner.analysis.security_scanner import full_security_scan
 from scanner.contracts import validate_finding
 from scanner.core.patcher import propose_patch
 from scanner.views import summarize_findings
-from scanner.models import Membership, Organization, Project
+from scanner.models import Membership, Organization, Project, ScanJob
 class ContractAndRulesTests(TestCase):
     def test_contract_contains_security_fields(self):
         f=analyze_code_string('value = eval(user_input)')[0]
@@ -127,6 +128,29 @@ class APITests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response['Content-Type'], 'application/sarif+json')
         self.assertIn('CWE-95', response.content.decode())
+
+    def test_scan_job_is_idempotent_and_worker_completes_it(self):
+        headers = {'HTTP_IDEMPOTENCY_KEY': 'checkout-build-001'}
+        first = self.client.post('/api/v1/scan-jobs/', {'code': 'value = eval(input)', 'filename': 'worker.py'}, format='json', **headers)
+        self.assertEqual(first.status_code, 202)
+        job_id = first.data['job']['id']
+        replay = self.client.post('/api/v1/scan-jobs/', {'code': 'different code'}, format='json', **headers)
+        self.assertEqual(replay.status_code, 200)
+        self.assertTrue(replay.data['replayed'])
+        self.assertEqual(replay.data['job']['id'], job_id)
+        call_command('process_scan_jobs', limit=1, verbosity=0)
+        detail = self.client.get(f'/api/v1/scan-jobs/{job_id}/')
+        self.assertEqual(detail.status_code, 200)
+        self.assertEqual(detail.data['job']['status'], 'SUCCEEDED')
+        self.assertEqual(detail.data['job']['progress'], 100)
+        self.assertTrue(ScanJob.objects.get(pk=job_id).result['scan_id'])
+
+    def test_pending_scan_job_can_be_cancelled(self):
+        created = self.client.post('/api/v1/scan-jobs/', {'code': 'safe = True'}, format='json')
+        job_id = created.data['job']['id']
+        cancelled = self.client.post(f'/api/v1/scan-jobs/{job_id}/')
+        self.assertEqual(cancelled.status_code, 200)
+        self.assertEqual(cancelled.data['job']['status'], 'CANCELLED')
 
 
 from scanner.rag.vector_db import KnowledgeVectorStore

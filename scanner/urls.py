@@ -1,6 +1,7 @@
 from django.urls import path
 from .views import (APIKeyListCreateAPIView, APIKeyRevokeAPIView, CompareAPIView, EvaluationSummaryAPIView,
                     FindingListUpdateAPIView, HistoryAPIView, ProjectListCreateAPIView, ReportExportAPIView,
+                    ScanJobDetailAPIView, ScanJobListCreateAPIView,
                     ScanCodeAPIView, health_view, home_view, login_view, logout_view, metrics_view,
                     readiness_view, register_view)
 
@@ -26,4 +27,6 @@ urlpatterns = [
     path('api/v1/api-keys/', APIKeyListCreateAPIView.as_view(), name='api_v1_api_keys'),
     path('api/v1/api-keys/<str:prefix>/revoke/', APIKeyRevokeAPIView.as_view(), name='api_v1_revoke_api_key'),
     path('api/v1/reports/export/', ReportExportAPIView.as_view(), name='api_v1_report_export'),
+    path('api/v1/scan-jobs/', ScanJobListCreateAPIView.as_view(), name='api_v1_scan_jobs'),
+    path('api/v1/scan-jobs/<int:job_id>/', ScanJobDetailAPIView.as_view(), name='api_v1_scan_job'),
 ]

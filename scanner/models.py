@@ -84,6 +84,41 @@ class CodeScan(models.Model):
         return f"Scan #{self.id} - {self.status} - {self.created_at:%Y-%m-%d %H:%M}"
 
 
+class ScanJob(models.Model):
+    STATUS_CHOICES = [
+        ("PENDING", "Pending"),
+        ("RUNNING", "Running"),
+        ("SUCCEEDED", "Succeeded"),
+        ("FAILED", "Failed"),
+        ("CANCELLED", "Cancelled"),
+    ]
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name="scan_jobs")
+    project = models.ForeignKey(Project, on_delete=models.SET_NULL, related_name="scan_jobs", null=True, blank=True)
+    requested_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, related_name="requested_scan_jobs", null=True, blank=True)
+    filename = models.CharField(max_length=255, default="sample.py")
+    engines = models.JSONField(default=list, blank=True)
+    source_code = models.TextField()
+    status = models.CharField(max_length=12, choices=STATUS_CHOICES, default="PENDING", db_index=True)
+    progress = models.PositiveSmallIntegerField(default=0)
+    idempotency_key = models.CharField(max_length=120, null=True, blank=True)
+    result = models.JSONField(default=dict, blank=True)
+    error_message = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    started_at = models.DateTimeField(null=True, blank=True)
+    completed_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["organization", "idempotency_key"],
+                name="unique_scan_job_idempotency",
+            )
+        ]
+        indexes = [
+            models.Index(fields=["organization", "status", "-created_at"], name="scanjob_org_status_created")
+        ]
+
+
 class VulnerabilityReport(models.Model):
     SEVERITY_CHOICES = [("CRITICAL", "Critical"), ("HIGH", "High"), ("MEDIUM", "Medium"), ("LOW", "Low")]
     scan = models.ForeignKey(CodeScan, on_delete=models.CASCADE, related_name="vulnerabilities")
