@@ -91,3 +91,66 @@ class APITests(TestCase):
         self.assertEqual(response.data["status"], "success")
         self.assertIn("metrics", response.data)
         self.assertIn("counts", response.data)
+from scanner.rag.vector_db import KnowledgeVectorStore
+from scanner.rag.rag_engine import SecurityRAGEngine
+
+
+class RAGVectorStoreTests(TestCase):
+
+    def setUp(self):
+        self.store = KnowledgeVectorStore()
+
+    def test_knowledge_base_loads_records(self):
+        self.assertGreater(self.store.count(), 0)
+
+    def test_exact_cwe_lookup(self):
+        result = self.store.lookup(
+            "CWE-89",
+            query="SQL injection"
+        )
+
+        self.assertIsNotNone(result)
+        self.assertEqual(result["cwe_id"], "CWE-89")
+        self.assertEqual(result["match"], "exact_cwe")
+        self.assertEqual(result["score"], 1.0)
+
+    def test_token_overlap_search(self):
+        result = self.store.lookup(
+            None,
+            query="How to prevent SQL injection in Python database queries"
+        )
+
+        self.assertIsNotNone(result)
+        self.assertEqual(result["cwe_id"], "CWE-89")
+        self.assertEqual(result["match"], "token_overlap")
+
+    def test_unknown_cwe_returns_none(self):
+        result = self.store.lookup(
+            "CWE-999",
+            query="quantum teleportation galaxy"
+        )
+
+        self.assertIsNone(result)
+
+    def test_empty_query_returns_none(self):
+        result = self.store.lookup(None, query="")
+
+        self.assertIsNone(result)
+
+    def test_rag_engine_enriches_finding(self):
+        engine = SecurityRAGEngine(store=self.store)
+
+        findings = [
+            {
+                "cwe_id": "CWE-89",
+                "message": "SQL injection vulnerability detected"
+            }
+        ]
+
+        result = engine.enrich_findings(findings)
+
+        self.assertEqual(len(result), 1)
+        self.assertEqual(
+            result[0]["rag_suggested_fix"]["cwe_id"],
+            "CWE-89"
+        )
