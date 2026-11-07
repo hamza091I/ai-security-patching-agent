@@ -1,66 +1,110 @@
-from django.db import models
+import secrets
 
-class CodeScan(models.Model):
-    """
-    Table to store code scanning operations performed by the user
-    """
-    user = models.ForeignKey(
-            "auth.User",
-            on_delete=models.CASCADE,
-            related_name="code_scans",
-            null=True,
-            blank=True,
-    )
-    
-    STATUS_CHOICES = [
-        ('PENDING', 'Pending Scan'),
-        ('SUCCESS', 'Scanned and Patched'),
-        ('FAILED', 'Scan Failed'),
-    ]
-    
-    original_code = models.TextField(help_text="The original code entered by the user")
-    patched_code = models.TextField(blank=True, null=True, help_text="The code after patching and fixing")
-    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='PENDING')
-    is_vulnerable = models.BooleanField(default=False, help_text="Does the code contain vulnerabilities?")
-    created_at = models.DateTimeField(auto_now_add=True, help_text="Scan date and time")
+from django.conf import settings
+from django.db import models
+from django.utils import timezone
+
+
+class Organization(models.Model):
+    name = models.CharField(max_length=150)
+    slug = models.SlugField(max_length=170, unique=True)
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="owned_organizations")
+    created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"Scan #{self.id} - {self.status} - {self.created_at.strftime('%Y-%m-%d %H:%M')}"
+        return self.name
+
+
+class Membership(models.Model):
+    ROLE_CHOICES = [("OWNER", "Owner"), ("ADMIN", "Admin"), ("DEVELOPER", "Developer"), ("VIEWER", "Viewer")]
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name="memberships")
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="organization_memberships")
+    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default="DEVELOPER")
+    joined_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=["organization", "user"], name="unique_organization_member")]
+
+
+class Project(models.Model):
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name="projects")
+    name = models.CharField(max_length=150)
+    slug = models.SlugField(max_length=170)
+    repository_url = models.URLField(blank=True)
+    default_branch = models.CharField(max_length=120, default="main")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=["organization", "slug"], name="unique_project_slug_per_org")]
+
+    def __str__(self):
+        return f"{self.organization.slug}/{self.slug}"
+
+
+class APIKey(models.Model):
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name="api_keys")
+    name = models.CharField(max_length=100)
+    prefix = models.CharField(max_length=12, unique=True)
+    key_hash = models.CharField(max_length=128)
+    last_used_at = models.DateTimeField(null=True, blank=True)
+    revoked_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    @staticmethod
+    def generate_raw_key():
+        return "sa_" + secrets.token_urlsafe(32)
+
+    def revoke(self):
+        self.revoked_at = timezone.now()
+        self.save(update_fields=["revoked_at"])
+
+
+class AuditLog(models.Model):
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name="audit_logs")
+    actor = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
+    action = models.CharField(max_length=120)
+    request_id = models.CharField(max_length=80, blank=True)
+    metadata = models.JSONField(default=dict, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+
+class CodeScan(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="code_scans", null=True, blank=True)
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name="scans", null=True, blank=True)
+    project = models.ForeignKey(Project, on_delete=models.SET_NULL, related_name="scans", null=True, blank=True)
+
+    STATUS_CHOICES = [("PENDING", "Pending Scan"), ("SUCCESS", "Scanned and Patched"), ("FAILED", "Scan Failed")]
+    original_code = models.TextField(help_text="The original code entered by the user")
+    patched_code = models.TextField(blank=True, null=True, help_text="The code after scanning and patch proposal")
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default="PENDING")
+    is_vulnerable = models.BooleanField(default=False, help_text="Does the code contain vulnerabilities?")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Scan #{self.id} - {self.status} - {self.created_at:%Y-%m-%d %H:%M}"
 
 
 class VulnerabilityReport(models.Model):
-    """
-    Table to store details of each vulnerability detected in a specific scan
-    """
-    SEVERITY_CHOICES = [
-        ('CRITICAL', 'Critical'),
-        ('HIGH', 'High'),
-        ('MEDIUM', 'Medium'),
-        ('LOW', 'Low'),
-    ]
-
-    scan = models.ForeignKey(CodeScan, on_delete=models.CASCADE, related_name='vulnerabilities')
+    SEVERITY_CHOICES = [("CRITICAL", "Critical"), ("HIGH", "High"), ("MEDIUM", "Medium"), ("LOW", "Low")]
+    scan = models.ForeignKey(CodeScan, on_delete=models.CASCADE, related_name="vulnerabilities")
     cwe_id = models.CharField(max_length=20, help_text="Standard vulnerability ID like CWE-95")
-    vulnerability_type = models.CharField(max_length=100, help_text="Type of vulnerability (e.g., Code Injection)")
-    severity = models.CharField(max_length=10, choices=SEVERITY_CHOICES, default='HIGH')
-    line_number = models.IntegerField(null=True, blank=True, help_text="Line number containing the vulnerability")
-    description = models.TextField(help_text="Detailed description and risks of the vulnerability")
-    recommendation = models.TextField(help_text="Safe recommendation for remediation")
+    vulnerability_type = models.CharField(max_length=100, help_text="Vulnerability type")
+    severity = models.CharField(max_length=10, choices=SEVERITY_CHOICES, default="HIGH")
+    line_number = models.IntegerField(null=True, blank=True)
+    description = models.TextField()
+    recommendation = models.TextField()
+    status = models.CharField(max_length=20, default="OPEN")
+    assigned_to = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="assigned_findings")
+    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return f"{self.cwe_id} ({self.severity}) in Scan #{self.scan.id}"
 
 
 class SecurityKnowledgeBase(models.Model):
-    """
-    Table for security knowledge base to be used in the future with RAG and ChromaDB
-    """
-    cwe_id = models.CharField(max_length=20, unique=True, help_text="Standard vulnerability ID")
-    title = models.CharField(max_length=200, help_text="Vulnerability title")
-    vulnerable_example = models.TextField(help_text="Example of insecure code")
-    secure_example = models.TextField(help_text="Example of secure and patched code")
-    explanation = models.TextField(help_text="Explanation of patching and prevention mechanism")
+    cwe_id = models.CharField(max_length=20, unique=True)
+    title = models.CharField(max_length=200)
+    vulnerable_example = models.TextField()
+    secure_example = models.TextField()
+    explanation = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return f"{self.cwe_id} - {self.title}"

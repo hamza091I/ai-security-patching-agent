@@ -8,6 +8,7 @@ from scanner.analysis.security_scanner import full_security_scan
 from scanner.contracts import validate_finding
 from scanner.core.patcher import propose_patch
 from scanner.views import summarize_findings
+from scanner.models import Membership, Organization
 class ContractAndRulesTests(TestCase):
     def test_contract_contains_security_fields(self):
         f=analyze_code_string('value = eval(user_input)')[0]
@@ -49,6 +50,9 @@ class APITests(TestCase):
     def test_register_and_login(self):
         self.client.logout()
         r=self.client.post('/register/',{'username':'analyst','email':'a@example.com','password':'strong-pass-123'}); self.assertEqual(r.status_code,302); self.client.get('/logout/'); r=self.client.post('/login/',{'username':'analyst','password':'strong-pass-123'}); self.assertEqual(r.status_code,302)
+        analyst = User.objects.get(username='analyst')
+        self.assertTrue(Organization.objects.filter(owner=analyst).exists())
+        self.assertTrue(Membership.objects.filter(user=analyst, role='OWNER').exists())
     def test_dashboard_requires_login(self):
         unauthenticated_client = APIClient()
 
@@ -59,6 +63,15 @@ class APITests(TestCase):
 
         self.assertEqual(response.status_code, 302)
         self.assertIn("/login/", response["Location"])
+
+    def test_health_and_readiness_endpoints(self):
+        self.client.logout()
+        self.assertEqual(self.client.get('/health/').status_code, 200)
+        self.assertEqual(self.client.get('/ready/').status_code, 200)
+
+    def test_v1_scan_alias_requires_authentication(self):
+        response = self.client.post('/api/v1/scan/', {'code': 'safe = True'}, format='json')
+        self.assertEqual(response.status_code, 200)
 
     def test_finding_summary_counts_severity_language_and_engine(self):
         summary = summarize_findings([
@@ -71,3 +84,10 @@ class APITests(TestCase):
         self.assertEqual(summary["languages"], ["python"])
         self.assertEqual(summary["engines"], ["ast", "bandit"])
         self.assertEqual(summary["duration_ms"], 12.5)
+
+    def test_evaluation_summary_endpoint(self):
+        response = self.client.get("/api/evaluation/summary/")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data["status"], "success")
+        self.assertIn("metrics", response.data)
+        self.assertIn("counts", response.data)

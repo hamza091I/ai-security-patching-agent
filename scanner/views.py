@@ -1,9 +1,14 @@
 import time
+import json
+from pathlib import Path
 
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
+from django.db import connection
+from django.http import JsonResponse
+from django.utils.text import slugify
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -12,7 +17,30 @@ from rest_framework.permissions import IsAuthenticated
 
 from scanner.analysis.security_scanner import full_security_scan
 from scanner.core.patcher import propose_patch
-from .models import CodeScan, VulnerabilityReport
+from .models import AuditLog, CodeScan, Membership, Organization, VulnerabilityReport
+
+
+def health_view(request):
+    return JsonResponse({"status": "ok", "service": "ai-security-patching-agent"})
+
+
+def readiness_view(request):
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT 1")
+        return JsonResponse({"status": "ready", "database": "ok"})
+    except Exception as exc:
+        return JsonResponse({"status": "not_ready", "database": "error", "detail": type(exc).__name__}, status=503)
+
+
+def metrics_view(request):
+    if not request.user.is_authenticated:
+        return JsonResponse({"detail": "Authentication required."}, status=401)
+    return JsonResponse({
+        "status": "ok",
+        "scans_total": CodeScan.objects.filter(user=request.user).count(),
+        "open_findings": VulnerabilityReport.objects.filter(scan__user=request.user, status="OPEN").count(),
+    })
 
 
 @login_required(login_url="/login/")
@@ -21,8 +49,10 @@ def home_view(request):
 
 
 def _save_scan(user, code, patched, findings):
+    membership = Membership.objects.filter(user=user).select_related("organization").first()
     scan = CodeScan.objects.create(
         user=user,
+        organization=membership.organization if membership else None,
         original_code=code,
         patched_code=patched,
         status="SUCCESS",
@@ -43,6 +73,14 @@ def _save_scan(user, code, patched, findings):
             line_number=finding.get("line_start", 0),
             description=finding.get("message", ""),
             recommendation=finding.get("recommendation", ""),
+        )
+
+    if membership:
+        AuditLog.objects.create(
+            organization=membership.organization,
+            actor=user,
+            action="scan.completed",
+            metadata={"scan_id": scan.id, "finding_count": len(findings)},
         )
 
     return scan
@@ -252,6 +290,36 @@ class HistoryAPIView(APIView):
         )
 
 
+class EvaluationSummaryAPIView(APIView):
+    """Expose the latest checked benchmark result to the dashboard."""
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        report_path = Path(__file__).resolve().parent.parent / "reports" / "hamzeh-week1-merged-evaluation.json"
+        if not report_path.exists():
+            report_path = Path(__file__).resolve().parent.parent / "reports" / "hamzeh-week1-evaluation.json"
+
+        try:
+            report = json.loads(report_path.read_text(encoding="utf-8")) if report_path.exists() else {}
+        except (OSError, ValueError):
+            report = {}
+
+        return Response(
+            {
+                "status": "success",
+                "available": bool(report),
+                "source": report_path.name if report else None,
+                "counts": report.get("counts", {}),
+                "metrics": report.get("metrics", {}),
+                "total_cases": report.get("total_cases", report.get("metrics", {}).get("total", 0)),
+                "passed_cases": report.get("passed_cases", 0),
+                "failed_cases": report.get("failed_cases", 0),
+            },
+            status=status.HTTP_200_OK,
+        )
+
+
 def login_view(request):
     if request.user.is_authenticated:
         return redirect("/")
@@ -318,6 +386,14 @@ def register_view(request):
             email=email,
             password=password,
         )
+
+        organization = Organization.objects.create(
+            name=f"{username}'s Workspace",
+            slug=f"{slugify(username)}-{user.id}",
+            owner=user,
+        )
+        Membership.objects.create(organization=organization, user=user, role="OWNER")
+        AuditLog.objects.create(organization=organization, actor=user, action="workspace.created")
 
         login(request, user)
         return redirect("/")
