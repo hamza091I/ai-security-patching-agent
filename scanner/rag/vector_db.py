@@ -77,10 +77,19 @@ class KnowledgeVectorStore:
 
     def lookup(self, cwe_id: str | None, query: str = "") -> dict[str, Any] | None:
         exact = self.get_by_cwe(cwe_id)
-        if exact:
-            return {**exact, "score": 1.0, "match": "exact_cwe"}
-        return self.search(query, n_results=1)[0] if query else None
 
+        if exact:
+            return {
+                **exact,
+                "score": 1.0,
+                "match": "exact_cwe"
+           }
+
+        if query:
+            results = self.search(query, n_results=1)
+            return results[0] if results else None
+
+        return None
 
 _default_store: KnowledgeVectorStore | None = None
 
