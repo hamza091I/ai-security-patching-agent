@@ -24,7 +24,7 @@
 - [x] Durable ScanJob API with progress, cancel, idempotency, file-size limit, and worker command.
 - [ ] Redis/Celery adapter and distributed locking; [x] local retries, stale-job recovery, timeout guard, and worker controls.
 - [x] Add non-root Docker application baseline; [ ] hardened no-network scan sandbox with read-only filesystem, CPU/memory limits, timeout, and cleanup.
-- [ ] GitHub/GitLab OAuth, repository selection, push/branch/PR scans, comments, and merge blocking.
+- [x] GitHub/GitLab integration registry, repository-to-project linking, webhook event persistence, and signature verification; [ ] OAuth, repository fetch, scans, comments, and merge blocking.
 - [ ] Java, Go, PHP, C#, and Ruby language adapters.
 - [ ] SCA, secrets, IaC, container, DAST, and license scanning modules.
 - [ ] AI Security Assistant with evidence, safe exploit explanation, patch diff, rescan, regression gate, and human approval.

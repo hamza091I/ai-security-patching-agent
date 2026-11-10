@@ -12,8 +12,9 @@ from scanner.analysis.security_scanner import full_security_scan
 from scanner.contracts import validate_finding
 from scanner.core.patcher import propose_patch
 from scanner.views import summarize_findings
-from scanner.models import AuditLog, Membership, Organization, Project, ScanJob
+from scanner.models import AuditLog, Membership, Organization, Project, RepositoryEvent, RepositoryIntegration, ScanJob
 from scanner.services.scan_jobs import recover_stale_jobs, requeue_failed_jobs
+from scanner.services.integrations import hash_secret
 class ContractAndRulesTests(TestCase):
     def test_contract_contains_security_fields(self):
         f=analyze_code_string('value = eval(user_input)')[0]
@@ -271,3 +272,36 @@ class Phase4ReliabilityTests(TestCase):
         job.refresh_from_db()
         self.assertEqual(job.status, "FAILED")
         self.assertIn("retry budget", job.error_message)
+
+
+class Phase5IntegrationTests(TestCase):
+
+    def setUp(self):
+        self.user = User.objects.create_user(username="integration-user", password="strong-pass-123")
+        self.organization = Organization.objects.create(name="Integration Workspace", slug="integration-workspace", owner=self.user)
+        Membership.objects.create(organization=self.organization, user=self.user, role="OWNER")
+        self.client = APIClient()
+        self.client.force_authenticate(user=self.user)
+
+    def test_create_integration_creates_workspace_project_without_raw_secret(self):
+        response = self.client.post("/api/v1/integrations/", {"provider": "GITLAB", "repository_url": "https://gitlab.com/acme/payments", "webhook_secret": "secret-123"}, format="json")
+        self.assertEqual(response.status_code, 201)
+        integration = RepositoryIntegration.objects.get()
+        self.assertEqual(integration.webhook_secret_hash, hash_secret("secret-123"))
+        self.assertNotIn("secret-123", response.content.decode())
+        self.assertIsNotNone(integration.project_id)
+
+    def test_gitlab_webhook_requires_token_and_records_push(self):
+        integration = RepositoryIntegration.objects.create(organization=self.organization, provider="GITLAB", repository_url="https://gitlab.com/acme/payments", webhook_secret_hash=hash_secret("secret-123"))
+        payload = {"ref": "refs/heads/main", "after": "abc123", "project": {"web_url": integration.repository_url}}
+        response = self.client.post(f"/api/v1/webhooks/gitlab/{integration.id}/", payload, format="json", HTTP_X_GITLAB_EVENT="Push Hook", HTTP_X_GITLAB_TOKEN="secret-123")
+        self.assertEqual(response.status_code, 202)
+        event = RepositoryEvent.objects.get(integration=integration)
+        self.assertEqual(event.event_type, "PUSH")
+        self.assertEqual(event.commit_sha, "abc123")
+
+    def test_invalid_webhook_signature_is_rejected(self):
+        integration = RepositoryIntegration.objects.create(organization=self.organization, provider="GITLAB", repository_url="https://gitlab.com/acme/payments", webhook_secret_hash=hash_secret("secret-123"))
+        response = self.client.post(f"/api/v1/webhooks/gitlab/{integration.id}/", {"ref": "main"}, format="json", HTTP_X_GITLAB_EVENT="Push Hook", HTTP_X_GITLAB_TOKEN="wrong")
+        self.assertEqual(response.status_code, 401)
+        self.assertFalse(RepositoryEvent.objects.filter(integration=integration).exists())
