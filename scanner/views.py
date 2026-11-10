@@ -2,6 +2,7 @@ import time
 import json
 import csv
 import hashlib
+import os
 import io
 from pathlib import Path
 
@@ -18,11 +19,12 @@ from django.utils.text import slugify
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated
 
 from scanner.analysis.security_scanner import full_security_scan
 from scanner.core.patcher import propose_patch
-from .models import APIKey, AuditLog, CodeScan, Membership, Organization, Project, ScanJob, VulnerabilityReport
+from .models import APIKey, AuditLog, CodeScan, Membership, Organization, Project, RepositoryIntegration, ScanJob, VulnerabilityReport
+from scanner.services.integrations import create_integration_project, hash_secret, ingest_webhook
 
 
 def health_view(request):
@@ -376,6 +378,59 @@ class ProjectListCreateAPIView(APIView):
         )
         AuditLog.objects.create(organization=organization, actor=request.user, action="project.created", metadata={"project_id": project.id})
         return Response({"status": "success", "project": {"id": project.id, "name": project.name, "slug": project.slug}}, status=201)
+
+
+class IntegrationListCreateAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        organization = _workspace_for_user(request.user)
+        integrations = RepositoryIntegration.objects.filter(organization=organization).select_related("project").order_by("provider", "repository_url")
+        return Response({"status": "success", "integrations": [{
+            "id": item.id, "provider": item.provider, "status": item.status,
+            "repository_url": item.repository_url, "default_branch": item.default_branch,
+            "project_id": item.project_id, "oauth_status": "NOT_CONNECTED",
+            "webhook_ready": bool(item.webhook_secret_hash or (item.provider == "GITHUB" and os.getenv("GITHUB_WEBHOOK_SECRET"))),
+        } for item in integrations]})
+
+    def post(self, request):
+        organization = _workspace_for_user(request.user)
+        if not organization:
+            return Response({"status": "error", "message": "Create or join a workspace first."}, status=403)
+        provider = str(request.data.get("provider", "")).upper()
+        repository_url = str(request.data.get("repository_url", "")).strip()
+        if provider not in {"GITHUB", "GITLAB"} or not repository_url:
+            return Response({"status": "error", "message": "provider must be GITHUB or GITLAB and repository_url is required."}, status=400)
+        secret = str(request.data.get("webhook_secret", "")).strip()
+        integration, created = RepositoryIntegration.objects.get_or_create(
+            organization=organization, provider=provider, repository_url=repository_url,
+            defaults={"default_branch": str(request.data.get("default_branch", "main"))[:120], "webhook_secret_hash": hash_secret(secret) if secret else "", "connected_by": request.user},
+        )
+        if not created:
+            if secret:
+                integration.webhook_secret_hash = hash_secret(secret)
+            integration.default_branch = str(request.data.get("default_branch", integration.default_branch))[:120]
+            integration.save(update_fields=["webhook_secret_hash", "default_branch", "updated_at"])
+        project = create_integration_project(integration, request.user)
+        AuditLog.objects.create(organization=organization, actor=request.user, action="integration.created", metadata={"integration_id": integration.id, "provider": provider, "project_id": project.id})
+        return Response({"status": "success", "integration": {"id": integration.id, "provider": provider, "repository_url": repository_url, "project_id": project.id, "oauth_status": "NOT_CONNECTED", "webhook_ready": bool(integration.webhook_secret_hash or (provider == "GITHUB" and os.getenv("GITHUB_WEBHOOK_SECRET"))), "note": "OAuth connection and repository API fetch require provider App credentials."}}, status=201 if created else 200)
+
+
+class RepositoryWebhookAPIView(APIView):
+    permission_classes = [AllowAny]
+    authentication_classes = []
+
+    def post(self, request, provider, integration_id):
+        integration = RepositoryIntegration.objects.filter(id=integration_id, provider=provider.upper(), status__in=["PENDING", "ACTIVE"]).first()
+        if not integration:
+            return Response({"status": "error", "message": "Integration not found."}, status=404)
+        try:
+            event = ingest_webhook(integration, request.headers, request.body)
+        except PermissionError as exc:
+            return Response({"status": "error", "message": str(exc)}, status=401)
+        except (ValueError, UnicodeDecodeError):
+            return Response({"status": "error", "message": "Invalid webhook JSON."}, status=400)
+        return Response({"status": "accepted", "event_id": event.id, "event_type": event.event_type, "status": event.status, "next_step": "Repository content fetch and ScanJob creation require an authenticated provider API connection."}, status=202)
 
 
 class FindingListUpdateAPIView(APIView):

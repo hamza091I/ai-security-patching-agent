@@ -68,6 +68,41 @@ class AuditLog(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
 
+class RepositoryIntegration(models.Model):
+    PROVIDER_CHOICES = [("GITHUB", "GitHub"), ("GITLAB", "GitLab")]
+    STATUS_CHOICES = [("PENDING", "Pending OAuth"), ("ACTIVE", "Active"), ("DISABLED", "Disabled")]
+
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name="repository_integrations")
+    project = models.OneToOneField("Project", on_delete=models.CASCADE, related_name="integration", null=True, blank=True)
+    provider = models.CharField(max_length=10, choices=PROVIDER_CHOICES)
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default="PENDING")
+    repository_url = models.URLField()
+    external_account_id = models.CharField(max_length=150, blank=True)
+    default_branch = models.CharField(max_length=120, default="main")
+    webhook_secret_hash = models.CharField(max_length=64, blank=True)
+    metadata = models.JSONField(default=dict, blank=True)
+    connected_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=["organization", "provider", "repository_url"], name="unique_repo_integration")]
+
+
+class RepositoryEvent(models.Model):
+    EVENT_CHOICES = [("PUSH", "Push"), ("PULL_REQUEST", "Pull Request"), ("MERGE_REQUEST", "Merge Request"), ("UNKNOWN", "Unknown")]
+    STATUS_CHOICES = [("RECEIVED", "Received"), ("QUEUED", "Queued"), ("IGNORED", "Ignored"), ("INVALID", "Invalid")]
+
+    integration = models.ForeignKey(RepositoryIntegration, on_delete=models.CASCADE, related_name="events")
+    event_type = models.CharField(max_length=20, choices=EVENT_CHOICES)
+    delivery_id = models.CharField(max_length=200, blank=True)
+    ref = models.CharField(max_length=255, blank=True)
+    commit_sha = models.CharField(max_length=100, blank=True)
+    payload = models.JSONField(default=dict, blank=True)
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default="RECEIVED")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+
 class CodeScan(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="code_scans", null=True, blank=True)
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name="scans", null=True, blank=True)

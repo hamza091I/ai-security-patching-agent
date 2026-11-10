@@ -74,6 +74,17 @@ python manage.py process_scan_jobs --limit 10 --recover-stale --retry-failed
 
 Configuration is available in `.env.example` through `SCAN_JOB_TIMEOUT_SECONDS`, `SCAN_JOB_MAX_RETRIES`, `SCAN_JOB_STALE_SECONDS`, and `LOG_LEVEL`. A non-root Docker application baseline is provided in `Dockerfile` and `docker-compose.yml`. Pull requests are checked by `.github/workflows/quality.yml` for Django checks, migration drift, tests, and Bandit. See `docs/PHASE4_RELEASE_NOTES.md` for boundaries and verification.
 
+## Phase 5 repository integration foundation
+
+Phase 5 adds workspace-scoped GitHub/GitLab integration records, automatic repository-to-project linking, signed webhook ingestion, and auditable Push, Pull Request, and Merge Request events:
+
+```text
+GET/POST /api/v1/integrations/
+POST     /api/v1/webhooks/<provider>/<integration_id>/
+```
+
+GitLab webhook tokens are stored only as SHA-256 digests. GitHub signatures use `GITHUB_WEBHOOK_SECRET`. OAuth, provider API token exchange, remote repository checkout, and automatic ScanJob creation still require registered provider App credentials; see `docs/PHASE5_RELEASE_NOTES.md`.
+
 ## Scope status
 
 The current implementation has the complete baseline workflow and 100 taxonomy slots, with benchmark-backed rules and metrics. Production hardening still requires deeper rule coverage, authenticated users/projects, formal GitLab merge-request integration, and broader regression data.
