@@ -9,7 +9,7 @@
 - [x] Add `/api/v1/` aliases for the existing scan, compare, history, and evaluation contracts.
 - [x] Add Organization, Membership, Project, APIKey, AuditLog models.
 - [x] Add finding status and assignment fields.
-- [ ] Generate and review the migration for the new SaaS models.
+- [x] Generate and review the migration for the new SaaS models.
 - [ ] Add tenant selection middleware and enforce organization-level query isolation.
 
 ## Product outcomes
@@ -18,8 +18,9 @@
 - [ ] Workspace API-key authentication and key rotation UI.
 - [ ] Complete audit events for login, scans, changes, exports, and integrations.
 - [ ] Overview, Projects, Repositories, Scans, Findings, Reports, Integrations, Team, Billing, Settings, and Audit Logs pages.
-- [ ] Finding workflow: assign, comments, due dates, labels, false-positive, snooze, ticket link, resolved/reopened.
-- [ ] PDF, JSON, CSV, HTML, and SARIF exports.
+- [x] Projects, Findings, Reports sections added to the Dashboard.
+- [x] Finding workflow: status changes and workspace-safe assignment endpoint.
+- [x] JSON, CSV, and SARIF exports.
 - [ ] Celery/Redis queue with progress, retry, cancel, timeout, file-size and plan limits.
 - [ ] Non-root Docker sandbox with no network, read-only filesystem, CPU/memory limits, timeout, and cleanup.
 - [ ] GitHub/GitLab OAuth, repository selection, push/branch/PR scans, comments, and merge blocking.

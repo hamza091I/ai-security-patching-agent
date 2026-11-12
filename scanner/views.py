@@ -1,5 +1,8 @@
 import time
 import json
+import csv
+import hashlib
+import io
 from pathlib import Path
 
 from django.shortcuts import render, redirect
@@ -7,7 +10,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.db import connection
-from django.http import JsonResponse
+from django.http import HttpResponse, JsonResponse
 from django.utils.text import slugify
 
 from rest_framework.views import APIView
@@ -17,7 +20,7 @@ from rest_framework.permissions import IsAuthenticated
 
 from scanner.analysis.security_scanner import full_security_scan
 from scanner.core.patcher import propose_patch
-from .models import AuditLog, CodeScan, Membership, Organization, VulnerabilityReport
+from .models import APIKey, AuditLog, CodeScan, Membership, Organization, Project, VulnerabilityReport
 
 
 def health_view(request):
@@ -48,11 +51,12 @@ def home_view(request):
     return render(request, "scanner/index.html")
 
 
-def _save_scan(user, code, patched, findings):
+def _save_scan(user, code, patched, findings, project=None):
     membership = Membership.objects.filter(user=user).select_related("organization").first()
     scan = CodeScan.objects.create(
         user=user,
         organization=membership.organization if membership else None,
+        project=project,
         original_code=code,
         patched_code=patched,
         status="SUCCESS",
@@ -80,7 +84,7 @@ def _save_scan(user, code, patched, findings):
             organization=membership.organization,
             actor=user,
             action="scan.completed",
-            metadata={"scan_id": scan.id, "finding_count": len(findings)},
+            metadata={"scan_id": scan.id, "finding_count": len(findings), "project_id": project.id if project else None},
         )
 
     return scan
@@ -126,6 +130,15 @@ class ScanCodeAPIView(APIView):
             code = request.data.get("code", "") or request.POST.get("code", "")
             filename = request.data.get("filename", "sample.py")
             engines = request.data.get("engines")
+            project = None
+            project_id = request.data.get("project_id")
+            if project_id:
+                membership = Membership.objects.filter(user=request.user).select_related("organization").first()
+                if not membership:
+                    return Response({"status": "error", "message": "Create or join a workspace first."}, status=403)
+                project = Project.objects.filter(id=project_id, organization=membership.organization).first()
+                if not project:
+                    return Response({"status": "error", "message": "Project not found in your workspace."}, status=404)
 
             if not isinstance(code, str) or not code.strip():
                 return Response(
@@ -174,12 +187,14 @@ class ScanCodeAPIView(APIView):
                 code=code,
                 patched=patch["patched_code"],
                 findings=findings,
+                project=project,
             )
 
             return Response(
                 {
                     "status": "success",
                     "scan_id": scan.id,
+                    "project": {"id": project.id, "slug": project.slug} if project else None,
                     "language": result["language"],
                     "is_vulnerable": bool(findings),
                     "original_code": code,
@@ -318,6 +333,143 @@ class EvaluationSummaryAPIView(APIView):
             },
             status=status.HTTP_200_OK,
         )
+
+
+def _workspace_for_user(user):
+    membership = Membership.objects.filter(user=user).select_related("organization").first()
+    return membership.organization if membership else None
+
+
+class ProjectListCreateAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        organization = _workspace_for_user(request.user)
+        if not organization:
+            return Response({"status": "success", "projects": []})
+        projects = organization.projects.order_by("name")
+        return Response({"status": "success", "projects": [
+            {"id": project.id, "name": project.name, "slug": project.slug,
+             "repository_url": project.repository_url, "default_branch": project.default_branch,
+             "scan_count": project.scans.count()}
+            for project in projects
+        ]})
+
+    def post(self, request):
+        organization = _workspace_for_user(request.user)
+        name = str(request.data.get("name", "")).strip()
+        if not organization:
+            return Response({"status": "error", "message": "Create or join a workspace first."}, status=403)
+        if not name:
+            return Response({"status": "error", "message": "Project name is required."}, status=400)
+        slug = slugify(name)
+        if Project.objects.filter(organization=organization, slug=slug).exists():
+            return Response({"status": "error", "message": "A project with this name already exists."}, status=409)
+        project = Project.objects.create(
+            organization=organization,
+            name=name,
+            slug=slug,
+            repository_url=str(request.data.get("repository_url", "")).strip(),
+            default_branch=str(request.data.get("default_branch", "main")).strip() or "main",
+        )
+        AuditLog.objects.create(organization=organization, actor=request.user, action="project.created", metadata={"project_id": project.id})
+        return Response({"status": "success", "project": {"id": project.id, "name": project.name, "slug": project.slug}}, status=201)
+
+
+class FindingListUpdateAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        organization = _workspace_for_user(request.user)
+        findings = VulnerabilityReport.objects.filter(scan__user=request.user)
+        if organization:
+            findings = VulnerabilityReport.objects.filter(scan__organization=organization)
+        status_filter = request.query_params.get("status")
+        severity_filter = request.query_params.get("severity")
+        if status_filter:
+            findings = findings.filter(status=status_filter.upper())
+        if severity_filter:
+            findings = findings.filter(severity=severity_filter.upper())
+        findings = findings.select_related("scan", "assigned_to").order_by("-updated_at")[:100]
+        return Response({"status": "success", "findings": [
+            {"id": item.id, "scan_id": item.scan_id, "cwe_id": item.cwe_id,
+             "type": item.vulnerability_type, "severity": item.severity,
+             "status": item.status, "line_number": item.line_number,
+             "description": item.description, "recommendation": item.recommendation,
+             "assigned_to": item.assigned_to.username if item.assigned_to else None,
+             "updated_at": item.updated_at.isoformat()}
+            for item in findings
+        ]})
+
+    def patch(self, request, finding_id):
+        organization = _workspace_for_user(request.user)
+        finding = VulnerabilityReport.objects.filter(id=finding_id, scan__organization=organization).select_related("scan").first()
+        if not finding:
+            return Response({"status": "error", "message": "Finding not found in your workspace."}, status=404)
+        if "status" in request.data:
+            new_status = str(request.data["status"]).upper()
+            if new_status not in {"OPEN", "IN_PROGRESS", "FALSE_POSITIVE", "RESOLVED", "REOPENED"}:
+                return Response({"status": "error", "message": "Invalid finding status."}, status=400)
+            finding.status = new_status
+        if "assigned_to" in request.data:
+            username = str(request.data["assigned_to"]).strip()
+            member = Membership.objects.filter(organization=organization, user__username=username).select_related("user").first()
+            if username and not member:
+                return Response({"status": "error", "message": "Assignee is not a member of this workspace."}, status=400)
+            finding.assigned_to = member.user if member else None
+        finding.save()
+        AuditLog.objects.create(organization=organization, actor=request.user, action="finding.updated", metadata={"finding_id": finding.id, "status": finding.status})
+        return Response({"status": "success", "finding_id": finding.id, "finding_status": finding.status})
+
+
+class APIKeyListCreateAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        organization = _workspace_for_user(request.user)
+        keys = organization.api_keys.order_by("-created_at") if organization else APIKey.objects.none()
+        return Response({"status": "success", "api_keys": [{"prefix": key.prefix, "name": key.name, "revoked": bool(key.revoked_at), "created_at": key.created_at.isoformat(), "last_used_at": key.last_used_at.isoformat() if key.last_used_at else None} for key in keys]})
+
+    def post(self, request):
+        organization = _workspace_for_user(request.user)
+        name = str(request.data.get("name", "")).strip() or "Default CI key"
+        if not organization:
+            return Response({"status": "error", "message": "Create or join a workspace first."}, status=403)
+        raw_key = APIKey.generate_raw_key()
+        key = APIKey.objects.create(organization=organization, name=name, prefix=raw_key[:11], key_hash=hashlib.sha256(raw_key.encode()).hexdigest())
+        AuditLog.objects.create(organization=organization, actor=request.user, action="api_key.created", metadata={"prefix": key.prefix})
+        return Response({"status": "success", "api_key": {"name": key.name, "prefix": key.prefix, "token": raw_key, "warning": "Save this token now. It will not be shown again."}}, status=201)
+
+
+class APIKeyRevokeAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, prefix):
+        organization = _workspace_for_user(request.user)
+        key = APIKey.objects.filter(organization=organization, prefix=prefix, revoked_at__isnull=True).first()
+        if not key:
+            return Response({"status": "error", "message": "API key not found."}, status=404)
+        key.revoke()
+        AuditLog.objects.create(organization=organization, actor=request.user, action="api_key.revoked", metadata={"prefix": prefix})
+        return Response({"status": "success", "prefix": prefix, "revoked": True})
+
+
+class ReportExportAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        organization = _workspace_for_user(request.user)
+        findings = VulnerabilityReport.objects.filter(scan__organization=organization).select_related("scan", "assigned_to") if organization else VulnerabilityReport.objects.filter(scan__user=request.user).select_related("scan", "assigned_to")
+        rows = [{"id": item.id, "scan_id": item.scan_id, "cwe_id": item.cwe_id, "severity": item.severity, "status": item.status, "line": item.line_number, "description": item.description, "recommendation": item.recommendation} for item in findings.order_by("id")]
+        # `format` is reserved by DRF content negotiation; use `type` for exports.
+        output_format = request.query_params.get("type", "json").lower()
+        if output_format == "csv":
+            buffer = io.StringIO(); writer = csv.DictWriter(buffer, fieldnames=list(rows[0].keys()) if rows else ["id", "scan_id", "cwe_id", "severity", "status", "line", "description", "recommendation"]); writer.writeheader(); writer.writerows(rows)
+            response = HttpResponse(buffer.getvalue(), content_type="text/csv"); response["Content-Disposition"] = "attachment; filename=security-findings.csv"; return response
+        if output_format == "sarif":
+            sarif = {"version": "2.1.0", "$schema": "https://json.schemastore.org/sarif-2.1.0.json", "runs": [{"tool": {"driver": {"name": "AI Security Patching Agent"}}, "results": [{"ruleId": row["cwe_id"], "level": row["severity"].lower(), "message": {"text": row["description"]}, "locations": [{"physicalLocation": {"artifactLocation": {"uri": f"scan/{row['scan_id']}"}, "region": {"startLine": row["line"] or 1}}}]} for row in rows]}]}
+            response = HttpResponse(json.dumps(sarif, indent=2), content_type="application/sarif+json"); response["Content-Disposition"] = "attachment; filename=security-findings.sarif"; return response
+        return Response({"status": "success", "generated_at": time.time(), "findings": rows})
 
 
 def login_view(request):

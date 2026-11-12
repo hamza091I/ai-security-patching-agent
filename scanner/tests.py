@@ -8,7 +8,7 @@ from scanner.analysis.security_scanner import full_security_scan
 from scanner.contracts import validate_finding
 from scanner.core.patcher import propose_patch
 from scanner.views import summarize_findings
-from scanner.models import Membership, Organization
+from scanner.models import Membership, Organization, Project
 class ContractAndRulesTests(TestCase):
     def test_contract_contains_security_fields(self):
         f=analyze_code_string('value = eval(user_input)')[0]
@@ -34,6 +34,8 @@ class APITests(TestCase):
             username="test-user",
             password="strong-pass-123",
         )
+        self.organization = Organization.objects.create(name="Test Workspace", slug="test-workspace", owner=self.user)
+        Membership.objects.create(organization=self.organization, user=self.user, role="OWNER")
 
         self.client.force_authenticate(user=self.user)
     def test_scan_endpoint(self):
@@ -91,6 +93,42 @@ class APITests(TestCase):
         self.assertEqual(response.data["status"], "success")
         self.assertIn("metrics", response.data)
         self.assertIn("counts", response.data)
+
+    def test_project_create_and_list_is_workspace_scoped(self):
+        response = self.client.post('/api/v1/projects/', {'name': 'Payments API', 'repository_url': 'https://github.com/example/payments'}, format='json')
+        self.assertEqual(response.status_code, 201)
+        listed = self.client.get('/api/v1/projects/')
+        self.assertEqual(listed.status_code, 200)
+        self.assertEqual(listed.data['projects'][0]['slug'], 'payments-api')
+        self.assertTrue(Project.objects.filter(organization=self.organization, slug='payments-api').exists())
+
+    def test_finding_status_can_be_updated(self):
+        scan = self.client.post('/api/scan/', {'code': 'value = eval(input)', 'filename': 'x.py'}, format='json')
+        self.assertEqual(scan.status_code, 200)
+        finding_id = scan.data['scan_id']
+        self.assertEqual(self.client.get('/api/v1/findings/').status_code, 200)
+        finding = self.client.get('/api/v1/findings/').data['findings'][0]
+        updated = self.client.patch(f"/api/v1/findings/{finding['id']}/", {'status': 'RESOLVED'}, format='json')
+        self.assertEqual(updated.status_code, 200)
+        self.assertEqual(updated.data['finding_status'], 'RESOLVED')
+
+    def test_api_key_is_returned_once_and_can_authenticate(self):
+        created = self.client.post('/api/v1/api-keys/', {'name': 'CI'}, format='json')
+        self.assertEqual(created.status_code, 201)
+        raw_key = created.data['api_key']['token']
+        api_client = APIClient()
+        response = api_client.get('/api/v1/projects/', HTTP_AUTHORIZATION=f'Bearer {raw_key}')
+        self.assertEqual(response.status_code, 200)
+        self.assertNotIn('token', api_client.get('/api/v1/api-keys/').data.get('api_keys', [{}])[0])
+
+    def test_sarif_report_export(self):
+        self.client.post('/api/scan/', {'code': 'value = eval(input)', 'filename': 'x.py'}, format='json')
+        response = self.client.get('/api/v1/reports/export/?type=sarif')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response['Content-Type'], 'application/sarif+json')
+        self.assertIn('CWE-95', response.content.decode())
+
+
 from scanner.rag.vector_db import KnowledgeVectorStore
 from scanner.rag.rag_engine import SecurityRAGEngine
 
