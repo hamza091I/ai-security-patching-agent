@@ -17,6 +17,7 @@ from scanner.services.scan_jobs import recover_stale_jobs, requeue_failed_jobs
 from scanner.services.integrations import hash_secret
 from scanner.services.token_crypto import decrypt_token, encrypt_token
 from scanner.services.provider_clients import ProviderClient, extract_source_files
+from scanner.services.provider_actions import ProviderActions
 from unittest.mock import Mock, patch
 import io
 import zipfile
@@ -354,3 +355,17 @@ class Phase5IntegrationTests(TestCase):
         self.assertEqual(second.status_code, 202)
         self.assertEqual(RepositoryEvent.objects.filter(integration=integration).count(), 1)
         self.assertEqual(RepositoryEvent.objects.get(integration=integration).status, "QUEUED")
+
+    def test_github_provider_actions_publish_sarif_comment_and_status(self):
+        client = ProviderClient("GITHUB", "provider-token")
+        response = Mock(status_code=201)
+        response.json.return_value = {"url": "https://api.github.com/sarifs/1"}
+        with patch.object(client, "_request", return_value=response) as request:
+            actions = ProviderActions(client)
+            uploaded = actions.upload_sarif("https://github.com/acme/payments", "abc123", "refs/heads/main", {"version": "2.1.0"})
+            actions.comment("https://github.com/acme/payments", 7, "Security scan completed.")
+            actions.set_security_status("https://github.com/acme/payments", "abc123", "main", False, "Critical findings detected")
+        self.assertEqual(uploaded["provider"], "GITHUB")
+        self.assertEqual(request.call_count, 3)
+        self.assertIn("code-scanning/sarifs", request.call_args_list[0].args[1])
+        self.assertEqual(request.call_args_list[2].kwargs["json"]["state"], "failure")
