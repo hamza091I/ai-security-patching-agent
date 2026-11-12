@@ -80,6 +80,10 @@ class RepositoryIntegration(models.Model):
     external_account_id = models.CharField(max_length=150, blank=True)
     default_branch = models.CharField(max_length=120, default="main")
     webhook_secret_hash = models.CharField(max_length=64, blank=True)
+    access_token_encrypted = models.TextField(blank=True)
+    refresh_token_encrypted = models.TextField(blank=True)
+    token_expires_at = models.DateTimeField(null=True, blank=True)
+    oauth_state = models.CharField(max_length=120, blank=True)
     metadata = models.JSONField(default=dict, blank=True)
     connected_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -91,7 +95,7 @@ class RepositoryIntegration(models.Model):
 
 class RepositoryEvent(models.Model):
     EVENT_CHOICES = [("PUSH", "Push"), ("PULL_REQUEST", "Pull Request"), ("MERGE_REQUEST", "Merge Request"), ("UNKNOWN", "Unknown")]
-    STATUS_CHOICES = [("RECEIVED", "Received"), ("QUEUED", "Queued"), ("IGNORED", "Ignored"), ("INVALID", "Invalid")]
+    STATUS_CHOICES = [("RECEIVED", "Received"), ("QUEUED", "Queued"), ("PROCESSED", "Processed"), ("IGNORED", "Ignored"), ("INVALID", "Invalid")]
 
     integration = models.ForeignKey(RepositoryIntegration, on_delete=models.CASCADE, related_name="events")
     event_type = models.CharField(max_length=20, choices=EVENT_CHOICES)

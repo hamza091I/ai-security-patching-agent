@@ -50,8 +50,14 @@ def ingest_webhook(integration, headers, raw_body):
         raise PermissionError("Invalid webhook signature.")
     payload = json.loads(raw_body.decode("utf-8"))
     event_type, ref, sha, delivery = event_from_payload(integration.provider, headers, payload)
+    if delivery:
+        existing = RepositoryEvent.objects.filter(integration=integration, delivery_id=delivery).first()
+        if existing:
+            return existing
     if event_type == "UNKNOWN":
         status = "IGNORED"
+    elif integration.status == "ACTIVE":
+        status = "QUEUED"
     else:
         status = "RECEIVED"
     event = RepositoryEvent.objects.create(

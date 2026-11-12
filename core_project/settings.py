@@ -117,6 +117,16 @@ SCAN_JOB_TIMEOUT_SECONDS = int(os.getenv("SCAN_JOB_TIMEOUT_SECONDS", "300"))
 SCAN_JOB_MAX_RETRIES = int(os.getenv("SCAN_JOB_MAX_RETRIES", "2"))
 SCAN_JOB_STALE_SECONDS = int(os.getenv("SCAN_JOB_STALE_SECONDS", "900"))
 
+GITHUB_CLIENT_ID = os.getenv("GITHUB_CLIENT_ID", "")
+GITHUB_CLIENT_SECRET = os.getenv("GITHUB_CLIENT_SECRET", "")
+GITHUB_CALLBACK_URL = os.getenv("GITHUB_CALLBACK_URL", "http://127.0.0.1:8000/api/v1/integrations/github/callback/")
+GITLAB_CLIENT_ID = os.getenv("GITLAB_CLIENT_ID", "")
+GITLAB_CLIENT_SECRET = os.getenv("GITLAB_CLIENT_SECRET", "")
+GITLAB_CALLBACK_URL = os.getenv("GITLAB_CALLBACK_URL", "http://127.0.0.1:8000/api/v1/integrations/gitlab/callback/")
+PROVIDER_HTTP_TIMEOUT_SECONDS = int(os.getenv("PROVIDER_HTTP_TIMEOUT_SECONDS", "30"))
+REMOTE_SCAN_MAX_FILES = int(os.getenv("REMOTE_SCAN_MAX_FILES", "500"))
+REMOTE_SCAN_MAX_FILE_BYTES = int(os.getenv("REMOTE_SCAN_MAX_FILE_BYTES", "1000000"))
+
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
