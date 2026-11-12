@@ -15,6 +15,11 @@ from scanner.views import summarize_findings
 from scanner.models import AuditLog, Membership, Organization, Project, RepositoryEvent, RepositoryIntegration, ScanJob
 from scanner.services.scan_jobs import recover_stale_jobs, requeue_failed_jobs
 from scanner.services.integrations import hash_secret
+from scanner.services.token_crypto import decrypt_token, encrypt_token
+from scanner.services.provider_clients import ProviderClient, extract_source_files
+from unittest.mock import Mock, patch
+import io
+import zipfile
 class ContractAndRulesTests(TestCase):
     def test_contract_contains_security_fields(self):
         f=analyze_code_string('value = eval(user_input)')[0]
@@ -305,3 +310,47 @@ class Phase5IntegrationTests(TestCase):
         response = self.client.post(f"/api/v1/webhooks/gitlab/{integration.id}/", {"ref": "main"}, format="json", HTTP_X_GITLAB_EVENT="Push Hook", HTTP_X_GITLAB_TOKEN="wrong")
         self.assertEqual(response.status_code, 401)
         self.assertFalse(RepositoryEvent.objects.filter(integration=integration).exists())
+
+    @override_settings(GITHUB_CLIENT_ID="client-id", GITHUB_CLIENT_SECRET="client-secret")
+    def test_oauth_start_returns_provider_authorization_url(self):
+        integration = RepositoryIntegration.objects.create(organization=self.organization, provider="GITHUB", repository_url="https://github.com/acme/payments")
+        response = self.client.get(f"/api/v1/integrations/{integration.id}/oauth/start/")
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("github.com/login/oauth/authorize", response.data["authorization_url"])
+        integration.refresh_from_db()
+        self.assertTrue(integration.oauth_state)
+
+    def test_provider_client_lists_repositories_without_exposing_token(self):
+        response = Mock(status_code=200)
+        response.json.return_value = [{"name": "payments", "full_name": "acme/payments", "default_branch": "main", "html_url": "https://github.com/acme/payments"}]
+        with patch("scanner.services.provider_clients.requests.request", return_value=response) as request:
+            repos = ProviderClient("GITHUB", "secret-token").list_repositories()
+        self.assertEqual(repos[0].full_name, "acme/payments")
+        self.assertNotIn("secret-token", str(repos))
+        self.assertEqual(request.call_args.kwargs["headers"]["Authorization"], "Bearer secret-token")
+
+    def test_remote_archive_extraction_rejects_traversal_and_binary_files(self):
+        stream = io.BytesIO()
+        with zipfile.ZipFile(stream, "w") as archive:
+            archive.writestr("repo/main.py", "value = eval(input)")
+            archive.writestr("../escape.py", "should not be extracted")
+            archive.writestr("repo/image.png", b"\x00\x01")
+        files = extract_source_files(stream.getvalue())
+        self.assertEqual(files, [("repo/main.py", "value = eval(input)")])
+
+    def test_provider_token_is_reversibly_encrypted_and_not_plaintext(self):
+        encrypted = encrypt_token("provider-secret")
+        self.assertNotEqual(encrypted, "provider-secret")
+        self.assertEqual(decrypt_token(encrypted), "provider-secret")
+        self.assertEqual(decrypt_token("not-a-valid-token"), "")
+
+    def test_duplicate_delivery_is_not_recorded_twice(self):
+        integration = RepositoryIntegration.objects.create(organization=self.organization, provider="GITLAB", repository_url="https://gitlab.com/acme/payments", webhook_secret_hash=hash_secret("secret-123"), status="ACTIVE")
+        payload = {"ref": "refs/heads/main", "after": "abc123"}
+        headers = {"X-Gitlab-Event": "Push Hook", "X-Gitlab-Token": "secret-123", "X-Gitlab-Event-UUID": "delivery-1"}
+        first = self.client.post(f"/api/v1/webhooks/gitlab/{integration.id}/", payload, format="json", **{f"HTTP_{key.upper().replace('-', '_')}": value for key, value in headers.items()})
+        second = self.client.post(f"/api/v1/webhooks/gitlab/{integration.id}/", payload, format="json", **{f"HTTP_{key.upper().replace('-', '_')}": value for key, value in headers.items()})
+        self.assertEqual(first.status_code, 202)
+        self.assertEqual(second.status_code, 202)
+        self.assertEqual(RepositoryEvent.objects.filter(integration=integration).count(), 1)
+        self.assertEqual(RepositoryEvent.objects.get(integration=integration).status, "QUEUED")

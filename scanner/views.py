@@ -15,6 +15,7 @@ from django.db import connection
 from django.http import HttpResponse, JsonResponse
 from django.utils import timezone
 from django.utils.text import slugify
+from django.core import signing
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -25,6 +26,9 @@ from scanner.analysis.security_scanner import full_security_scan
 from scanner.core.patcher import propose_patch
 from .models import APIKey, AuditLog, CodeScan, Membership, Organization, Project, RepositoryIntegration, ScanJob, VulnerabilityReport
 from scanner.services.integrations import create_integration_project, hash_secret, ingest_webhook
+from scanner.services.provider_clients import ProviderClient, ProviderError, extract_source_files
+from scanner.services.provider_oauth import build_authorization_url, exchange_code, new_state
+from scanner.services.token_crypto import decrypt_token
 
 
 def health_view(request):
@@ -416,6 +420,117 @@ class IntegrationListCreateAPIView(APIView):
         return Response({"status": "success", "integration": {"id": integration.id, "provider": provider, "repository_url": repository_url, "project_id": project.id, "oauth_status": "NOT_CONNECTED", "webhook_ready": bool(integration.webhook_secret_hash or (provider == "GITHUB" and os.getenv("GITHUB_WEBHOOK_SECRET"))), "note": "OAuth connection and repository API fetch require provider App credentials."}}, status=201 if created else 200)
 
 
+class IntegrationOAuthStartAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, integration_id):
+        organization = _workspace_for_user(request.user)
+        integration = RepositoryIntegration.objects.filter(id=integration_id, organization=organization).first()
+        if not integration:
+            return Response({"status": "error", "message": "Integration not found."}, status=404)
+        state = new_state()
+        integration.oauth_state = state
+        integration.save(update_fields=["oauth_state", "updated_at"])
+        try:
+            url = build_authorization_url(integration.provider, state)
+        except (RuntimeError, ValueError) as exc:
+            return Response({"status": "error", "message": str(exc)}, status=503)
+        return Response({"status": "success", "provider": integration.provider, "authorization_url": url})
+
+
+class IntegrationOAuthCallbackAPIView(APIView):
+    permission_classes = [AllowAny]
+    authentication_classes = []
+
+    def get(self, request, provider):
+        state = request.query_params.get("state", "")
+        code = request.query_params.get("code", "")
+        integration = RepositoryIntegration.objects.filter(provider=provider.upper(), oauth_state=state).first()
+        if not integration or not state or not code:
+            return Response({"status": "error", "message": "Invalid or expired OAuth state."}, status=400)
+        try:
+            values = exchange_code(provider, code, state)
+        except (RuntimeError, ValueError) as exc:
+            return Response({"status": "error", "message": str(exc)}, status=502)
+        for field, value in values.items():
+            setattr(integration, field, value)
+        integration.status = "ACTIVE"
+        integration.save(update_fields=[*values.keys(), "status", "updated_at"])
+        AuditLog.objects.create(organization=integration.organization, action="integration.oauth_connected", metadata={"integration_id": integration.id, "provider": integration.provider})
+        return Response({"status": "success", "integration_id": integration.id, "provider": integration.provider, "connected": True})
+
+
+def _provider_client_for(integration):
+    return ProviderClient(integration.provider, decrypt_token(integration.access_token_encrypted), timeout=settings.PROVIDER_HTTP_TIMEOUT_SECONDS)
+
+
+class IntegrationRepositoriesAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, integration_id):
+        organization = _workspace_for_user(request.user)
+        integration = RepositoryIntegration.objects.filter(id=integration_id, organization=organization).first()
+        if not integration:
+            return Response({"status": "error", "message": "Integration not found."}, status=404)
+        try:
+            repos = _provider_client_for(integration).list_repositories()
+        except ProviderError as exc:
+            return Response({"status": "error", "message": str(exc)}, status=502)
+        return Response({"status": "success", "repositories": [r.__dict__ for r in repos]})
+
+
+class IntegrationBranchesAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, integration_id):
+        organization = _workspace_for_user(request.user)
+        integration = RepositoryIntegration.objects.filter(id=integration_id, organization=organization).first()
+        if not integration:
+            return Response({"status": "error", "message": "Integration not found."}, status=404)
+        repository_url = request.query_params.get("repository_url", integration.repository_url)
+        try:
+            branches = _provider_client_for(integration).list_branches(repository_url)
+        except ProviderError as exc:
+            return Response({"status": "error", "message": str(exc)}, status=502)
+        return Response({"status": "success", "branches": branches})
+
+
+def enqueue_remote_scan(integration, ref=None):
+    client = _provider_client_for(integration)
+    ref = ref or integration.default_branch
+    archive = client.download_repository(integration.repository_url, ref)
+    files = extract_source_files(archive, settings.REMOTE_SCAN_MAX_FILES, settings.REMOTE_SCAN_MAX_FILE_BYTES)
+    if not integration.project_id:
+        create_integration_project(integration, integration.connected_by)
+    jobs = []
+    for filename, source_code in files:
+        jobs.append(ScanJob.objects.create(
+            organization=integration.organization,
+            project=integration.project,
+            requested_by=integration.connected_by,
+            filename=filename,
+            engines=["ast", "bandit", "javascript"],
+            source_code=source_code,
+        ))
+    return jobs
+
+
+class IntegrationSyncAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, integration_id):
+        organization = _workspace_for_user(request.user)
+        integration = RepositoryIntegration.objects.filter(id=integration_id, organization=organization, status="ACTIVE").first()
+        if not integration:
+            return Response({"status": "error", "message": "An active integration is required."}, status=404)
+        try:
+            jobs = enqueue_remote_scan(integration, str(request.data.get("ref", "")).strip() or integration.default_branch)
+        except ProviderError as exc:
+            return Response({"status": "error", "message": str(exc)}, status=502)
+        AuditLog.objects.create(organization=organization, actor=request.user, action="integration.sync_queued", metadata={"integration_id": integration.id, "job_count": len(jobs)})
+        return Response({"status": "accepted", "integration_id": integration.id, "job_ids": [job.id for job in jobs], "file_count": len(jobs)}, status=202)
+
+
 class RepositoryWebhookAPIView(APIView):
     permission_classes = [AllowAny]
     authentication_classes = []
@@ -430,7 +545,7 @@ class RepositoryWebhookAPIView(APIView):
             return Response({"status": "error", "message": str(exc)}, status=401)
         except (ValueError, UnicodeDecodeError):
             return Response({"status": "error", "message": "Invalid webhook JSON."}, status=400)
-        return Response({"status": "accepted", "event_id": event.id, "event_type": event.event_type, "status": event.status, "next_step": "Repository content fetch and ScanJob creation require an authenticated provider API connection."}, status=202)
+        return Response({"status": "accepted", "event_id": event.id, "event_type": event.event_type, "status": event.status, "next_step": "Run process_repository_events worker to fetch the commit and create ScanJobs."}, status=202)
 
 
 class FindingListUpdateAPIView(APIView):
