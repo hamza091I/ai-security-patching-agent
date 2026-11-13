@@ -11,6 +11,15 @@ class ProviderError(RuntimeError):
     """A safe, user-facing provider API error."""
 
 
+def normalize_ref(ref):
+    """Turn a webhook ref such as ``refs/heads/main`` into ``main``."""
+    ref = (ref or "").strip()
+    for prefix in ("refs/heads/", "refs/tags/", "refs/remotes/origin/"):
+        if ref.startswith(prefix):
+            return ref[len(prefix):]
+    return ref
+
+
 @dataclass
 class RepositoryRef:
     name: str
@@ -81,7 +90,62 @@ class ProviderClient:
         data = self._request("GET", f"/projects/{project}/repository/branches", params={"per_page": 100}).json()
         return [x["name"] for x in data]
 
+    def get_pull_request(self, repository_url, number):
+        """Return the merge/pull request head information used for feedback."""
+        if self.provider == "GITHUB":
+            slug = _github_slug(repository_url)
+            data = self._request("GET", f"/repos/{slug}/pulls/{int(number)}").json()
+            head = data.get("head") or {}
+            return {
+                "number": data.get("number", int(number)),
+                "title": data.get("title", ""),
+                "state": data.get("state", ""),
+                "head_ref": head.get("ref", ""),
+                "head_sha": head.get("sha", ""),
+                "html_url": data.get("html_url", ""),
+            }
+        project = quote(_gitlab_project(repository_url), safe="")
+        data = self._request("GET", f"/projects/{project}/merge_requests/{int(number)}").json()
+        return {
+            "number": data.get("iid", int(number)),
+            "title": data.get("title", ""),
+            "state": data.get("state", ""),
+            "head_ref": data.get("source_branch", ""),
+            "head_sha": data.get("sha", ""),
+            "html_url": data.get("web_url", ""),
+        }
+
+    def find_open_pull_request(self, repository_url, branch):
+        """Find the open pull/merge request whose source is ``branch``."""
+        branch = normalize_ref(branch)
+        if not branch:
+            return None
+        if self.provider == "GITHUB":
+            slug = _github_slug(repository_url)
+            owner = slug.split("/", 1)[0]
+            data = self._request(
+                "GET",
+                f"/repos/{slug}/pulls",
+                params={"head": f"{owner}:{branch}", "state": "open", "per_page": 10},
+            ).json()
+            if not data:
+                return None
+            item = data[0]
+            head = item.get("head") or {}
+            return {"number": item.get("number"), "head_ref": head.get("ref", branch), "head_sha": head.get("sha", "")}
+        project = quote(_gitlab_project(repository_url), safe="")
+        data = self._request(
+            "GET",
+            f"/projects/{project}/merge_requests",
+            params={"source_branch": branch, "state": "opened", "per_page": 10},
+        ).json()
+        if not data:
+            return None
+        item = data[0]
+        return {"number": item.get("iid"), "head_ref": item.get("source_branch", branch), "head_sha": item.get("sha", "")}
+
     def download_repository(self, repository_url, ref):
+        ref = normalize_ref(ref)
         if self.provider == "GITHUB":
             slug = _github_slug(repository_url)
             response = self._request("GET", f"/repos/{slug}/zipball/{quote(ref, safe='')}")

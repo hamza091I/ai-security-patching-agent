@@ -3,6 +3,7 @@ from django.core.management.base import BaseCommand
 
 from scanner.models import ScanJob
 from scanner.services.scan_jobs import execute_scan_job, recover_stale_jobs, requeue_failed_jobs
+from scanner.services.publish import publish_pending_events
 
 
 class Command(BaseCommand):
@@ -13,6 +14,7 @@ class Command(BaseCommand):
         parser.add_argument("--retry-failed", action="store_true", help="Requeue failed jobs with remaining retry budget.")
         parser.add_argument("--recover-stale", action="store_true", help="Recover RUNNING jobs with an expired heartbeat.")
         parser.add_argument("--stale-after", type=int, default=None, help="Override stale heartbeat age in seconds.")
+        parser.add_argument("--no-publish", action="store_true", help="Skip publishing repository feedback after the batch.")
 
     def handle(self, *args, **options):
         limit = max(1, min(options["limit"], 100))
@@ -28,8 +30,13 @@ class Command(BaseCommand):
         )
         if not job_ids:
             self.stdout.write("No pending scan jobs.")
-            return
-        for job_id in job_ids:
-            job = execute_scan_job(job_id)
-            self.stdout.write(f"job={job.id} status={job.status} progress={job.progress}% retries={job.retry_count}")
-        self.stdout.write(self.style.SUCCESS(f"Processed {len(job_ids)} scan job(s)."))
+        else:
+            for job_id in job_ids:
+                job = execute_scan_job(job_id)
+                self.stdout.write(f"job={job.id} status={job.status} progress={job.progress}% retries={job.retry_count}")
+            self.stdout.write(self.style.SUCCESS(f"Processed {len(job_ids)} scan job(s)."))
+        if not options["no_publish"]:
+            published = publish_pending_events()
+            self.stdout.write(
+                f"published={published['published']} waiting={published['waiting']} retry={published['retry']}"
+            )

@@ -6,9 +6,11 @@ from django.utils import timezone
 
 
 class Organization(models.Model):
+    PLAN_CHOICES = [("FREE", "Free"), ("PRO", "Pro"), ("ENTERPRISE", "Enterprise")]
     name = models.CharField(max_length=150)
     slug = models.SlugField(max_length=170, unique=True)
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="owned_organizations")
+    plan = models.CharField(max_length=20, choices=PLAN_CHOICES, default="FREE")
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -94,8 +96,8 @@ class RepositoryIntegration(models.Model):
 
 
 class RepositoryEvent(models.Model):
-    EVENT_CHOICES = [("PUSH", "Push"), ("PULL_REQUEST", "Pull Request"), ("MERGE_REQUEST", "Merge Request"), ("UNKNOWN", "Unknown")]
-    STATUS_CHOICES = [("RECEIVED", "Received"), ("QUEUED", "Queued"), ("PROCESSED", "Processed"), ("IGNORED", "Ignored"), ("INVALID", "Invalid")]
+    EVENT_CHOICES = [("PUSH", "Push"), ("PULL_REQUEST", "Pull Request"), ("MERGE_REQUEST", "Merge Request"), ("SYNC", "Manual sync"), ("UNKNOWN", "Unknown")]
+    STATUS_CHOICES = [("RECEIVED", "Received"), ("QUEUED", "Queued"), ("PROCESSED", "Processed"), ("PUBLISHED", "Published"), ("IGNORED", "Ignored"), ("INVALID", "Invalid")]
 
     integration = models.ForeignKey(RepositoryIntegration, on_delete=models.CASCADE, related_name="events")
     event_type = models.CharField(max_length=20, choices=EVENT_CHOICES)
@@ -104,7 +106,17 @@ class RepositoryEvent(models.Model):
     commit_sha = models.CharField(max_length=100, blank=True)
     payload = models.JSONField(default=dict, blank=True)
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default="RECEIVED")
+    attempts = models.PositiveSmallIntegerField(default=0)
+    publish_attempts = models.PositiveSmallIntegerField(default=0)
+    last_error = models.TextField(blank=True)
+    scan_job_count = models.PositiveIntegerField(default=0)
+    publish_result = models.JSONField(default=dict, blank=True)
+    processed_at = models.DateTimeField(null=True, blank=True)
+    published_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        indexes = [models.Index(fields=["status", "created_at"], name="repo_event_status_created")]
 
 
 class CodeScan(models.Model):
@@ -134,7 +146,10 @@ class ScanJob(models.Model):
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name="scan_jobs")
     project = models.ForeignKey(Project, on_delete=models.SET_NULL, related_name="scan_jobs", null=True, blank=True)
     requested_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, related_name="requested_scan_jobs", null=True, blank=True)
+    repository_event = models.ForeignKey(RepositoryEvent, on_delete=models.SET_NULL, related_name="scan_jobs", null=True, blank=True)
     filename = models.CharField(max_length=255, default="sample.py")
+    ref = models.CharField(max_length=255, blank=True)
+    commit_sha = models.CharField(max_length=100, blank=True)
     engines = models.JSONField(default=list, blank=True)
     source_code = models.TextField()
     status = models.CharField(max_length=12, choices=STATUS_CHOICES, default="PENDING", db_index=True)
@@ -187,3 +202,7 @@ class SecurityKnowledgeBase(models.Model):
     secure_example = models.TextField()
     explanation = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
+
+
+# Extended SaaS models are kept in a focused module but registered by Django.
+from .saas_models import AssistantRequest, EmailVerification, TeamInvite, UsageRecord  # noqa: E402,F401

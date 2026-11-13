@@ -1,9 +1,10 @@
 from django.urls import path
 from .views import (APIKeyListCreateAPIView, APIKeyRevokeAPIView, CompareAPIView, EvaluationSummaryAPIView,
-                    FindingListUpdateAPIView, HistoryAPIView, IntegrationListCreateAPIView, IntegrationOAuthStartAPIView, IntegrationOAuthCallbackAPIView, IntegrationRepositoriesAPIView, IntegrationBranchesAPIView, IntegrationSyncAPIView, ProjectListCreateAPIView, ReportExportAPIView,
+                    FindingListUpdateAPIView, HistoryAPIView, IntegrationListCreateAPIView, IntegrationOAuthStartAPIView, IntegrationOAuthCallbackAPIView, IntegrationRepositoriesAPIView, IntegrationBranchesAPIView, IntegrationSyncAPIView, IntegrationEventsAPIView, IntegrationEventPublishAPIView, ProjectListCreateAPIView, ReportExportAPIView,
                     ScanJobDetailAPIView, ScanJobListCreateAPIView,
                     ScanCodeAPIView, health_view, home_view, login_view, logout_view, metrics_view,
                     readiness_view, register_view, RepositoryWebhookAPIView)
+from .saas_api import APIKeyRotateAPIView, AssistantAPIView, OpenAPISchemaAPIView, PasswordResetConfirmAPIView, PasswordResetRequestAPIView, TeamAPIView, UsageAPIView, VerifyEmailAPIView
 
 urlpatterns = [
     path('', home_view, name='index'),
@@ -13,6 +14,10 @@ urlpatterns = [
     path('health/', health_view, name='health'),
     path('ready/', readiness_view, name='ready'),
     path('metrics/', metrics_view, name='metrics'),
+    path('api/openapi.json', OpenAPISchemaAPIView.as_view(), name='openapi_schema'),
+    path('api/v1/auth/verify-email/', VerifyEmailAPIView.as_view(), name='verify_email'),
+    path('api/v1/auth/password-reset/', PasswordResetRequestAPIView.as_view(), name='password_reset_request'),
+    path('api/v1/auth/password-reset/confirm/', PasswordResetConfirmAPIView.as_view(), name='password_reset_confirm'),
     path('api/scan/', ScanCodeAPIView.as_view(), name='api_scan'),
     path('api/compare/', CompareAPIView.as_view(), name='api_compare'),
     path('api/history/', HistoryAPIView.as_view(), name='api_history'),
@@ -27,12 +32,19 @@ urlpatterns = [
     path('api/v1/integrations/<int:integration_id>/repositories/', IntegrationRepositoriesAPIView.as_view(), name='api_v1_integration_repositories'),
     path('api/v1/integrations/<int:integration_id>/branches/', IntegrationBranchesAPIView.as_view(), name='api_v1_integration_branches'),
     path('api/v1/integrations/<int:integration_id>/sync/', IntegrationSyncAPIView.as_view(), name='api_v1_integration_sync'),
+    path('api/v1/integrations/<int:integration_id>/events/', IntegrationEventsAPIView.as_view(), name='api_v1_integration_events'),
+    path('api/v1/integrations/<int:integration_id>/events/<int:event_id>/publish/', IntegrationEventPublishAPIView.as_view(), name='api_v1_integration_event_publish'),
     path('api/v1/integrations/<str:provider>/callback/', IntegrationOAuthCallbackAPIView.as_view(), name='api_v1_integration_oauth_callback'),
     path('api/v1/webhooks/<str:provider>/<int:integration_id>/', RepositoryWebhookAPIView.as_view(), name='api_v1_repository_webhook'),
     path('api/v1/findings/', FindingListUpdateAPIView.as_view(), name='api_v1_findings'),
     path('api/v1/findings/<int:finding_id>/', FindingListUpdateAPIView.as_view(), name='api_v1_finding'),
     path('api/v1/api-keys/', APIKeyListCreateAPIView.as_view(), name='api_v1_api_keys'),
     path('api/v1/api-keys/<str:prefix>/revoke/', APIKeyRevokeAPIView.as_view(), name='api_v1_revoke_api_key'),
+    path('api/v1/api-keys/<str:prefix>/rotate/', APIKeyRotateAPIView.as_view(), name='api_v1_rotate_api_key'),
+    path('api/v1/team/', TeamAPIView.as_view(), name='api_v1_team'),
+    path('api/v1/usage/', UsageAPIView.as_view(), name='api_v1_usage'),
+    path('api/v1/assistant/', AssistantAPIView.as_view(), name='api_v1_assistant'),
+    path('api/v1/assistant/<int:request_id>/', AssistantAPIView.as_view(), name='api_v1_assistant_request'),
     path('api/v1/reports/export/', ReportExportAPIView.as_view(), name='api_v1_report_export'),
     path('api/v1/scan-jobs/', ScanJobListCreateAPIView.as_view(), name='api_v1_scan_jobs'),
     path('api/v1/scan-jobs/<int:job_id>/', ScanJobDetailAPIView.as_view(), name='api_v1_scan_job'),

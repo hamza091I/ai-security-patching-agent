@@ -1,3 +1,4 @@
+import logging
 import time
 
 from django.conf import settings
@@ -7,9 +8,11 @@ from django.utils import timezone
 from scanner.analysis.security_scanner import full_security_scan
 from scanner.core.patcher import propose_patch
 from scanner.models import AuditLog, CodeScan, ScanJob, VulnerabilityReport
+from scanner.services.publish import publish_event
 
 
 ALLOWED_SEVERITIES = {"CRITICAL", "HIGH", "MEDIUM", "LOW"}
+logger = logging.getLogger("security_platform")
 
 
 def _persist_scan(job, patched_code, findings):
@@ -147,4 +150,12 @@ def execute_scan_job(job_id):
         ScanJob.objects.filter(pk=job_id).update(status="FAILED", progress=100, error_message=f"{type(exc).__name__}: {exc}", completed_at=timezone.now(), heartbeat_at=timezone.now())
         _audit(job, "scan_job.failed", {"error_type": type(exc).__name__})
 
-    return ScanJob.objects.get(pk=job_id)
+    job = ScanJob.objects.get(pk=job_id)
+    if job.repository_event_id:
+        # Best effort: a provider outage must never lose a finished scan. The
+        # publish worker retries events whose feedback could not be delivered.
+        try:
+            publish_event(job.repository_event)
+        except Exception:  # pragma: no cover - defensive, provider network boundary
+            logger.exception("repository_event_publish_failed", extra={"job_id": job.id})
+    return job

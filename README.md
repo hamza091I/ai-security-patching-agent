@@ -83,8 +83,59 @@ GET/POST /api/v1/integrations/
 POST     /api/v1/webhooks/<provider>/<integration_id>/
 ```
 
-GitLab webhook tokens are stored only as SHA-256 digests. GitHub signatures use `GITHUB_WEBHOOK_SECRET`. OAuth, provider API token exchange, remote repository checkout, and automatic ScanJob creation still require registered provider App credentials; see `docs/PHASE5_RELEASE_NOTES.md`.
+GitLab webhook tokens are stored only as SHA-256 digests. GitHub signatures use `GITHUB_WEBHOOK_SECRET`. OAuth, provider API token exchange, remote repository checkout, and automatic ScanJob creation require registered provider App credentials; see `docs/PHASE5_RELEASE_NOTES.md`.
+
+## Phase 5 complete feedback loop
+Every repository event now runs end to end: webhook → verified delivery → archive download → one durable ScanJob per source file → scan and patch proposal → aggregated SARIF, pull/merge-request comment, commit status and merge gate.
+
+```bash
+# Window 1: web application
+python manage.py runserver
+
+# Window 2: scan jobs + result publishing
+while true; do
+  python manage.py process_scan_jobs --limit 10 --recover-stale --retry-failed
+  python manage.py publish_repository_results --limit 20
+  sleep 5
+done
+
+# Window 3: webhook commits
+while true; do
+  python manage.py process_repository_events --limit 20
+  sleep 3
+done
+```
+
+What is published after the last file of an event finishes:
+
+- **SARIF 2.1.0** upload to GitHub Code Scanning (`PROVIDER_SARIF_UPLOAD=1`). GitLab receives an explicit "publish as CI security artifact" response instead of a fake upload.
+- **Comment** on the pull request / merge request, or on the commit for a plain push without an open PR.
+- **Commit status** `ai-security-patching-agent/security` with `success` or `failure`.
+- **Merge blocking:** add that status as a *required status check* in branch protection. A CRITICAL/HIGH finding (configurable with `MERGE_BLOCK_SEVERITIES`) makes the status fail, so the provider refuses the merge.
+
+Delivery history and manual retry:
+
+```text
+GET  /api/v1/integrations/<integration_id>/events/
+POST /api/v1/integrations/<integration_id>/events/<event_id>/publish/
+POST /api/v1/integrations/<integration_id>/sync/
+```
+
+Each delivery records attempts, last error, scan job count, and the publish result (SARIF URL, comment target, status state). The dashboard exposes the webhook URL, delivery history, and a *Publish results* button per event.
+
+Provider setup notes:
+
+- Register the GitHub App/OAuth App callback as `GITHUB_CALLBACK_URL` and set `GITHUB_CLIENT_ID` / `GITHUB_CLIENT_SECRET` in `.env`.
+- Webhooks need a public HTTPS URL; `127.0.0.1` is not reachable from GitHub/GitLab. Use a deployed domain, ngrok, or Cloudflare Tunnel, then point the webhook at `/api/v1/webhooks/<provider>/<integration_id>/`.
+- Set `PUBLIC_BASE_URL` to that public origin so commit statuses link back to the dashboard.
+- GitLab access tokens expire after two hours; the stored refresh token is rotated automatically before provider calls.
+- For Docker: `docker compose up --build` starts PostgreSQL, Gunicorn, and the worker loop (scan jobs, repository events, publishing).
 
 ## Scope status
 
-The current implementation has the complete baseline workflow and 100 taxonomy slots, with benchmark-backed rules and metrics. Production hardening still requires deeper rule coverage, authenticated users/projects, formal GitLab merge-request integration, and broader regression data.
+The current implementation has the complete baseline workflow and 100 taxonomy slots, with benchmark-backed rules and metrics, plus a complete GitHub/GitLab feedback loop (OAuth with token refresh, remote scans, SARIF, comments, commit statuses, merge gate, and delivery history). Production hardening still requires deeper rule coverage, a durable queue (Redis/Celery), billing, monitoring, and broader regression data.
+
+## SaaS completion pack
+The project includes email verification, password reset contracts, login throttling, API-key rotation, paginated findings, team invitations, usage tracking, an OpenAPI contract at `/api/openapi.json`, an approval-gated patch assistant, optional Celery/Redis task wrappers, extended secret/dependency/IaC/container scanners, and a bounded external-scanner runner. See `docs/SAAS_COMPLETION_PACK.md`.
+
+Stripe billing, enterprise SSO/SAML, real mail delivery, kernel-level network isolation, and production backups require external credentials/infrastructure; the release exposes contracts and safe local fallbacks rather than pretending those services are configured.

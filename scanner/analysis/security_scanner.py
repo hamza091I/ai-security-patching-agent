@@ -4,6 +4,7 @@ from scanner.analysis.bandit_scanner import scan_code as bandit_scan
 from scanner.analysis.orchestrator import detect_language
 from scanner.analysis.javascript_parser import analyze_javascript
 from scanner.analysis.catalog_rules import analyze_catalog
+from scanner.analysis.extended_scanners import scan_extended
 from scanner.rules.registry import filter_findings
 
 def _dedupe(items):
@@ -26,6 +27,7 @@ def full_security_scan(code, filename="sample.py", engines=None):
             bandit_findings = bandit_scan(code)
     elif "javascript" in engines:
         javascript_findings = analyze_javascript(code, language) + analyze_catalog(code, language)
-    all_findings = _dedupe(filter_findings(ast_findings + bandit_findings + javascript_findings, language))
+    extended_findings = scan_extended(code, filename)
+    all_findings = _dedupe(filter_findings(ast_findings + bandit_findings + javascript_findings + extended_findings, language))
     return {"language": language, "ast_findings": ast_findings, "bandit_findings": bandit_findings,
-            "javascript_findings": javascript_findings, "all_findings": all_findings}
+            "javascript_findings": javascript_findings, "extended_findings": extended_findings, "all_findings": all_findings}

@@ -45,9 +45,23 @@ class ProviderActions:
             response = self._request("POST", f"/projects/{project}/merge_requests/{int(number)}/notes", json={"body": body})
         return response.json()
 
-    def set_security_status(self, repository_url, commit_sha, ref, passed, description):
+    def comment_on_commit(self, repository_url, commit_sha, body):
+        """Comment on a commit when a push has no open pull request."""
+        if not body.strip():
+            raise ProviderError("Comment body cannot be empty.")
+        if not commit_sha:
+            raise ProviderError("A commit SHA is required to comment on a commit.")
+        if self.client.provider == "GITHUB":
+            slug = _github_slug(repository_url)
+            response = self._request("POST", f"/repos/{slug}/commits/{commit_sha}/comments", json={"body": body})
+        else:
+            project = quote(_gitlab_project(repository_url), safe="")
+            response = self._request("POST", f"/projects/{project}/repository/commits/{commit_sha}/comments", json={"note": body})
+        return response.json()
+
+    def set_security_status(self, repository_url, commit_sha, ref, passed, description, target_url=""):
         state = "success" if passed else "failure"
-        payload = {"state": state, "context": "ai-security-patching-agent/security", "description": description[:140], "target_url": ""}
+        payload = {"state": state, "context": "ai-security-patching-agent/security", "description": description[:140], "target_url": target_url or ""}
         if self.client.provider == "GITHUB":
             slug = _github_slug(repository_url)
             response = self._request("POST", f"/repos/{slug}/statuses/{commit_sha}", json=payload)

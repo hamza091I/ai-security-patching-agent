@@ -1,12 +1,12 @@
 import hashlib
 import hmac
 import json
-import os
 
 from django.conf import settings
 from django.utils.text import slugify
 
 from scanner.models import AuditLog, Project, RepositoryEvent, RepositoryIntegration
+from scanner.services.provider_clients import normalize_ref
 
 
 def hash_secret(secret):
@@ -21,7 +21,7 @@ def verify_webhook(integration, headers, raw_body):
     stored on the integration.
     """
     if integration.provider == "GITHUB":
-        secret = os.getenv("GITHUB_WEBHOOK_SECRET", "")
+        secret = settings.GITHUB_WEBHOOK_SECRET
         signature = headers.get("X-Hub-Signature-256", "")
         expected = "sha256=" + hmac.new(secret.encode(), raw_body, hashlib.sha256).hexdigest()
         return bool(secret) and hmac.compare_digest(signature, expected)
@@ -39,10 +39,11 @@ def event_from_payload(provider, headers, payload):
     else:
         event = headers.get("X-Gitlab-Event", "")
         event_type = "MERGE_REQUEST" if event == "Merge Request Hook" else "PUSH" if event == "Push Hook" else "UNKNOWN"
-        ref = payload.get("ref", "") or payload.get("object_attributes", {}).get("source_branch", "")
-        sha = payload.get("after", "") or payload.get("checkout_sha", "")
+        attributes = payload.get("object_attributes", {}) or {}
+        ref = payload.get("ref", "") or attributes.get("source_branch", "")
+        sha = payload.get("after", "") or payload.get("checkout_sha", "") or (attributes.get("last_commit") or {}).get("id", "")
         delivery = headers.get("X-Gitlab-Event-UUID", "")
-    return event_type, ref, sha, delivery
+    return event_type, normalize_ref(ref), sha, delivery
 
 
 def ingest_webhook(integration, headers, raw_body):
@@ -54,7 +55,8 @@ def ingest_webhook(integration, headers, raw_body):
         existing = RepositoryEvent.objects.filter(integration=integration, delivery_id=delivery).first()
         if existing:
             return existing
-    if event_type == "UNKNOWN":
+    if event_type == "UNKNOWN" or (event_type == "PUSH" and (not sha or set(sha) == {"0"})):
+        # A branch deletion has an all-zero ``after`` commit and nothing to scan.
         status = "IGNORED"
     elif integration.status == "ACTIVE":
         status = "QUEUED"

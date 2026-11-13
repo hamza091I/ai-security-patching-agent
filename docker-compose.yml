@@ -1,20 +1,52 @@
 services:
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: sentinel
+      POSTGRES_USER: sentinel
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-sentinel-dev-password}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sentinel -d sentinel"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
   web:
     build: .
     env_file: .env
+    environment:
+      DATABASE_URL: postgres://sentinel:${POSTGRES_PASSWORD:-sentinel-dev-password}@db:5432/sentinel
     ports:
       - "8000:8000"
-    volumes:
-      - ./db.sqlite3:/app/db.sqlite3
-    command: sh -c "python manage.py migrate --noinput && gunicorn core_project.wsgi:application --bind 0.0.0.0:8000 --workers 2"
+    command: sh -c "python manage.py migrate --noinput && gunicorn core_project.wsgi:application --bind 0.0.0.0:8000 --workers 3"
     restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
 
   worker:
     build: .
     env_file: .env
-    volumes:
-      - ./db.sqlite3:/app/db.sqlite3
-    command: sh -c "while true; do python manage.py process_scan_jobs --limit 10 --recover-stale --retry-failed; sleep 5; done"
+    environment:
+      DATABASE_URL: postgres://sentinel:${POSTGRES_PASSWORD:-sentinel-dev-password}@db:5432/sentinel
+      REDIS_URL: redis://redis:6379/0
+      CELERY_BROKER_URL: redis://redis:6379/0
+    command: sh -c "while true; do python manage.py process_scan_jobs --limit 10 --recover-stale --retry-failed; python manage.py process_repository_events --limit 20; python manage.py publish_repository_results --limit 20; sleep 5; done"
     restart: unless-stopped
     depends_on:
-      - web
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+
+volumes:
+  pgdata:

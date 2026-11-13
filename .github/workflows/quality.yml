@@ -14,12 +14,18 @@ jobs:
         with:
           python-version: "3.12"
       - name: Install dependencies
-        run: pip install -r requirements.txt bandit
+        run: pip install -r requirements.txt coverage bandit pip-audit
       - name: Django checks
         run: python manage.py check
       - name: Migration check
         run: python manage.py makemigrations --check --dry-run
-      - name: Tests
-        run: python manage.py test
+      - name: Tests and coverage
+        run: coverage run --source=scanner manage.py test && coverage report --fail-under=55
+      - name: Benchmark regression
+        run: python scanner/evaluation/benchmark_runner.py
       - name: Bandit baseline scan
         run: bandit -r scanner core_project -x scanner/migrations -ll
+      - name: Dependency audit
+        run: pip-audit -r requirements.txt
+      - name: Docker build
+        run: docker build -t sentinel-ai-security-agent .
