@@ -22,7 +22,7 @@ jobs:
       - name: Tests and coverage
         run: coverage run --source=scanner manage.py test && coverage report --fail-under=55
       - name: Benchmark regression
-        run: python scanner/evaluation/benchmark_runner.py
+        run: python -m scanner.evaluation.benchmark_runner
       - name: Bandit baseline scan
         run: bandit -r scanner core_project -x scanner/migrations -ll
       - name: Dependency audit
