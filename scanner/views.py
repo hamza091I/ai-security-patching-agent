@@ -4,6 +4,7 @@ import csv
 import hashlib
 import os
 import io
+import secrets
 from pathlib import Path
 
 from django.conf import settings
@@ -16,6 +17,8 @@ from django.http import HttpResponse, JsonResponse
 from django.utils import timezone
 from django.utils.text import slugify
 from django.core import signing
+from django.core.cache import cache
+from django.core.mail import send_mail
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -24,10 +27,11 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 
 from scanner.analysis.security_scanner import full_security_scan
 from scanner.core.patcher import propose_patch
-from .models import APIKey, AuditLog, CodeScan, Membership, Organization, Project, RepositoryIntegration, ScanJob, VulnerabilityReport
+from .models import APIKey, AuditLog, CodeScan, EmailVerification, Membership, Organization, Project, RepositoryEvent, RepositoryIntegration, ScanJob, UsageRecord, VulnerabilityReport
 from scanner.services.integrations import create_integration_project, hash_secret, ingest_webhook
-from scanner.services.provider_clients import ProviderClient, ProviderError, extract_source_files
-from scanner.services.provider_oauth import build_authorization_url, exchange_code, new_state
+from scanner.services.provider_clients import ProviderClient, ProviderError, extract_source_files, normalize_ref
+from scanner.services.provider_oauth import OAuthError, build_authorization_url, exchange_code, new_state, refresh_integration_token
+from scanner.services.publish import publish_event
 from scanner.services.token_crypto import decrypt_token
 
 
@@ -390,11 +394,20 @@ class IntegrationListCreateAPIView(APIView):
     def get(self, request):
         organization = _workspace_for_user(request.user)
         integrations = RepositoryIntegration.objects.filter(organization=organization).select_related("project").order_by("provider", "repository_url")
+        last_events = {}
+        for event in RepositoryEvent.objects.filter(
+            integration__organization=organization
+        ).order_by("integration_id", "-created_at")[:200]:
+            last_events.setdefault(event.integration_id, event)
         return Response({"status": "success", "integrations": [{
             "id": item.id, "provider": item.provider, "status": item.status,
             "repository_url": item.repository_url, "default_branch": item.default_branch,
-            "project_id": item.project_id, "oauth_status": "NOT_CONNECTED",
-            "webhook_ready": bool(item.webhook_secret_hash or (item.provider == "GITHUB" and os.getenv("GITHUB_WEBHOOK_SECRET"))),
+            "project_id": item.project_id,
+            "oauth_status": "CONNECTED" if item.status == "ACTIVE" else "NOT_CONNECTED",
+            "token_expires_at": item.token_expires_at.isoformat() if item.token_expires_at else None,
+            "events_count": item.events.count(),
+            "last_event_status": last_events[item.id].status if item.id in last_events else None,
+            "webhook_ready": bool(item.webhook_secret_hash or (item.provider == "GITHUB" and settings.GITHUB_WEBHOOK_SECRET)),
         } for item in integrations]})
 
     def post(self, request):
@@ -445,22 +458,37 @@ class IntegrationOAuthCallbackAPIView(APIView):
     def get(self, request, provider):
         state = request.query_params.get("state", "")
         code = request.query_params.get("code", "")
+        wants_html = "text/html" in request.headers.get("Accept", "") and "application/json" not in request.headers.get("Accept", "")
+        if request.query_params.get("error"):
+            if wants_html:
+                return redirect(f"/?integration=denied&provider={provider}")
+            return Response({"status": "error", "message": "The provider authorization was denied."}, status=400)
         integration = RepositoryIntegration.objects.filter(provider=provider.upper(), oauth_state=state).first()
         if not integration or not state or not code:
+            if wants_html:
+                return redirect("/?integration=invalid")
             return Response({"status": "error", "message": "Invalid or expired OAuth state."}, status=400)
         try:
             values = exchange_code(provider, code, state)
-        except (RuntimeError, ValueError) as exc:
+        except (OAuthError, ValueError) as exc:
+            if wants_html:
+                return redirect("/?integration=failed")
             return Response({"status": "error", "message": str(exc)}, status=502)
         for field, value in values.items():
             setattr(integration, field, value)
         integration.status = "ACTIVE"
         integration.save(update_fields=[*values.keys(), "status", "updated_at"])
         AuditLog.objects.create(organization=integration.organization, action="integration.oauth_connected", metadata={"integration_id": integration.id, "provider": integration.provider})
+        if wants_html:
+            return redirect(f"/?integration=connected&integration_id={integration.id}")
         return Response({"status": "success", "integration_id": integration.id, "provider": integration.provider, "connected": True})
 
 
 def _provider_client_for(integration):
+    try:
+        refresh_integration_token(integration)
+    except OAuthError as exc:
+        raise ProviderError(str(exc)) from exc
     return ProviderClient(integration.provider, decrypt_token(integration.access_token_encrypted), timeout=settings.PROVIDER_HTTP_TIMEOUT_SECONDS)
 
 
@@ -495,9 +523,10 @@ class IntegrationBranchesAPIView(APIView):
         return Response({"status": "success", "branches": branches})
 
 
-def enqueue_remote_scan(integration, ref=None):
+def enqueue_remote_scan(integration, ref=None, event=None):
+    """Download a repository ref and create one durable ScanJob per file."""
     client = _provider_client_for(integration)
-    ref = ref or integration.default_branch
+    ref = normalize_ref(ref) or integration.default_branch
     archive = client.download_repository(integration.repository_url, ref)
     files = extract_source_files(archive, settings.REMOTE_SCAN_MAX_FILES, settings.REMOTE_SCAN_MAX_FILE_BYTES)
     if not integration.project_id:
@@ -508,7 +537,10 @@ def enqueue_remote_scan(integration, ref=None):
             organization=integration.organization,
             project=integration.project,
             requested_by=integration.connected_by,
+            repository_event=event,
             filename=filename,
+            ref=ref,
+            commit_sha=event.commit_sha if event else "",
             engines=["ast", "bandit", "javascript"],
             source_code=source_code,
         ))
@@ -523,12 +555,29 @@ class IntegrationSyncAPIView(APIView):
         integration = RepositoryIntegration.objects.filter(id=integration_id, organization=organization, status="ACTIVE").first()
         if not integration:
             return Response({"status": "error", "message": "An active integration is required."}, status=404)
+        ref = normalize_ref(str(request.data.get("ref", "")).strip()) or integration.default_branch
+        event = RepositoryEvent.objects.create(
+            integration=integration,
+            event_type="SYNC",
+            ref=ref,
+            commit_sha=str(request.data.get("commit_sha", ""))[:100],
+            payload={"source": "manual_sync"},
+            status="RECEIVED",
+            attempts=1,
+        )
         try:
-            jobs = enqueue_remote_scan(integration, str(request.data.get("ref", "")).strip() or integration.default_branch)
+            jobs = enqueue_remote_scan(integration, ref, event=event)
         except ProviderError as exc:
+            event.status = "INVALID"
+            event.last_error = str(exc)[:1000]
+            event.save(update_fields=["status", "last_error"])
             return Response({"status": "error", "message": str(exc)}, status=502)
+        event.status = "PROCESSED"
+        event.scan_job_count = len(jobs)
+        event.processed_at = timezone.now()
+        event.save(update_fields=["status", "scan_job_count", "processed_at"])
         AuditLog.objects.create(organization=organization, actor=request.user, action="integration.sync_queued", metadata={"integration_id": integration.id, "job_count": len(jobs)})
-        return Response({"status": "accepted", "integration_id": integration.id, "job_ids": [job.id for job in jobs], "file_count": len(jobs)}, status=202)
+        return Response({"status": "accepted", "integration_id": integration.id, "event_id": event.id, "job_ids": [job.id for job in jobs], "file_count": len(jobs)}, status=202)
 
 
 class RepositoryWebhookAPIView(APIView):
@@ -548,6 +597,59 @@ class RepositoryWebhookAPIView(APIView):
         return Response({"status": "accepted", "event_id": event.id, "event_type": event.event_type, "status": event.status, "next_step": "Run process_repository_events worker to fetch the commit and create ScanJobs."}, status=202)
 
 
+def _serialize_event(event):
+    return {
+        "id": event.id,
+        "event_type": event.event_type,
+        "status": event.status,
+        "ref": event.ref,
+        "commit_sha": event.commit_sha,
+        "delivery_id": event.delivery_id,
+        "attempts": event.attempts,
+        "publish_attempts": event.publish_attempts,
+        "scan_job_count": event.scan_job_count,
+        "last_error": event.last_error,
+        "publish_result": event.publish_result,
+        "created_at": event.created_at.isoformat(),
+        "processed_at": event.processed_at.isoformat() if event.processed_at else None,
+        "published_at": event.published_at.isoformat() if event.published_at else None,
+    }
+
+
+class IntegrationEventsAPIView(APIView):
+    """Delivery history for one repository integration."""
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, integration_id):
+        organization = _workspace_for_user(request.user)
+        integration = RepositoryIntegration.objects.filter(id=integration_id, organization=organization).first()
+        if not integration:
+            return Response({"status": "error", "message": "Integration not found."}, status=404)
+        events = integration.events.order_by("-created_at")[:50]
+        return Response({"status": "success", "integration_id": integration.id, "events": [_serialize_event(event) for event in events]})
+
+
+class IntegrationEventPublishAPIView(APIView):
+    """Manually publish (or retry) the feedback for one repository event."""
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, integration_id, event_id):
+        organization = _workspace_for_user(request.user)
+        integration = RepositoryIntegration.objects.filter(id=integration_id, organization=organization).first()
+        event = RepositoryEvent.objects.filter(id=event_id, integration=integration).first() if integration else None
+        if not event:
+            return Response({"status": "error", "message": "Repository event not found."}, status=404)
+        result = publish_event(event, force=True)
+        AuditLog.objects.create(
+            organization=organization,
+            actor=request.user,
+            action="integration.publish_requested",
+            metadata={"integration_id": integration.id, "event_id": event.id, "status": result.get("status")},
+        )
+        status_code = 200 if result.get("status") not in {"waiting", "retry"} else 202
+        return Response({"status": result.get("status"), "event_id": event.id, "result": result}, status=status_code)
+
+
 class FindingListUpdateAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -562,8 +664,15 @@ class FindingListUpdateAPIView(APIView):
             findings = findings.filter(status=status_filter.upper())
         if severity_filter:
             findings = findings.filter(severity=severity_filter.upper())
-        findings = findings.select_related("scan", "assigned_to").order_by("-updated_at")[:100]
-        return Response({"status": "success", "findings": [
+        findings = findings.select_related("scan", "assigned_to").order_by("-updated_at")
+        try:
+            page_number = max(1, int(request.query_params.get("page", 1)))
+            page_size = max(1, min(100, int(request.query_params.get("page_size", 25))))
+        except ValueError:
+            page_number, page_size = 1, 25
+        total = findings.count()
+        findings = findings[(page_number - 1) * page_size:page_number * page_size]
+        return Response({"status": "success", "page": page_number, "page_size": page_size, "total": total, "has_next": page_number * page_size < total, "findings": [
             {"id": item.id, "scan_id": item.scan_id, "cwe_id": item.cwe_id,
              "type": item.vulnerability_type, "severity": item.severity,
              "status": item.status, "line_number": item.line_number,
@@ -635,6 +744,8 @@ class ReportExportAPIView(APIView):
         rows = [{"id": item.id, "scan_id": item.scan_id, "cwe_id": item.cwe_id, "severity": item.severity, "status": item.status, "line": item.line_number, "description": item.description, "recommendation": item.recommendation} for item in findings.order_by("id")]
         # `format` is reserved by DRF content negotiation; use `type` for exports.
         output_format = request.query_params.get("type", "json").lower()
+        if organization:
+            AuditLog.objects.create(organization=organization, actor=request.user, action="report.exported", metadata={"format": output_format, "finding_count": len(rows)})
         if output_format == "csv":
             buffer = io.StringIO(); writer = csv.DictWriter(buffer, fieldnames=list(rows[0].keys()) if rows else ["id", "scan_id", "cwe_id", "severity", "status", "line", "description", "recommendation"]); writer.writeheader(); writer.writerows(rows)
             response = HttpResponse(buffer.getvalue(), content_type="text/csv"); response["Content-Disposition"] = "attachment; filename=security-findings.csv"; return response
@@ -704,6 +815,7 @@ class ScanJobListCreateAPIView(APIView):
             source_code=source_code,
             idempotency_key=idempotency_key,
         )
+        UsageRecord.objects.create(organization=organization, metric="scan_jobs", quantity=1, period=timezone.localdate(), metadata={"job_id": job.id})
         AuditLog.objects.create(organization=organization, actor=request.user, action="scan_job.created", metadata={"job_id": job.id, "project_id": project.id if project else None})
         return Response({"status": "accepted", "replayed": False, "job": _serialize_scan_job(job)}, status=202)
 
@@ -742,6 +854,9 @@ def login_view(request):
     if request.method == "POST":
         username = request.POST.get("username", "").strip()
         password = request.POST.get("password", "")
+        throttle_key = f"login-attempt:{request.META.get('REMOTE_ADDR', 'unknown')}:{username.lower()}"
+        if int(cache.get(throttle_key, 0)) >= 8:
+            return render(request, "scanner/login.html", {"error": "Too many login attempts. Try again in 15 minutes."})
 
         user = authenticate(
             request,
@@ -750,8 +865,14 @@ def login_view(request):
         )
 
         if user is not None:
+            cache.delete(throttle_key)
             login(request, user)
+            organization = _workspace_for_user(user)
+            if organization:
+                AuditLog.objects.create(organization=organization, actor=user, action="auth.login")
             return redirect("/")
+
+        cache.set(throttle_key, int(cache.get(throttle_key, 0)) + 1, 900)
 
         return render(
             request,
@@ -809,6 +930,10 @@ def register_view(request):
         )
         Membership.objects.create(organization=organization, user=user, role="OWNER")
         AuditLog.objects.create(organization=organization, actor=user, action="workspace.created")
+        raw_token = secrets.token_urlsafe(32)
+        EmailVerification.objects.create(user=user, token_hash=hashlib.sha256(raw_token.encode()).hexdigest(), expires_at=timezone.now() + timezone.timedelta(hours=24))
+        if email:
+            send_mail("Verify your Sentinel AI email", f"Verification token: {raw_token}", None, [email], fail_silently=True)
 
         login(request, user)
         return redirect("/")

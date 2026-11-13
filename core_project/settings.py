@@ -127,6 +127,19 @@ PROVIDER_HTTP_TIMEOUT_SECONDS = int(os.getenv("PROVIDER_HTTP_TIMEOUT_SECONDS", "
 REMOTE_SCAN_MAX_FILES = int(os.getenv("REMOTE_SCAN_MAX_FILES", "500"))
 REMOTE_SCAN_MAX_FILE_BYTES = int(os.getenv("REMOTE_SCAN_MAX_FILE_BYTES", "1000000"))
 
+# Provider feedback loop: publish SARIF, pull-request comments, commit
+# statuses and the merge-blocking gate after a repository scan finishes.
+GITHUB_WEBHOOK_SECRET = os.getenv("GITHUB_WEBHOOK_SECRET", "")
+PUBLIC_BASE_URL = os.getenv("PUBLIC_BASE_URL", "").rstrip("/")
+PROVIDER_PUBLISH_ENABLED = os.getenv("PROVIDER_PUBLISH_ENABLED", "1").lower() in {"1", "true", "yes"}
+PROVIDER_SARIF_UPLOAD = os.getenv("PROVIDER_SARIF_UPLOAD", "1").lower() in {"1", "true", "yes"}
+PROVIDER_MAX_PUBLISH_ATTEMPTS = int(os.getenv("PROVIDER_MAX_PUBLISH_ATTEMPTS", "3"))
+MERGE_BLOCK_SEVERITIES = {
+    item.strip().upper()
+    for item in os.getenv("MERGE_BLOCK_SEVERITIES", "CRITICAL,HIGH").split(",")
+    if item.strip()
+}
+
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
