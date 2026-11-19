@@ -1,8 +1,16 @@
 from __future__ import annotations
 
 import json
+import sys
 from pathlib import Path
 from typing import Callable, Iterable
+
+# ``python scanner/evaluation/benchmark_runner.py`` sets ``sys.path`` to the
+# evaluation directory rather than the project root.  Keep the documented
+# direct invocation working as well as ``python -m ...`` and Django imports.
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
 
 from scanner.analysis.security_scanner import full_security_scan
 from scanner.evaluation.metrics import calculate_metrics, classify_case

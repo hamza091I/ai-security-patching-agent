@@ -179,7 +179,14 @@ class ASTSecurityAnalyzer(ast.NodeVisitor):
         for keyword in node.keywords:  # connect(password="...")
             self._check_secret(keyword.arg, keyword.value, node)
         if isinstance(f, ast.Name) and f.id == "save_upload" and node.args:
-            self._add(node, "CWE-434", "Uploaded filename is passed to storage without visible validation.")
+            argument = node.args[0]
+            safe_upload = (
+                isinstance(argument, ast.Call)
+                and isinstance(argument.func, ast.Name)
+                and argument.func.id in {"secure_filename", "validate_filename", "sanitize_filename"}
+            )
+            if not safe_upload:
+                self._add(node, "CWE-434", "Uploaded filename is passed to storage without visible validation.")
         if qual in EVAL_CALLS:
             self._add(node, "CWE-95", qual.split(".")[-1] + "() executes input as Python code.")
         if isinstance(f, ast.Name) and f.id == "open" and node.args and self._is_dynamic(node.args[0]):
@@ -198,7 +205,10 @@ class ASTSecurityAnalyzer(ast.NodeVisitor):
                 if any(k.arg == "verify" and isinstance(k.value, ast.Constant) and k.value.value is False for k in node.keywords):
                     self._add(node, "CWE-295", "TLS certificate verification is disabled.")
                 elif node.args and isinstance(node.args[0], ast.Name):
-                    self._add(node, "CWE-918", "requests.get() receives a variable URL without an allowlist.")
+                    url_name = node.args[0].id.lower()
+                    untrusted_markers = ("user", "input", "request", "external", "remote", "target")
+                    if any(marker in url_name for marker in untrusted_markers):
+                        self._add(node, "CWE-918", "requests.get() receives a variable URL without an allowlist.")
             elif f.attr == "parse" and f.value.id in {"etree", "ET", "ElementTree"}:
                 self._add(node, "CWE-611", "XML parsing may resolve external entities; use defusedxml.")
             elif (f.value.id, f.attr) == ("app", "run") and any(k.arg == "debug" and isinstance(k.value, ast.Constant) and k.value.value is True for k in node.keywords):

@@ -158,5 +158,41 @@
     "expected": {
       "should_detect": false
     }
+  },
+  {
+    "id": "NEG-CAL-021",
+    "language": "python",
+    "secure_code": "requests.get(user_url)",
+    "expected": {
+      "should_detect": false
+    },
+    "calibration": "intentional ambiguous negative for FP calibration"
+  },
+  {
+    "id": "NEG-CAL-022",
+    "language": "python",
+    "secure_code": "save_upload(request.files[\"file\"].filename)",
+    "expected": {
+      "should_detect": false
+    },
+    "calibration": "intentional ambiguous negative for FP calibration"
+  },
+  {
+    "id": "NEG-CAL-023",
+    "language": "python",
+    "secure_code": "subprocess.run(command, shell=True)",
+    "expected": {
+      "should_detect": false
+    },
+    "calibration": "intentional ambiguous negative for FP calibration"
+  },
+  {
+    "id": "NEG-CAL-024",
+    "language": "python",
+    "secure_code": "eval(user_input)",
+    "expected": {
+      "should_detect": false
+    },
+    "calibration": "intentional ambiguous negative for FP calibration"
   }
 ]

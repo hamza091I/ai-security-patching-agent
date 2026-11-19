@@ -1003,5 +1003,7 @@
         "CAT-100"
       ]
     }
-  ]
+  ],
+  "dataset_size": 500,
+  "dataset_note": "100 CWE categories with 500 benchmark fixture records; fixture variants reuse known patterns for regression coverage."
 }

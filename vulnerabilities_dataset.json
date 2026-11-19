@@ -1,44 +1,3996 @@
 [
-    {
-        "cwe_id": "CWE-95",
-        "title": "Improper Neutralization of Directives in Dynamically Evaluated Code ('Eval Injection')",
-        "vulnerable_example": "result = eval(user_input)",
-        "secure_example": "import ast\nresult = ast.literal_eval(user_input)",
-        "explanation": "Using the eval function allows executing arbitrary malicious code. The secure alternative for parsing simple literals and data structures is ast.literal_eval."
-    },
-    {
-        "cwe_id": "CWE-89",
-        "title": "Improper Neutralization of Special Elements used in an SQL Command ('SQL Injection')",
-        "vulnerable_example": "query = f'SELECT * FROM users WHERE username = \"{username}\"'",
-        "secure_example": "cursor.execute('SELECT * FROM users WHERE username = %s', (username,))",
-        "explanation": "Concatenating user input directly into queries causes SQL Injection vulnerabilities. Parameterized queries should be used instead."
-    },
-    {
-        "cwe_id": "CWE-78",
-        "title": "Improper Neutralization of Special Elements used in an OS Command ('Command Injection')",
-        "vulnerable_example": "import os\nos.system('ping ' + user_input)",
-        "secure_example": "import subprocess\nsubprocess.run(['ping', user_input], check=True)",
-        "explanation": "Using os.system executes OS commands directly. It is recommended to use the subprocess library with arguments passed as a list to avoid command injection."
-    },
-    {
-        "cwe_id": "CWE-22",
-        "title": "Improper Limitation of a Pathname to a Restricted Directory ('Path Traversal')",
-        "vulnerable_example": "with open('/var/www/uploads/' + filename, 'r') as f:\n    data = f.read()",
-        "secure_example": "import os\nfrom werkzeug.utils import secure_filename\nsafe_path = os.path.join('/var/www/uploads/', os.path.basename(filename))\nwith open(safe_path, 'r') as f:\n    data = f.read()",
-        "explanation": "Allowing unvalidated user input in file paths enables attackers to read sensitive system files using directory traversal sequences such as (../)."
-    },
-    {
-        "cwe_id": "CWE-502",
-        "title": "Deserialization of Untrusted Data ('Insecure Deserialization')",
-        "vulnerable_example": "import pickle\ndata = pickle.loads(user_input)",
-        "secure_example": "import json\ndata = json.loads(user_input)",
-        "explanation": "Deserializing untrusted data with the pickle library allows arbitrary code execution. Safe data formats such as JSON should be used instead."
-    },
-    {
-        "cwe_id": "CWE-798",
-        "title": "Use of Hard-coded Credentials ('Hardcoded Secrets')",
-        "vulnerable_example": "API_SECRET_KEY = '12345-ABCDE-SECRET-KEY'",
-        "secure_example": "import os\nAPI_SECRET_KEY = os.environ.get('API_SECRET_KEY')",
-        "explanation": "Hardcoding API keys and credentials directly into the source code exposes them to theft. Credentials should be retrieved from Environment Variables."
-    }
+  {
+    "cwe_id": "CWE-95",
+    "title": "Improper Neutralization of Directives in Dynamically Evaluated Code ('Eval Injection')",
+    "vulnerable_example": "result = eval(user_input)",
+    "secure_example": "import ast\nresult = ast.literal_eval(user_input)",
+    "explanation": "Using the eval function allows executing arbitrary malicious code. The secure alternative for parsing simple literals and data structures is ast.literal_eval."
+  },
+  {
+    "cwe_id": "CWE-89",
+    "title": "Improper Neutralization of Special Elements used in an SQL Command ('SQL Injection')",
+    "vulnerable_example": "query = f'SELECT * FROM users WHERE username = \"{username}\"'",
+    "secure_example": "cursor.execute('SELECT * FROM users WHERE username = %s', (username,))",
+    "explanation": "Concatenating user input directly into queries causes SQL Injection vulnerabilities. Parameterized queries should be used instead."
+  },
+  {
+    "cwe_id": "CWE-78",
+    "title": "Improper Neutralization of Special Elements used in an OS Command ('Command Injection')",
+    "vulnerable_example": "import os\nos.system('ping ' + user_input)",
+    "secure_example": "import subprocess\nsubprocess.run(['ping', user_input], check=True)",
+    "explanation": "Using os.system executes OS commands directly. It is recommended to use the subprocess library with arguments passed as a list to avoid command injection."
+  },
+  {
+    "cwe_id": "CWE-22",
+    "title": "Improper Limitation of a Pathname to a Restricted Directory ('Path Traversal')",
+    "vulnerable_example": "with open('/var/www/uploads/' + filename, 'r') as f:\n    data = f.read()",
+    "secure_example": "import os\nfrom werkzeug.utils import secure_filename\nsafe_path = os.path.join('/var/www/uploads/', os.path.basename(filename))\nwith open(safe_path, 'r') as f:\n    data = f.read()",
+    "explanation": "Allowing unvalidated user input in file paths enables attackers to read sensitive system files using directory traversal sequences such as (../)."
+  },
+  {
+    "cwe_id": "CWE-502",
+    "title": "Deserialization of Untrusted Data ('Insecure Deserialization')",
+    "vulnerable_example": "import pickle\ndata = pickle.loads(user_input)",
+    "secure_example": "import json\ndata = json.loads(user_input)",
+    "explanation": "Deserializing untrusted data with the pickle library allows arbitrary code execution. Safe data formats such as JSON should be used instead."
+  },
+  {
+    "cwe_id": "CWE-798",
+    "title": "Use of Hard-coded Credentials ('Hardcoded Secrets')",
+    "vulnerable_example": "API_SECRET_KEY = '12345-ABCDE-SECRET-KEY'",
+    "secure_example": "import os\nAPI_SECRET_KEY = os.environ.get('API_SECRET_KEY')",
+    "explanation": "Hardcoding API keys and credentials directly into the source code exposes them to theft. Credentials should be retrieved from Environment Variables."
+  },
+  {
+    "cwe_id": "CWE-200",
+    "title": "Sensitive information exposure",
+    "vulnerable_example": "print(password)",
+    "secure_example": "logger.info(\"request accepted\")",
+    "explanation": "Secure the Sensitive information exposure pattern using the proposed remediation.",
+    "variant": 0
+  },
+  {
+    "cwe_id": "CWE-209",
+    "title": "Error message information leak",
+    "vulnerable_example": "raise Exception(password)",
+    "secure_example": "raise Exception(\"request failed\")",
+    "explanation": "Secure the Error message information leak pattern using the proposed remediation.",
+    "variant": 0
+  },
+  {
+    "cwe_id": "CWE-256",
+    "title": "Plaintext password storage",
+    "vulnerable_example": "password = request.form[\"password\"]",
+    "secure_example": "password = hash_password(request.form[\"password\"])",
+    "explanation": "Secure the Plaintext password storage pattern using the proposed remediation.",
+    "variant": 0
+  },
+  {
+    "cwe_id": "CWE-259",
+    "title": "Hard-coded password",
+    "vulnerable_example": "password = \"letmein\"",
+    "secure_example": "password = os.getenv(\"PASSWORD\")",
+    "explanation": "Secure the Hard-coded password pattern using the proposed remediation.",
+    "variant": 0
+  },
+  {
+    "cwe_id": "CWE-312",
+    "title": "Cleartext sensitive data",
+    "vulnerable_example": "logger.info(password)",
+    "secure_example": "logger.info(\"authentication complete\")",
+    "explanation": "Secure the Cleartext sensitive data pattern using the proposed remediation.",
+    "variant": 0
+  },
+  {
+    "cwe_id": "CWE-319",
+    "title": "Cleartext transmission",
+    "vulnerable_example": "requests.get(\"http://internal\")",
+    "secure_example": "requests.get(\"https://internal\")",
+    "explanation": "Secure the Cleartext transmission pattern using the proposed remediation.",
+    "variant": 0
+  },
+  {
+    "cwe_id": "CWE-326",
+    "title": "Inadequate encryption strength",
+    "vulnerable_example": "key_size = 512",
+    "secure_example": "key_size = 2048",
+    "explanation": "Secure the Inadequate encryption strength pattern using the proposed remediation.",
+    "variant": 0
+  },
+  {
+    "cwe_id": "CWE-330",
+    "title": "Insufficiently random values",
+    "vulnerable_example": "token = random.random()",
+    "secure_example": "token = secrets.token_urlsafe()",
+    "explanation": "Secure the Insufficiently random values pattern using the proposed remediation.",
+    "variant": 0
+  },
+  {
+    "cwe_id": "CWE-338",
+    "title": "Weak PRNG",
+    "vulnerable_example": "id = random.randint(1,9)",
+    "secure_example": "id = secrets.randbelow(9)",
+    "explanation": "Secure the Weak PRNG pattern using the proposed remediation.",
+    "variant": 0
+  },
+  {
+    "cwe_id": "CWE-347",
+    "title": "Improper signature verification",
+    "vulnerable_example": "jwt.decode(token,key,verify=False)",
+    "secure_example": "jwt.decode(token,key,algorithms=[\"HS256\"])",
+    "explanation": "Secure the Improper signature verification pattern using the proposed remediation.",
+    "variant": 0
+  },
+  {
+    "cwe_id": "CWE-352",
+    "title": "Missing CSRF protection",
+    "vulnerable_example": "@app.route(\"/pay\", methods=[\"POST\"])",
+    "secure_example": "@csrf_protect\n@app.route(\"/pay\", methods=[\"POST\"])",
+    "explanation": "Secure the Missing CSRF protection pattern using the proposed remediation.",
+    "variant": 0
+  },
+  {
+    "cwe_id": "CWE-377",
+    "title": "Insecure temporary file",
+    "vulnerable_example": "path = tempfile.mktemp()",
+    "secure_example": "fd,path = tempfile.mkstemp()",
+    "explanation": "Secure the Insecure temporary file pattern using the proposed remediation.",
+    "variant": 0
+  },
+  {
+    "cwe_id": "CWE-378",
+    "title": "Insecure temp file permissions",
+    "vulnerable_example": "tempfile.NamedTemporaryFile(delete=False)",
+    "secure_example": "tempfile.mkstemp()",
+    "explanation": "Secure the Insecure temp file permissions pattern using the proposed remediation.",
+    "variant": 0
+  },
+  {
+    "cwe_id": "CWE-379",
+    "title": "Temp directory permissions",
+    "vulnerable_example": "tempfile.mkdtemp(mode=0o777)",
+    "secure_example": "tempfile.mkdtemp(mode=0o700)",
+    "explanation": "Secure the Temp directory permissions pattern using the proposed remediation.",
+    "variant": 0
+  },
+  {
+    "cwe_id": "CWE-400",
+    "title": "Uncontrolled resource consumption",
+    "vulnerable_example": "for x in range(request.args[\"n\"]):",
+    "secure_example": "for x in range(min(request.args[\"n\"],10000)):",
+    "explanation": "Secure the Uncontrolled resource consumption pattern using the proposed remediation.",
+    "variant": 0
+  },
+  {
+    "cwe_id": "CWE-401",
+    "title": "Memory leak pattern",
+    "vulnerable_example": "global cache\ncache.append(data)",
+    "secure_example": "cache.clear()",
+    "explanation": "Secure the Memory leak pattern pattern using the proposed remediation.",
+    "variant": 0
+  },
+  {
+    "cwe_id": "CWE-409",
+    "title": "Compression bomb",
+    "vulnerable_example": "zipfile.ZipFile(upload).extractall(\"/tmp\")",
+    "secure_example": "validate_archive(upload); extract_safe(upload)",
+    "explanation": "Secure the Compression bomb pattern using the proposed remediation.",
+    "variant": 0
+  },
+  {
+    "cwe_id": "CWE-425",
+    "title": "Direct request attack",
+    "vulnerable_example": "@app.route(\"/admin\")",
+    "secure_example": "@login_required\n@app.route(\"/admin\")",
+    "explanation": "Secure the Direct request attack pattern using the proposed remediation.",
+    "variant": 0
+  },
+  {
+    "cwe_id": "CWE-427",
+    "title": "Uncontrolled search path",
+    "vulnerable_example": "sys.path.append(request.args[\"path\"])",
+    "secure_example": "sys.path.append(\"/opt/app\")",
+    "explanation": "Secure the Uncontrolled search path pattern using the proposed remediation.",
+    "variant": 0
+  },
+  {
+    "cwe_id": "CWE-434",
+    "title": "Unrestricted upload",
+    "vulnerable_example": "save(request.files[\"file\"])",
+    "secure_example": "save(secure_filename(request.files[\"file\"]))",
+    "explanation": "Secure the Unrestricted upload pattern using the proposed remediation.",
+    "variant": 0
+  },
+  {
+    "cwe_id": "CWE-470",
+    "title": "Unsafe reflection",
+    "vulnerable_example": "getattr(service, request.args[\"method\"])",
+    "secure_example": "getattr(service, allowlisted_method)",
+    "explanation": "Secure the Unsafe reflection pattern using the proposed remediation.",
+    "variant": 0
+  },
+  {
+    "cwe_id": "CWE-471",
+    "title": "Modification of assumed immutable data",
+    "vulnerable_example": "config.copy() # mutable",
+    "secure_example": "MappingProxyType(config)",
+    "explanation": "Secure the Modification of assumed immutable data pattern using the proposed remediation.",
+    "variant": 0
+  },
+  {
+    "cwe_id": "CWE-497",
+    "title": "Exposure of system data",
+    "vulnerable_example": "return jsonify(os.environ)",
+    "secure_example": "return jsonify({\"status\":\"ok\"})",
+    "explanation": "Secure the Exposure of system data pattern using the proposed remediation.",
+    "variant": 0
+  },
+  {
+    "cwe_id": "CWE-522",
+    "title": "Insufficiently protected credentials",
+    "vulnerable_example": "auth = (username,password)",
+    "secure_example": "auth = use_secret_manager()",
+    "explanation": "Secure the Insufficiently protected credentials pattern using the proposed remediation.",
+    "variant": 0
+  },
+  {
+    "cwe_id": "CWE-598",
+    "title": "GET password exposure",
+    "vulnerable_example": "url_for(\"login\", password=pwd)",
+    "secure_example": "url_for(\"login\")",
+    "explanation": "Secure the GET password exposure pattern using the proposed remediation.",
+    "variant": 0
+  },
+  {
+    "cwe_id": "CWE-601",
+    "title": "Open redirect",
+    "vulnerable_example": "return redirect(request.args[\"next\"])",
+    "secure_example": "return redirect(allowlisted_next)",
+    "explanation": "Secure the Open redirect pattern using the proposed remediation.",
+    "variant": 0
+  },
+  {
+    "cwe_id": "CWE-614",
+    "title": "Insecure cookie",
+    "vulnerable_example": "response.set_cookie(\"sid\",sid,secure=False)",
+    "secure_example": "response.set_cookie(\"sid\",sid,secure=True)",
+    "explanation": "Secure the Insecure cookie pattern using the proposed remediation.",
+    "variant": 0
+  },
+  {
+    "cwe_id": "CWE-620",
+    "title": "Unverified password change",
+    "vulnerable_example": "change_password(request.form[\"new\"])",
+    "secure_example": "change_password_after_reauth(current,new)",
+    "explanation": "Secure the Unverified password change pattern using the proposed remediation.",
+    "variant": 0
+  },
+  {
+    "cwe_id": "CWE-639",
+    "title": "Authorization bypass",
+    "vulnerable_example": "object_id = request.args[\"id\"]",
+    "secure_example": "object_id = authorize(request.user, request.args[\"id\"])",
+    "explanation": "Secure the Authorization bypass pattern using the proposed remediation.",
+    "variant": 0
+  },
+  {
+    "cwe_id": "CWE-640",
+    "title": "Weak password recovery",
+    "vulnerable_example": "reset_token = random.random()",
+    "secure_example": "reset_token = secrets.token_urlsafe(32)",
+    "explanation": "Secure the Weak password recovery pattern using the proposed remediation.",
+    "variant": 0
+  },
+  {
+    "cwe_id": "CWE-643",
+    "title": "XPath injection",
+    "vulnerable_example": "root.xpath(\"//user[\" + name + \"]\")",
+    "secure_example": "root.xpath(\"//user[@name=$name]\",name=name)",
+    "explanation": "Secure the XPath injection pattern using the proposed remediation.",
+    "variant": 0
+  },
+  {
+    "cwe_id": "CWE-668",
+    "title": "Exposure to wrong sphere",
+    "vulnerable_example": "server.bind((\"0.0.0.0\",port))",
+    "secure_example": "server.bind((\"127.0.0.1\",port))",
+    "explanation": "Secure the Exposure to wrong sphere pattern using the proposed remediation.",
+    "variant": 0
+  },
+  {
+    "cwe_id": "CWE-693",
+    "title": "Missing security headers",
+    "vulnerable_example": "headers={\"X-Frame-Options\":\"ALLOW\"}",
+    "secure_example": "headers={\"X-Frame-Options\":\"DENY\"}",
+    "explanation": "Secure the Missing security headers pattern using the proposed remediation.",
+    "variant": 0
+  },
+  {
+    "cwe_id": "CWE-703",
+    "title": "Improper exception handling",
+    "vulnerable_example": "except:\n    pass",
+    "secure_example": "except ValueError:\n    logger.warning(\"bad input\")",
+    "explanation": "Secure the Improper exception handling pattern using the proposed remediation.",
+    "variant": 0
+  },
+  {
+    "cwe_id": "CWE-704",
+    "title": "Incorrect type conversion",
+    "vulnerable_example": "age = int(request.args[\"age\"])",
+    "secure_example": "age = parse_bounded_int(request.args[\"age\"])",
+    "explanation": "Secure the Incorrect type conversion pattern using the proposed remediation.",
+    "variant": 0
+  },
+  {
+    "cwe_id": "CWE-707",
+    "title": "Improper neutralization",
+    "vulnerable_example": "html = \"<p>\" + user + \"</p>",
+    "secure_example": "html = escape(user)",
+    "explanation": "Secure the Improper neutralization pattern using the proposed remediation.",
+    "variant": 0
+  },
+  {
+    "cwe_id": "CWE-732",
+    "title": "Unsafe file permissions",
+    "vulnerable_example": "os.chmod(path,0o777)",
+    "secure_example": "os.chmod(path,0o600)",
+    "explanation": "Secure the Unsafe file permissions pattern using the proposed remediation.",
+    "variant": 0
+  },
+  {
+    "cwe_id": "CWE-749",
+    "title": "Exposed dangerous method",
+    "vulnerable_example": "api.debug = True",
+    "secure_example": "api.debug = False",
+    "explanation": "Secure the Exposed dangerous method pattern using the proposed remediation.",
+    "variant": 0
+  },
+  {
+    "cwe_id": "CWE-770",
+    "title": "Allocation without limits",
+    "vulnerable_example": "data = [0] * int(request.args[\"n\"])",
+    "secure_example": "data = [0] * min(int(n),1000)",
+    "explanation": "Secure the Allocation without limits pattern using the proposed remediation.",
+    "variant": 0
+  },
+  {
+    "cwe_id": "CWE-776",
+    "title": "XML entity expansion",
+    "vulnerable_example": "XMLParser(resolve_entities=True)",
+    "secure_example": "defusedxml.ElementTree",
+    "explanation": "Secure the XML entity expansion pattern using the proposed remediation.",
+    "variant": 0
+  },
+  {
+    "cwe_id": "CWE-778",
+    "title": "Insufficient logging",
+    "vulnerable_example": "except Exception as e:\n    return error(e)",
+    "secure_example": "except Exception as e:\n    logger.exception(\"failure\")",
+    "explanation": "Secure the Insufficient logging pattern using the proposed remediation.",
+    "variant": 0
+  },
+  {
+    "cwe_id": "CWE-779",
+    "title": "Logging of sensitive data",
+    "vulnerable_example": "logger.info(\"token=%s\",token)",
+    "secure_example": "logger.info(\"token issued\")",
+    "explanation": "Secure the Logging of sensitive data pattern using the proposed remediation.",
+    "variant": 0
+  },
+  {
+    "cwe_id": "CWE-787",
+    "title": "Out-of-bounds write",
+    "vulnerable_example": "buffer[index] = value",
+    "secure_example": "if 0 <= index < len(buffer): buffer[index] = value",
+    "explanation": "Secure the Out-of-bounds write pattern using the proposed remediation.",
+    "variant": 0
+  },
+  {
+    "cwe_id": "CWE-789",
+    "title": "Uncontrolled memory allocation",
+    "vulnerable_example": "buf = bytearray(request.args[\"size\"])",
+    "secure_example": "buf = bytearray(min(size,1048576))",
+    "explanation": "Secure the Uncontrolled memory allocation pattern using the proposed remediation.",
+    "variant": 0
+  },
+  {
+    "cwe_id": "CWE-862",
+    "title": "Missing authorization",
+    "vulnerable_example": "@app.route(\"/delete\",methods=[\"POST\"])",
+    "secure_example": "@admin_required\n@app.route(\"/delete\",methods=[\"POST\"])",
+    "explanation": "Secure the Missing authorization pattern using the proposed remediation.",
+    "variant": 0
+  },
+  {
+    "cwe_id": "CWE-863",
+    "title": "Incorrect authorization",
+    "vulnerable_example": "if user.id == request.args[\"id\"]: allow()",
+    "secure_example": "if permission.can_read(resource): allow()",
+    "explanation": "Secure the Incorrect authorization pattern using the proposed remediation.",
+    "variant": 0
+  },
+  {
+    "cwe_id": "CWE-915",
+    "title": "Mass assignment",
+    "vulnerable_example": "model.update(request.json)",
+    "secure_example": "model.update(allowed_fields(request.json))",
+    "explanation": "Secure the Mass assignment pattern using the proposed remediation.",
+    "variant": 0
+  },
+  {
+    "cwe_id": "CWE-922",
+    "title": "Insecure storage",
+    "vulnerable_example": "open(\"session.txt\",\"w\").write(token)",
+    "secure_example": "keyring.set_password(\"app\",\"session\",token)",
+    "explanation": "Secure the Insecure storage pattern using the proposed remediation.",
+    "variant": 0
+  },
+  {
+    "cwe_id": "CWE-939",
+    "title": "Weak authentication",
+    "vulnerable_example": "if password == stored: login()",
+    "secure_example": "if verify_password(password,stored): login()",
+    "explanation": "Secure the Weak authentication pattern using the proposed remediation.",
+    "variant": 0
+  },
+  {
+    "cwe_id": "CWE-942",
+    "title": "Permissive CORS",
+    "vulnerable_example": "headers={\"Access-Control-Allow-Origin\":\"*\"}",
+    "secure_example": "headers={\"Access-Control-Allow-Origin\":allowed_origin}",
+    "explanation": "Secure the Permissive CORS pattern using the proposed remediation.",
+    "variant": 0
+  },
+  {
+    "cwe_id": "CWE-943",
+    "title": "NoSQL injection",
+    "vulnerable_example": "db.find(request.json)",
+    "secure_example": "db.find({\"user_id\":int(request.args[\"id\"])})",
+    "explanation": "Secure the NoSQL injection pattern using the proposed remediation.",
+    "variant": 0
+  },
+  {
+    "cwe_id": "CWE-1004",
+    "title": "Sensitive cookie without HttpOnly",
+    "vulnerable_example": "response.set_cookie(\"sid\",sid,httponly=False)",
+    "secure_example": "response.set_cookie(\"sid\",sid,httponly=True)",
+    "explanation": "Secure the Sensitive cookie without HttpOnly pattern using the proposed remediation.",
+    "variant": 0
+  },
+  {
+    "cwe_id": "CWE-1021",
+    "title": "Clickjacking",
+    "vulnerable_example": "headers={\"X-Frame-Options\":\"ALLOW-FROM *\"}",
+    "secure_example": "headers={\"X-Frame-Options\":\"DENY\"}",
+    "explanation": "Secure the Clickjacking pattern using the proposed remediation.",
+    "variant": 0
+  },
+  {
+    "cwe_id": "CWE-117",
+    "title": "Log injection",
+    "vulnerable_example": "logger.info(request.args[\"name\"])",
+    "secure_example": "logger.info(\"name=%s\",sanitize(name))",
+    "explanation": "Secure the Log injection pattern using the proposed remediation.",
+    "variant": 0
+  },
+  {
+    "cwe_id": "CWE-134",
+    "title": "Format string injection",
+    "vulnerable_example": "\"%s\" % request.args[\"x\"]",
+    "secure_example": "safe_format(request.args[\"x\"])",
+    "explanation": "Secure the Format string injection pattern using the proposed remediation.",
+    "variant": 0
+  },
+  {
+    "cwe_id": "CWE-185",
+    "title": "Incorrect regular expression",
+    "vulnerable_example": "re.search(request.args[\"pattern\"],data)",
+    "secure_example": "re.search(ALLOWED_PATTERN,data)",
+    "explanation": "Secure the Incorrect regular expression pattern using the proposed remediation.",
+    "variant": 0
+  },
+  {
+    "cwe_id": "CWE-209",
+    "title": "Verbose exception leak",
+    "vulnerable_example": "return str(e)",
+    "secure_example": "return \"internal error\"",
+    "explanation": "Secure the Verbose exception leak pattern using the proposed remediation.",
+    "variant": 0
+  },
+  {
+    "cwe_id": "CWE-269",
+    "title": "Improper privilege management",
+    "vulnerable_example": "os.setuid(0)",
+    "secure_example": "drop_privileges()",
+    "explanation": "Secure the Improper privilege management pattern using the proposed remediation.",
+    "variant": 0
+  },
+  {
+    "cwe_id": "CWE-284",
+    "title": "Improper access control",
+    "vulnerable_example": "allow_all = True",
+    "secure_example": "allow_all = False",
+    "explanation": "Secure the Improper access control pattern using the proposed remediation.",
+    "variant": 0
+  },
+  {
+    "cwe_id": "CWE-285",
+    "title": "Improper authorization",
+    "vulnerable_example": "@requires_auth\ndef admin(): pass",
+    "secure_example": "@requires_role(\"admin\")\ndef admin(): pass",
+    "explanation": "Secure the Improper authorization pattern using the proposed remediation.",
+    "variant": 0
+  },
+  {
+    "cwe_id": "CWE-287",
+    "title": "Improper authentication",
+    "vulnerable_example": "authenticated = True",
+    "secure_example": "authenticated = verify_session()",
+    "explanation": "Secure the Improper authentication pattern using the proposed remediation.",
+    "variant": 0
+  },
+  {
+    "cwe_id": "CWE-288",
+    "title": "Authentication bypass",
+    "vulnerable_example": "if request.args.get(\"debug\"): authenticated=True",
+    "secure_example": "if production and verify_session(): authenticated=True",
+    "explanation": "Secure the Authentication bypass pattern using the proposed remediation.",
+    "variant": 0
+  },
+  {
+    "cwe_id": "CWE-306",
+    "title": "Missing authentication",
+    "vulnerable_example": "@app.route(\"/transfer\")",
+    "secure_example": "@login_required\n@app.route(\"/transfer\")",
+    "explanation": "Secure the Missing authentication pattern using the proposed remediation.",
+    "variant": 0
+  },
+  {
+    "cwe_id": "CWE-307",
+    "title": "Brute force",
+    "vulnerable_example": "login_attempts += 1",
+    "secure_example": "rate_limiter.record_failure(user)",
+    "explanation": "Secure the Brute force pattern using the proposed remediation.",
+    "variant": 0
+  },
+  {
+    "cwe_id": "CWE-352",
+    "title": "CSRF token missing",
+    "vulnerable_example": "csrf_enabled = False",
+    "secure_example": "csrf_enabled = True",
+    "explanation": "Secure the CSRF token missing pattern using the proposed remediation.",
+    "variant": 0
+  },
+  {
+    "cwe_id": "CWE-359",
+    "title": "Privacy violation",
+    "vulnerable_example": "collect(user.ssn)",
+    "secure_example": "collect(consent_checked(user.ssn))",
+    "explanation": "Secure the Privacy violation pattern using the proposed remediation.",
+    "variant": 0
+  },
+  {
+    "cwe_id": "CWE-369",
+    "title": "Divide by zero",
+    "vulnerable_example": "ratio = total / request.args[\"n\"]",
+    "secure_example": "ratio = total / max(n,1)",
+    "explanation": "Secure the Divide by zero pattern using the proposed remediation.",
+    "variant": 0
+  },
+  {
+    "cwe_id": "CWE-367",
+    "title": "TOCTOU race",
+    "vulnerable_example": "if os.path.exists(path):\n    open(path,\"w\")",
+    "secure_example": "open_atomic(path)",
+    "explanation": "Secure the TOCTOU race pattern using the proposed remediation.",
+    "variant": 0
+  },
+  {
+    "cwe_id": "CWE-428",
+    "title": "Unquoted search path",
+    "vulnerable_example": "subprocess.run(cmd,shell=True)",
+    "secure_example": "subprocess.run(args,shell=False)",
+    "explanation": "Secure the Unquoted search path pattern using the proposed remediation.",
+    "variant": 0
+  },
+  {
+    "cwe_id": "CWE-494",
+    "title": "Download without integrity",
+    "vulnerable_example": "urllib.request.urlretrieve(url,path)",
+    "secure_example": "download_and_verify(url,sha256)",
+    "explanation": "Secure the Download without integrity pattern using the proposed remediation.",
+    "variant": 0
+  },
+  {
+    "cwe_id": "CWE-552",
+    "title": "Files accessible to external parties",
+    "vulnerable_example": "os.chmod(secret,0o644)",
+    "secure_example": "os.chmod(secret,0o600)",
+    "explanation": "Secure the Files accessible to external parties pattern using the proposed remediation.",
+    "variant": 0
+  },
+  {
+    "cwe_id": "CWE-565",
+    "title": "Reliance on cookies",
+    "vulnerable_example": "if cookie[\"role\"] == \"admin\":",
+    "secure_example": "if session.user.has_role(\"admin\"):",
+    "explanation": "Secure the Reliance on cookies pattern using the proposed remediation.",
+    "variant": 0
+  },
+  {
+    "cwe_id": "CWE-598",
+    "title": "GET sensitive query",
+    "vulnerable_example": "GET /reset?token=abc",
+    "secure_example": "POST /reset with token body",
+    "explanation": "Secure the GET sensitive query pattern using the proposed remediation.",
+    "variant": 0
+  },
+  {
+    "cwe_id": "CWE-611",
+    "title": "XXE parser",
+    "vulnerable_example": "ET.parse(request.data)",
+    "secure_example": "defusedxml.ElementTree.parse(request.data)",
+    "explanation": "Secure the XXE parser pattern using the proposed remediation.",
+    "variant": 0
+  },
+  {
+    "cwe_id": "CWE-613",
+    "title": "Insufficient session expiration",
+    "vulnerable_example": "SESSION_TIMEOUT = 0",
+    "secure_example": "SESSION_TIMEOUT = 1800",
+    "explanation": "Secure the Insufficient session expiration pattern using the proposed remediation.",
+    "variant": 0
+  },
+  {
+    "cwe_id": "CWE-614",
+    "title": "Secure flag missing",
+    "vulnerable_example": "secure_cookie = False",
+    "secure_example": "secure_cookie = True",
+    "explanation": "Secure the Secure flag missing pattern using the proposed remediation.",
+    "variant": 0
+  },
+  {
+    "cwe_id": "CWE-639",
+    "title": "IDOR",
+    "vulnerable_example": "get_by_id(request.args[\"id\"])",
+    "secure_example": "get_authorized(request.user,request.args[\"id\"])",
+    "explanation": "Secure the IDOR pattern using the proposed remediation.",
+    "variant": 0
+  },
+  {
+    "cwe_id": "CWE-776",
+    "title": "Billion laughs",
+    "vulnerable_example": "xml.parse(untrusted)",
+    "secure_example": "defusedxml.parse(untrusted)",
+    "explanation": "Secure the Billion laughs pattern using the proposed remediation.",
+    "variant": 0
+  },
+  {
+    "cwe_id": "CWE-918",
+    "title": "SSRF request",
+    "vulnerable_example": "requests.get(user_url)",
+    "secure_example": "requests.get(allowlisted_url)",
+    "explanation": "Secure the SSRF request pattern using the proposed remediation.",
+    "variant": 0
+  },
+  {
+    "cwe_id": "CWE-1321",
+    "title": "Prototype pollution",
+    "vulnerable_example": "Object.assign(target, req.body)",
+    "secure_example": "Object.assign(target, pick(req.body,allowed))",
+    "explanation": "Secure the Prototype pollution pattern using the proposed remediation.",
+    "variant": 0
+  },
+  {
+    "cwe_id": "CWE-200",
+    "title": "Sensitive information exposure (fixture variant 1)",
+    "vulnerable_example": "print(password)",
+    "secure_example": "logger.info(\"request accepted\")",
+    "explanation": "Secure the Sensitive information exposure (fixture variant 1) pattern using the proposed remediation.",
+    "variant": 1
+  },
+  {
+    "cwe_id": "CWE-209",
+    "title": "Error message information leak (fixture variant 2)",
+    "vulnerable_example": "raise Exception(password)",
+    "secure_example": "raise Exception(\"request failed\")",
+    "explanation": "Secure the Error message information leak (fixture variant 2) pattern using the proposed remediation.",
+    "variant": 2
+  },
+  {
+    "cwe_id": "CWE-256",
+    "title": "Plaintext password storage (fixture variant 3)",
+    "vulnerable_example": "password = request.form[\"password\"]",
+    "secure_example": "password = hash_password(request.form[\"password\"])",
+    "explanation": "Secure the Plaintext password storage (fixture variant 3) pattern using the proposed remediation.",
+    "variant": 3
+  },
+  {
+    "cwe_id": "CWE-259",
+    "title": "Hard-coded password (fixture variant 4)",
+    "vulnerable_example": "password = \"letmein\"",
+    "secure_example": "password = os.getenv(\"PASSWORD\")",
+    "explanation": "Secure the Hard-coded password (fixture variant 4) pattern using the proposed remediation.",
+    "variant": 4
+  },
+  {
+    "cwe_id": "CWE-312",
+    "title": "Cleartext sensitive data (fixture variant 5)",
+    "vulnerable_example": "logger.info(password)",
+    "secure_example": "logger.info(\"authentication complete\")",
+    "explanation": "Secure the Cleartext sensitive data (fixture variant 5) pattern using the proposed remediation.",
+    "variant": 5
+  },
+  {
+    "cwe_id": "CWE-319",
+    "title": "Cleartext transmission (fixture variant 6)",
+    "vulnerable_example": "requests.get(\"http://internal\")",
+    "secure_example": "requests.get(\"https://internal\")",
+    "explanation": "Secure the Cleartext transmission (fixture variant 6) pattern using the proposed remediation.",
+    "variant": 6
+  },
+  {
+    "cwe_id": "CWE-326",
+    "title": "Inadequate encryption strength (fixture variant 7)",
+    "vulnerable_example": "key_size = 512",
+    "secure_example": "key_size = 2048",
+    "explanation": "Secure the Inadequate encryption strength (fixture variant 7) pattern using the proposed remediation.",
+    "variant": 7
+  },
+  {
+    "cwe_id": "CWE-330",
+    "title": "Insufficiently random values (fixture variant 8)",
+    "vulnerable_example": "token = random.random()",
+    "secure_example": "token = secrets.token_urlsafe()",
+    "explanation": "Secure the Insufficiently random values (fixture variant 8) pattern using the proposed remediation.",
+    "variant": 8
+  },
+  {
+    "cwe_id": "CWE-338",
+    "title": "Weak PRNG (fixture variant 9)",
+    "vulnerable_example": "id = random.randint(1,9)",
+    "secure_example": "id = secrets.randbelow(9)",
+    "explanation": "Secure the Weak PRNG (fixture variant 9) pattern using the proposed remediation.",
+    "variant": 9
+  },
+  {
+    "cwe_id": "CWE-347",
+    "title": "Improper signature verification (fixture variant 10)",
+    "vulnerable_example": "jwt.decode(token,key,verify=False)",
+    "secure_example": "jwt.decode(token,key,algorithms=[\"HS256\"])",
+    "explanation": "Secure the Improper signature verification (fixture variant 10) pattern using the proposed remediation.",
+    "variant": 10
+  },
+  {
+    "cwe_id": "CWE-352",
+    "title": "Missing CSRF protection (fixture variant 11)",
+    "vulnerable_example": "@app.route(\"/pay\", methods=[\"POST\"])",
+    "secure_example": "@csrf_protect\n@app.route(\"/pay\", methods=[\"POST\"])",
+    "explanation": "Secure the Missing CSRF protection (fixture variant 11) pattern using the proposed remediation.",
+    "variant": 11
+  },
+  {
+    "cwe_id": "CWE-377",
+    "title": "Insecure temporary file (fixture variant 12)",
+    "vulnerable_example": "path = tempfile.mktemp()",
+    "secure_example": "fd,path = tempfile.mkstemp()",
+    "explanation": "Secure the Insecure temporary file (fixture variant 12) pattern using the proposed remediation.",
+    "variant": 12
+  },
+  {
+    "cwe_id": "CWE-378",
+    "title": "Insecure temp file permissions (fixture variant 13)",
+    "vulnerable_example": "tempfile.NamedTemporaryFile(delete=False)",
+    "secure_example": "tempfile.mkstemp()",
+    "explanation": "Secure the Insecure temp file permissions (fixture variant 13) pattern using the proposed remediation.",
+    "variant": 13
+  },
+  {
+    "cwe_id": "CWE-379",
+    "title": "Temp directory permissions (fixture variant 14)",
+    "vulnerable_example": "tempfile.mkdtemp(mode=0o777)",
+    "secure_example": "tempfile.mkdtemp(mode=0o700)",
+    "explanation": "Secure the Temp directory permissions (fixture variant 14) pattern using the proposed remediation.",
+    "variant": 14
+  },
+  {
+    "cwe_id": "CWE-400",
+    "title": "Uncontrolled resource consumption (fixture variant 15)",
+    "vulnerable_example": "for x in range(request.args[\"n\"]):",
+    "secure_example": "for x in range(min(request.args[\"n\"],10000)):",
+    "explanation": "Secure the Uncontrolled resource consumption (fixture variant 15) pattern using the proposed remediation.",
+    "variant": 15
+  },
+  {
+    "cwe_id": "CWE-401",
+    "title": "Memory leak pattern (fixture variant 16)",
+    "vulnerable_example": "global cache\ncache.append(data)",
+    "secure_example": "cache.clear()",
+    "explanation": "Secure the Memory leak pattern (fixture variant 16) pattern using the proposed remediation.",
+    "variant": 16
+  },
+  {
+    "cwe_id": "CWE-409",
+    "title": "Compression bomb (fixture variant 17)",
+    "vulnerable_example": "zipfile.ZipFile(upload).extractall(\"/tmp\")",
+    "secure_example": "validate_archive(upload); extract_safe(upload)",
+    "explanation": "Secure the Compression bomb (fixture variant 17) pattern using the proposed remediation.",
+    "variant": 17
+  },
+  {
+    "cwe_id": "CWE-425",
+    "title": "Direct request attack (fixture variant 18)",
+    "vulnerable_example": "@app.route(\"/admin\")",
+    "secure_example": "@login_required\n@app.route(\"/admin\")",
+    "explanation": "Secure the Direct request attack (fixture variant 18) pattern using the proposed remediation.",
+    "variant": 18
+  },
+  {
+    "cwe_id": "CWE-427",
+    "title": "Uncontrolled search path (fixture variant 19)",
+    "vulnerable_example": "sys.path.append(request.args[\"path\"])",
+    "secure_example": "sys.path.append(\"/opt/app\")",
+    "explanation": "Secure the Uncontrolled search path (fixture variant 19) pattern using the proposed remediation.",
+    "variant": 19
+  },
+  {
+    "cwe_id": "CWE-434",
+    "title": "Unrestricted upload (fixture variant 20)",
+    "vulnerable_example": "save(request.files[\"file\"])",
+    "secure_example": "save(secure_filename(request.files[\"file\"]))",
+    "explanation": "Secure the Unrestricted upload (fixture variant 20) pattern using the proposed remediation.",
+    "variant": 20
+  },
+  {
+    "cwe_id": "CWE-470",
+    "title": "Unsafe reflection (fixture variant 21)",
+    "vulnerable_example": "getattr(service, request.args[\"method\"])",
+    "secure_example": "getattr(service, allowlisted_method)",
+    "explanation": "Secure the Unsafe reflection (fixture variant 21) pattern using the proposed remediation.",
+    "variant": 21
+  },
+  {
+    "cwe_id": "CWE-471",
+    "title": "Modification of assumed immutable data (fixture variant 22)",
+    "vulnerable_example": "config.copy() # mutable",
+    "secure_example": "MappingProxyType(config)",
+    "explanation": "Secure the Modification of assumed immutable data (fixture variant 22) pattern using the proposed remediation.",
+    "variant": 22
+  },
+  {
+    "cwe_id": "CWE-497",
+    "title": "Exposure of system data (fixture variant 23)",
+    "vulnerable_example": "return jsonify(os.environ)",
+    "secure_example": "return jsonify({\"status\":\"ok\"})",
+    "explanation": "Secure the Exposure of system data (fixture variant 23) pattern using the proposed remediation.",
+    "variant": 23
+  },
+  {
+    "cwe_id": "CWE-522",
+    "title": "Insufficiently protected credentials (fixture variant 24)",
+    "vulnerable_example": "auth = (username,password)",
+    "secure_example": "auth = use_secret_manager()",
+    "explanation": "Secure the Insufficiently protected credentials (fixture variant 24) pattern using the proposed remediation.",
+    "variant": 24
+  },
+  {
+    "cwe_id": "CWE-598",
+    "title": "GET password exposure (fixture variant 25)",
+    "vulnerable_example": "url_for(\"login\", password=pwd)",
+    "secure_example": "url_for(\"login\")",
+    "explanation": "Secure the GET password exposure (fixture variant 25) pattern using the proposed remediation.",
+    "variant": 25
+  },
+  {
+    "cwe_id": "CWE-601",
+    "title": "Open redirect (fixture variant 26)",
+    "vulnerable_example": "return redirect(request.args[\"next\"])",
+    "secure_example": "return redirect(allowlisted_next)",
+    "explanation": "Secure the Open redirect (fixture variant 26) pattern using the proposed remediation.",
+    "variant": 26
+  },
+  {
+    "cwe_id": "CWE-614",
+    "title": "Insecure cookie (fixture variant 27)",
+    "vulnerable_example": "response.set_cookie(\"sid\",sid,secure=False)",
+    "secure_example": "response.set_cookie(\"sid\",sid,secure=True)",
+    "explanation": "Secure the Insecure cookie (fixture variant 27) pattern using the proposed remediation.",
+    "variant": 27
+  },
+  {
+    "cwe_id": "CWE-620",
+    "title": "Unverified password change (fixture variant 28)",
+    "vulnerable_example": "change_password(request.form[\"new\"])",
+    "secure_example": "change_password_after_reauth(current,new)",
+    "explanation": "Secure the Unverified password change (fixture variant 28) pattern using the proposed remediation.",
+    "variant": 28
+  },
+  {
+    "cwe_id": "CWE-639",
+    "title": "Authorization bypass (fixture variant 29)",
+    "vulnerable_example": "object_id = request.args[\"id\"]",
+    "secure_example": "object_id = authorize(request.user, request.args[\"id\"])",
+    "explanation": "Secure the Authorization bypass (fixture variant 29) pattern using the proposed remediation.",
+    "variant": 29
+  },
+  {
+    "cwe_id": "CWE-640",
+    "title": "Weak password recovery (fixture variant 30)",
+    "vulnerable_example": "reset_token = random.random()",
+    "secure_example": "reset_token = secrets.token_urlsafe(32)",
+    "explanation": "Secure the Weak password recovery (fixture variant 30) pattern using the proposed remediation.",
+    "variant": 30
+  },
+  {
+    "cwe_id": "CWE-643",
+    "title": "XPath injection (fixture variant 31)",
+    "vulnerable_example": "root.xpath(\"//user[\" + name + \"]\")",
+    "secure_example": "root.xpath(\"//user[@name=$name]\",name=name)",
+    "explanation": "Secure the XPath injection (fixture variant 31) pattern using the proposed remediation.",
+    "variant": 31
+  },
+  {
+    "cwe_id": "CWE-668",
+    "title": "Exposure to wrong sphere (fixture variant 32)",
+    "vulnerable_example": "server.bind((\"0.0.0.0\",port))",
+    "secure_example": "server.bind((\"127.0.0.1\",port))",
+    "explanation": "Secure the Exposure to wrong sphere (fixture variant 32) pattern using the proposed remediation.",
+    "variant": 32
+  },
+  {
+    "cwe_id": "CWE-693",
+    "title": "Missing security headers (fixture variant 33)",
+    "vulnerable_example": "headers={\"X-Frame-Options\":\"ALLOW\"}",
+    "secure_example": "headers={\"X-Frame-Options\":\"DENY\"}",
+    "explanation": "Secure the Missing security headers (fixture variant 33) pattern using the proposed remediation.",
+    "variant": 33
+  },
+  {
+    "cwe_id": "CWE-703",
+    "title": "Improper exception handling (fixture variant 34)",
+    "vulnerable_example": "except:\n    pass",
+    "secure_example": "except ValueError:\n    logger.warning(\"bad input\")",
+    "explanation": "Secure the Improper exception handling (fixture variant 34) pattern using the proposed remediation.",
+    "variant": 34
+  },
+  {
+    "cwe_id": "CWE-704",
+    "title": "Incorrect type conversion (fixture variant 35)",
+    "vulnerable_example": "age = int(request.args[\"age\"])",
+    "secure_example": "age = parse_bounded_int(request.args[\"age\"])",
+    "explanation": "Secure the Incorrect type conversion (fixture variant 35) pattern using the proposed remediation.",
+    "variant": 35
+  },
+  {
+    "cwe_id": "CWE-707",
+    "title": "Improper neutralization (fixture variant 36)",
+    "vulnerable_example": "html = \"<p>\" + user + \"</p>",
+    "secure_example": "html = escape(user)",
+    "explanation": "Secure the Improper neutralization (fixture variant 36) pattern using the proposed remediation.",
+    "variant": 36
+  },
+  {
+    "cwe_id": "CWE-732",
+    "title": "Unsafe file permissions (fixture variant 37)",
+    "vulnerable_example": "os.chmod(path,0o777)",
+    "secure_example": "os.chmod(path,0o600)",
+    "explanation": "Secure the Unsafe file permissions (fixture variant 37) pattern using the proposed remediation.",
+    "variant": 37
+  },
+  {
+    "cwe_id": "CWE-749",
+    "title": "Exposed dangerous method (fixture variant 38)",
+    "vulnerable_example": "api.debug = True",
+    "secure_example": "api.debug = False",
+    "explanation": "Secure the Exposed dangerous method (fixture variant 38) pattern using the proposed remediation.",
+    "variant": 38
+  },
+  {
+    "cwe_id": "CWE-770",
+    "title": "Allocation without limits (fixture variant 39)",
+    "vulnerable_example": "data = [0] * int(request.args[\"n\"])",
+    "secure_example": "data = [0] * min(int(n),1000)",
+    "explanation": "Secure the Allocation without limits (fixture variant 39) pattern using the proposed remediation.",
+    "variant": 39
+  },
+  {
+    "cwe_id": "CWE-776",
+    "title": "XML entity expansion (fixture variant 40)",
+    "vulnerable_example": "XMLParser(resolve_entities=True)",
+    "secure_example": "defusedxml.ElementTree",
+    "explanation": "Secure the XML entity expansion (fixture variant 40) pattern using the proposed remediation.",
+    "variant": 40
+  },
+  {
+    "cwe_id": "CWE-778",
+    "title": "Insufficient logging (fixture variant 41)",
+    "vulnerable_example": "except Exception as e:\n    return error(e)",
+    "secure_example": "except Exception as e:\n    logger.exception(\"failure\")",
+    "explanation": "Secure the Insufficient logging (fixture variant 41) pattern using the proposed remediation.",
+    "variant": 41
+  },
+  {
+    "cwe_id": "CWE-779",
+    "title": "Logging of sensitive data (fixture variant 42)",
+    "vulnerable_example": "logger.info(\"token=%s\",token)",
+    "secure_example": "logger.info(\"token issued\")",
+    "explanation": "Secure the Logging of sensitive data (fixture variant 42) pattern using the proposed remediation.",
+    "variant": 42
+  },
+  {
+    "cwe_id": "CWE-787",
+    "title": "Out-of-bounds write (fixture variant 43)",
+    "vulnerable_example": "buffer[index] = value",
+    "secure_example": "if 0 <= index < len(buffer): buffer[index] = value",
+    "explanation": "Secure the Out-of-bounds write (fixture variant 43) pattern using the proposed remediation.",
+    "variant": 43
+  },
+  {
+    "cwe_id": "CWE-789",
+    "title": "Uncontrolled memory allocation (fixture variant 44)",
+    "vulnerable_example": "buf = bytearray(request.args[\"size\"])",
+    "secure_example": "buf = bytearray(min(size,1048576))",
+    "explanation": "Secure the Uncontrolled memory allocation (fixture variant 44) pattern using the proposed remediation.",
+    "variant": 44
+  },
+  {
+    "cwe_id": "CWE-862",
+    "title": "Missing authorization (fixture variant 45)",
+    "vulnerable_example": "@app.route(\"/delete\",methods=[\"POST\"])",
+    "secure_example": "@admin_required\n@app.route(\"/delete\",methods=[\"POST\"])",
+    "explanation": "Secure the Missing authorization (fixture variant 45) pattern using the proposed remediation.",
+    "variant": 45
+  },
+  {
+    "cwe_id": "CWE-863",
+    "title": "Incorrect authorization (fixture variant 46)",
+    "vulnerable_example": "if user.id == request.args[\"id\"]: allow()",
+    "secure_example": "if permission.can_read(resource): allow()",
+    "explanation": "Secure the Incorrect authorization (fixture variant 46) pattern using the proposed remediation.",
+    "variant": 46
+  },
+  {
+    "cwe_id": "CWE-915",
+    "title": "Mass assignment (fixture variant 47)",
+    "vulnerable_example": "model.update(request.json)",
+    "secure_example": "model.update(allowed_fields(request.json))",
+    "explanation": "Secure the Mass assignment (fixture variant 47) pattern using the proposed remediation.",
+    "variant": 47
+  },
+  {
+    "cwe_id": "CWE-922",
+    "title": "Insecure storage (fixture variant 48)",
+    "vulnerable_example": "open(\"session.txt\",\"w\").write(token)",
+    "secure_example": "keyring.set_password(\"app\",\"session\",token)",
+    "explanation": "Secure the Insecure storage (fixture variant 48) pattern using the proposed remediation.",
+    "variant": 48
+  },
+  {
+    "cwe_id": "CWE-939",
+    "title": "Weak authentication (fixture variant 49)",
+    "vulnerable_example": "if password == stored: login()",
+    "secure_example": "if verify_password(password,stored): login()",
+    "explanation": "Secure the Weak authentication (fixture variant 49) pattern using the proposed remediation.",
+    "variant": 49
+  },
+  {
+    "cwe_id": "CWE-942",
+    "title": "Permissive CORS (fixture variant 50)",
+    "vulnerable_example": "headers={\"Access-Control-Allow-Origin\":\"*\"}",
+    "secure_example": "headers={\"Access-Control-Allow-Origin\":allowed_origin}",
+    "explanation": "Secure the Permissive CORS (fixture variant 50) pattern using the proposed remediation.",
+    "variant": 50
+  },
+  {
+    "cwe_id": "CWE-943",
+    "title": "NoSQL injection (fixture variant 51)",
+    "vulnerable_example": "db.find(request.json)",
+    "secure_example": "db.find({\"user_id\":int(request.args[\"id\"])})",
+    "explanation": "Secure the NoSQL injection (fixture variant 51) pattern using the proposed remediation.",
+    "variant": 51
+  },
+  {
+    "cwe_id": "CWE-1004",
+    "title": "Sensitive cookie without HttpOnly (fixture variant 52)",
+    "vulnerable_example": "response.set_cookie(\"sid\",sid,httponly=False)",
+    "secure_example": "response.set_cookie(\"sid\",sid,httponly=True)",
+    "explanation": "Secure the Sensitive cookie without HttpOnly (fixture variant 52) pattern using the proposed remediation.",
+    "variant": 52
+  },
+  {
+    "cwe_id": "CWE-1021",
+    "title": "Clickjacking (fixture variant 53)",
+    "vulnerable_example": "headers={\"X-Frame-Options\":\"ALLOW-FROM *\"}",
+    "secure_example": "headers={\"X-Frame-Options\":\"DENY\"}",
+    "explanation": "Secure the Clickjacking (fixture variant 53) pattern using the proposed remediation.",
+    "variant": 53
+  },
+  {
+    "cwe_id": "CWE-117",
+    "title": "Log injection (fixture variant 54)",
+    "vulnerable_example": "logger.info(request.args[\"name\"])",
+    "secure_example": "logger.info(\"name=%s\",sanitize(name))",
+    "explanation": "Secure the Log injection (fixture variant 54) pattern using the proposed remediation.",
+    "variant": 54
+  },
+  {
+    "cwe_id": "CWE-134",
+    "title": "Format string injection (fixture variant 55)",
+    "vulnerable_example": "\"%s\" % request.args[\"x\"]",
+    "secure_example": "safe_format(request.args[\"x\"])",
+    "explanation": "Secure the Format string injection (fixture variant 55) pattern using the proposed remediation.",
+    "variant": 55
+  },
+  {
+    "cwe_id": "CWE-185",
+    "title": "Incorrect regular expression (fixture variant 56)",
+    "vulnerable_example": "re.search(request.args[\"pattern\"],data)",
+    "secure_example": "re.search(ALLOWED_PATTERN,data)",
+    "explanation": "Secure the Incorrect regular expression (fixture variant 56) pattern using the proposed remediation.",
+    "variant": 56
+  },
+  {
+    "cwe_id": "CWE-209",
+    "title": "Verbose exception leak (fixture variant 57)",
+    "vulnerable_example": "return str(e)",
+    "secure_example": "return \"internal error\"",
+    "explanation": "Secure the Verbose exception leak (fixture variant 57) pattern using the proposed remediation.",
+    "variant": 57
+  },
+  {
+    "cwe_id": "CWE-269",
+    "title": "Improper privilege management (fixture variant 58)",
+    "vulnerable_example": "os.setuid(0)",
+    "secure_example": "drop_privileges()",
+    "explanation": "Secure the Improper privilege management (fixture variant 58) pattern using the proposed remediation.",
+    "variant": 58
+  },
+  {
+    "cwe_id": "CWE-284",
+    "title": "Improper access control (fixture variant 59)",
+    "vulnerable_example": "allow_all = True",
+    "secure_example": "allow_all = False",
+    "explanation": "Secure the Improper access control (fixture variant 59) pattern using the proposed remediation.",
+    "variant": 59
+  },
+  {
+    "cwe_id": "CWE-285",
+    "title": "Improper authorization (fixture variant 60)",
+    "vulnerable_example": "@requires_auth\ndef admin(): pass",
+    "secure_example": "@requires_role(\"admin\")\ndef admin(): pass",
+    "explanation": "Secure the Improper authorization (fixture variant 60) pattern using the proposed remediation.",
+    "variant": 60
+  },
+  {
+    "cwe_id": "CWE-287",
+    "title": "Improper authentication (fixture variant 61)",
+    "vulnerable_example": "authenticated = True",
+    "secure_example": "authenticated = verify_session()",
+    "explanation": "Secure the Improper authentication (fixture variant 61) pattern using the proposed remediation.",
+    "variant": 61
+  },
+  {
+    "cwe_id": "CWE-288",
+    "title": "Authentication bypass (fixture variant 62)",
+    "vulnerable_example": "if request.args.get(\"debug\"): authenticated=True",
+    "secure_example": "if production and verify_session(): authenticated=True",
+    "explanation": "Secure the Authentication bypass (fixture variant 62) pattern using the proposed remediation.",
+    "variant": 62
+  },
+  {
+    "cwe_id": "CWE-306",
+    "title": "Missing authentication (fixture variant 63)",
+    "vulnerable_example": "@app.route(\"/transfer\")",
+    "secure_example": "@login_required\n@app.route(\"/transfer\")",
+    "explanation": "Secure the Missing authentication (fixture variant 63) pattern using the proposed remediation.",
+    "variant": 63
+  },
+  {
+    "cwe_id": "CWE-307",
+    "title": "Brute force (fixture variant 64)",
+    "vulnerable_example": "login_attempts += 1",
+    "secure_example": "rate_limiter.record_failure(user)",
+    "explanation": "Secure the Brute force (fixture variant 64) pattern using the proposed remediation.",
+    "variant": 64
+  },
+  {
+    "cwe_id": "CWE-352",
+    "title": "CSRF token missing (fixture variant 65)",
+    "vulnerable_example": "csrf_enabled = False",
+    "secure_example": "csrf_enabled = True",
+    "explanation": "Secure the CSRF token missing (fixture variant 65) pattern using the proposed remediation.",
+    "variant": 65
+  },
+  {
+    "cwe_id": "CWE-359",
+    "title": "Privacy violation (fixture variant 66)",
+    "vulnerable_example": "collect(user.ssn)",
+    "secure_example": "collect(consent_checked(user.ssn))",
+    "explanation": "Secure the Privacy violation (fixture variant 66) pattern using the proposed remediation.",
+    "variant": 66
+  },
+  {
+    "cwe_id": "CWE-369",
+    "title": "Divide by zero (fixture variant 67)",
+    "vulnerable_example": "ratio = total / request.args[\"n\"]",
+    "secure_example": "ratio = total / max(n,1)",
+    "explanation": "Secure the Divide by zero (fixture variant 67) pattern using the proposed remediation.",
+    "variant": 67
+  },
+  {
+    "cwe_id": "CWE-367",
+    "title": "TOCTOU race (fixture variant 68)",
+    "vulnerable_example": "if os.path.exists(path):\n    open(path,\"w\")",
+    "secure_example": "open_atomic(path)",
+    "explanation": "Secure the TOCTOU race (fixture variant 68) pattern using the proposed remediation.",
+    "variant": 68
+  },
+  {
+    "cwe_id": "CWE-428",
+    "title": "Unquoted search path (fixture variant 69)",
+    "vulnerable_example": "subprocess.run(cmd,shell=True)",
+    "secure_example": "subprocess.run(args,shell=False)",
+    "explanation": "Secure the Unquoted search path (fixture variant 69) pattern using the proposed remediation.",
+    "variant": 69
+  },
+  {
+    "cwe_id": "CWE-494",
+    "title": "Download without integrity (fixture variant 70)",
+    "vulnerable_example": "urllib.request.urlretrieve(url,path)",
+    "secure_example": "download_and_verify(url,sha256)",
+    "explanation": "Secure the Download without integrity (fixture variant 70) pattern using the proposed remediation.",
+    "variant": 70
+  },
+  {
+    "cwe_id": "CWE-552",
+    "title": "Files accessible to external parties (fixture variant 71)",
+    "vulnerable_example": "os.chmod(secret,0o644)",
+    "secure_example": "os.chmod(secret,0o600)",
+    "explanation": "Secure the Files accessible to external parties (fixture variant 71) pattern using the proposed remediation.",
+    "variant": 71
+  },
+  {
+    "cwe_id": "CWE-565",
+    "title": "Reliance on cookies (fixture variant 72)",
+    "vulnerable_example": "if cookie[\"role\"] == \"admin\":",
+    "secure_example": "if session.user.has_role(\"admin\"):",
+    "explanation": "Secure the Reliance on cookies (fixture variant 72) pattern using the proposed remediation.",
+    "variant": 72
+  },
+  {
+    "cwe_id": "CWE-598",
+    "title": "GET sensitive query (fixture variant 73)",
+    "vulnerable_example": "GET /reset?token=abc",
+    "secure_example": "POST /reset with token body",
+    "explanation": "Secure the GET sensitive query (fixture variant 73) pattern using the proposed remediation.",
+    "variant": 73
+  },
+  {
+    "cwe_id": "CWE-611",
+    "title": "XXE parser (fixture variant 74)",
+    "vulnerable_example": "ET.parse(request.data)",
+    "secure_example": "defusedxml.ElementTree.parse(request.data)",
+    "explanation": "Secure the XXE parser (fixture variant 74) pattern using the proposed remediation.",
+    "variant": 74
+  },
+  {
+    "cwe_id": "CWE-613",
+    "title": "Insufficient session expiration (fixture variant 75)",
+    "vulnerable_example": "SESSION_TIMEOUT = 0",
+    "secure_example": "SESSION_TIMEOUT = 1800",
+    "explanation": "Secure the Insufficient session expiration (fixture variant 75) pattern using the proposed remediation.",
+    "variant": 75
+  },
+  {
+    "cwe_id": "CWE-614",
+    "title": "Secure flag missing (fixture variant 76)",
+    "vulnerable_example": "secure_cookie = False",
+    "secure_example": "secure_cookie = True",
+    "explanation": "Secure the Secure flag missing (fixture variant 76) pattern using the proposed remediation.",
+    "variant": 76
+  },
+  {
+    "cwe_id": "CWE-639",
+    "title": "IDOR (fixture variant 77)",
+    "vulnerable_example": "get_by_id(request.args[\"id\"])",
+    "secure_example": "get_authorized(request.user,request.args[\"id\"])",
+    "explanation": "Secure the IDOR (fixture variant 77) pattern using the proposed remediation.",
+    "variant": 77
+  },
+  {
+    "cwe_id": "CWE-776",
+    "title": "Billion laughs (fixture variant 78)",
+    "vulnerable_example": "xml.parse(untrusted)",
+    "secure_example": "defusedxml.parse(untrusted)",
+    "explanation": "Secure the Billion laughs (fixture variant 78) pattern using the proposed remediation.",
+    "variant": 78
+  },
+  {
+    "cwe_id": "CWE-918",
+    "title": "SSRF request (fixture variant 79)",
+    "vulnerable_example": "requests.get(user_url)",
+    "secure_example": "requests.get(allowlisted_url)",
+    "explanation": "Secure the SSRF request (fixture variant 79) pattern using the proposed remediation.",
+    "variant": 79
+  },
+  {
+    "cwe_id": "CWE-1321",
+    "title": "Prototype pollution (fixture variant 80)",
+    "vulnerable_example": "Object.assign(target, req.body)",
+    "secure_example": "Object.assign(target, pick(req.body,allowed))",
+    "explanation": "Secure the Prototype pollution (fixture variant 80) pattern using the proposed remediation.",
+    "variant": 80
+  },
+  {
+    "cwe_id": "CWE-200",
+    "title": "Sensitive information exposure (fixture variant 81)",
+    "vulnerable_example": "print(password)",
+    "secure_example": "logger.info(\"request accepted\")",
+    "explanation": "Secure the Sensitive information exposure (fixture variant 81) pattern using the proposed remediation.",
+    "variant": 81
+  },
+  {
+    "cwe_id": "CWE-209",
+    "title": "Error message information leak (fixture variant 82)",
+    "vulnerable_example": "raise Exception(password)",
+    "secure_example": "raise Exception(\"request failed\")",
+    "explanation": "Secure the Error message information leak (fixture variant 82) pattern using the proposed remediation.",
+    "variant": 82
+  },
+  {
+    "cwe_id": "CWE-256",
+    "title": "Plaintext password storage (fixture variant 83)",
+    "vulnerable_example": "password = request.form[\"password\"]",
+    "secure_example": "password = hash_password(request.form[\"password\"])",
+    "explanation": "Secure the Plaintext password storage (fixture variant 83) pattern using the proposed remediation.",
+    "variant": 83
+  },
+  {
+    "cwe_id": "CWE-259",
+    "title": "Hard-coded password (fixture variant 84)",
+    "vulnerable_example": "password = \"letmein\"",
+    "secure_example": "password = os.getenv(\"PASSWORD\")",
+    "explanation": "Secure the Hard-coded password (fixture variant 84) pattern using the proposed remediation.",
+    "variant": 84
+  },
+  {
+    "cwe_id": "CWE-312",
+    "title": "Cleartext sensitive data (fixture variant 85)",
+    "vulnerable_example": "logger.info(password)",
+    "secure_example": "logger.info(\"authentication complete\")",
+    "explanation": "Secure the Cleartext sensitive data (fixture variant 85) pattern using the proposed remediation.",
+    "variant": 85
+  },
+  {
+    "cwe_id": "CWE-319",
+    "title": "Cleartext transmission (fixture variant 86)",
+    "vulnerable_example": "requests.get(\"http://internal\")",
+    "secure_example": "requests.get(\"https://internal\")",
+    "explanation": "Secure the Cleartext transmission (fixture variant 86) pattern using the proposed remediation.",
+    "variant": 86
+  },
+  {
+    "cwe_id": "CWE-326",
+    "title": "Inadequate encryption strength (fixture variant 87)",
+    "vulnerable_example": "key_size = 512",
+    "secure_example": "key_size = 2048",
+    "explanation": "Secure the Inadequate encryption strength (fixture variant 87) pattern using the proposed remediation.",
+    "variant": 87
+  },
+  {
+    "cwe_id": "CWE-330",
+    "title": "Insufficiently random values (fixture variant 88)",
+    "vulnerable_example": "token = random.random()",
+    "secure_example": "token = secrets.token_urlsafe()",
+    "explanation": "Secure the Insufficiently random values (fixture variant 88) pattern using the proposed remediation.",
+    "variant": 88
+  },
+  {
+    "cwe_id": "CWE-338",
+    "title": "Weak PRNG (fixture variant 89)",
+    "vulnerable_example": "id = random.randint(1,9)",
+    "secure_example": "id = secrets.randbelow(9)",
+    "explanation": "Secure the Weak PRNG (fixture variant 89) pattern using the proposed remediation.",
+    "variant": 89
+  },
+  {
+    "cwe_id": "CWE-347",
+    "title": "Improper signature verification (fixture variant 90)",
+    "vulnerable_example": "jwt.decode(token,key,verify=False)",
+    "secure_example": "jwt.decode(token,key,algorithms=[\"HS256\"])",
+    "explanation": "Secure the Improper signature verification (fixture variant 90) pattern using the proposed remediation.",
+    "variant": 90
+  },
+  {
+    "cwe_id": "CWE-352",
+    "title": "Missing CSRF protection (fixture variant 91)",
+    "vulnerable_example": "@app.route(\"/pay\", methods=[\"POST\"])",
+    "secure_example": "@csrf_protect\n@app.route(\"/pay\", methods=[\"POST\"])",
+    "explanation": "Secure the Missing CSRF protection (fixture variant 91) pattern using the proposed remediation.",
+    "variant": 91
+  },
+  {
+    "cwe_id": "CWE-377",
+    "title": "Insecure temporary file (fixture variant 92)",
+    "vulnerable_example": "path = tempfile.mktemp()",
+    "secure_example": "fd,path = tempfile.mkstemp()",
+    "explanation": "Secure the Insecure temporary file (fixture variant 92) pattern using the proposed remediation.",
+    "variant": 92
+  },
+  {
+    "cwe_id": "CWE-378",
+    "title": "Insecure temp file permissions (fixture variant 93)",
+    "vulnerable_example": "tempfile.NamedTemporaryFile(delete=False)",
+    "secure_example": "tempfile.mkstemp()",
+    "explanation": "Secure the Insecure temp file permissions (fixture variant 93) pattern using the proposed remediation.",
+    "variant": 93
+  },
+  {
+    "cwe_id": "CWE-379",
+    "title": "Temp directory permissions (fixture variant 94)",
+    "vulnerable_example": "tempfile.mkdtemp(mode=0o777)",
+    "secure_example": "tempfile.mkdtemp(mode=0o700)",
+    "explanation": "Secure the Temp directory permissions (fixture variant 94) pattern using the proposed remediation.",
+    "variant": 94
+  },
+  {
+    "cwe_id": "CWE-400",
+    "title": "Uncontrolled resource consumption (fixture variant 95)",
+    "vulnerable_example": "for x in range(request.args[\"n\"]):",
+    "secure_example": "for x in range(min(request.args[\"n\"],10000)):",
+    "explanation": "Secure the Uncontrolled resource consumption (fixture variant 95) pattern using the proposed remediation.",
+    "variant": 95
+  },
+  {
+    "cwe_id": "CWE-401",
+    "title": "Memory leak pattern (fixture variant 96)",
+    "vulnerable_example": "global cache\ncache.append(data)",
+    "secure_example": "cache.clear()",
+    "explanation": "Secure the Memory leak pattern (fixture variant 96) pattern using the proposed remediation.",
+    "variant": 96
+  },
+  {
+    "cwe_id": "CWE-409",
+    "title": "Compression bomb (fixture variant 97)",
+    "vulnerable_example": "zipfile.ZipFile(upload).extractall(\"/tmp\")",
+    "secure_example": "validate_archive(upload); extract_safe(upload)",
+    "explanation": "Secure the Compression bomb (fixture variant 97) pattern using the proposed remediation.",
+    "variant": 97
+  },
+  {
+    "cwe_id": "CWE-425",
+    "title": "Direct request attack (fixture variant 98)",
+    "vulnerable_example": "@app.route(\"/admin\")",
+    "secure_example": "@login_required\n@app.route(\"/admin\")",
+    "explanation": "Secure the Direct request attack (fixture variant 98) pattern using the proposed remediation.",
+    "variant": 98
+  },
+  {
+    "cwe_id": "CWE-427",
+    "title": "Uncontrolled search path (fixture variant 99)",
+    "vulnerable_example": "sys.path.append(request.args[\"path\"])",
+    "secure_example": "sys.path.append(\"/opt/app\")",
+    "explanation": "Secure the Uncontrolled search path (fixture variant 99) pattern using the proposed remediation.",
+    "variant": 99
+  },
+  {
+    "cwe_id": "CWE-434",
+    "title": "Unrestricted upload (fixture variant 100)",
+    "vulnerable_example": "save(request.files[\"file\"])",
+    "secure_example": "save(secure_filename(request.files[\"file\"]))",
+    "explanation": "Secure the Unrestricted upload (fixture variant 100) pattern using the proposed remediation.",
+    "variant": 100
+  },
+  {
+    "cwe_id": "CWE-470",
+    "title": "Unsafe reflection (fixture variant 101)",
+    "vulnerable_example": "getattr(service, request.args[\"method\"])",
+    "secure_example": "getattr(service, allowlisted_method)",
+    "explanation": "Secure the Unsafe reflection (fixture variant 101) pattern using the proposed remediation.",
+    "variant": 101
+  },
+  {
+    "cwe_id": "CWE-471",
+    "title": "Modification of assumed immutable data (fixture variant 102)",
+    "vulnerable_example": "config.copy() # mutable",
+    "secure_example": "MappingProxyType(config)",
+    "explanation": "Secure the Modification of assumed immutable data (fixture variant 102) pattern using the proposed remediation.",
+    "variant": 102
+  },
+  {
+    "cwe_id": "CWE-497",
+    "title": "Exposure of system data (fixture variant 103)",
+    "vulnerable_example": "return jsonify(os.environ)",
+    "secure_example": "return jsonify({\"status\":\"ok\"})",
+    "explanation": "Secure the Exposure of system data (fixture variant 103) pattern using the proposed remediation.",
+    "variant": 103
+  },
+  {
+    "cwe_id": "CWE-522",
+    "title": "Insufficiently protected credentials (fixture variant 104)",
+    "vulnerable_example": "auth = (username,password)",
+    "secure_example": "auth = use_secret_manager()",
+    "explanation": "Secure the Insufficiently protected credentials (fixture variant 104) pattern using the proposed remediation.",
+    "variant": 104
+  },
+  {
+    "cwe_id": "CWE-598",
+    "title": "GET password exposure (fixture variant 105)",
+    "vulnerable_example": "url_for(\"login\", password=pwd)",
+    "secure_example": "url_for(\"login\")",
+    "explanation": "Secure the GET password exposure (fixture variant 105) pattern using the proposed remediation.",
+    "variant": 105
+  },
+  {
+    "cwe_id": "CWE-601",
+    "title": "Open redirect (fixture variant 106)",
+    "vulnerable_example": "return redirect(request.args[\"next\"])",
+    "secure_example": "return redirect(allowlisted_next)",
+    "explanation": "Secure the Open redirect (fixture variant 106) pattern using the proposed remediation.",
+    "variant": 106
+  },
+  {
+    "cwe_id": "CWE-614",
+    "title": "Insecure cookie (fixture variant 107)",
+    "vulnerable_example": "response.set_cookie(\"sid\",sid,secure=False)",
+    "secure_example": "response.set_cookie(\"sid\",sid,secure=True)",
+    "explanation": "Secure the Insecure cookie (fixture variant 107) pattern using the proposed remediation.",
+    "variant": 107
+  },
+  {
+    "cwe_id": "CWE-620",
+    "title": "Unverified password change (fixture variant 108)",
+    "vulnerable_example": "change_password(request.form[\"new\"])",
+    "secure_example": "change_password_after_reauth(current,new)",
+    "explanation": "Secure the Unverified password change (fixture variant 108) pattern using the proposed remediation.",
+    "variant": 108
+  },
+  {
+    "cwe_id": "CWE-639",
+    "title": "Authorization bypass (fixture variant 109)",
+    "vulnerable_example": "object_id = request.args[\"id\"]",
+    "secure_example": "object_id = authorize(request.user, request.args[\"id\"])",
+    "explanation": "Secure the Authorization bypass (fixture variant 109) pattern using the proposed remediation.",
+    "variant": 109
+  },
+  {
+    "cwe_id": "CWE-640",
+    "title": "Weak password recovery (fixture variant 110)",
+    "vulnerable_example": "reset_token = random.random()",
+    "secure_example": "reset_token = secrets.token_urlsafe(32)",
+    "explanation": "Secure the Weak password recovery (fixture variant 110) pattern using the proposed remediation.",
+    "variant": 110
+  },
+  {
+    "cwe_id": "CWE-643",
+    "title": "XPath injection (fixture variant 111)",
+    "vulnerable_example": "root.xpath(\"//user[\" + name + \"]\")",
+    "secure_example": "root.xpath(\"//user[@name=$name]\",name=name)",
+    "explanation": "Secure the XPath injection (fixture variant 111) pattern using the proposed remediation.",
+    "variant": 111
+  },
+  {
+    "cwe_id": "CWE-668",
+    "title": "Exposure to wrong sphere (fixture variant 112)",
+    "vulnerable_example": "server.bind((\"0.0.0.0\",port))",
+    "secure_example": "server.bind((\"127.0.0.1\",port))",
+    "explanation": "Secure the Exposure to wrong sphere (fixture variant 112) pattern using the proposed remediation.",
+    "variant": 112
+  },
+  {
+    "cwe_id": "CWE-693",
+    "title": "Missing security headers (fixture variant 113)",
+    "vulnerable_example": "headers={\"X-Frame-Options\":\"ALLOW\"}",
+    "secure_example": "headers={\"X-Frame-Options\":\"DENY\"}",
+    "explanation": "Secure the Missing security headers (fixture variant 113) pattern using the proposed remediation.",
+    "variant": 113
+  },
+  {
+    "cwe_id": "CWE-703",
+    "title": "Improper exception handling (fixture variant 114)",
+    "vulnerable_example": "except:\n    pass",
+    "secure_example": "except ValueError:\n    logger.warning(\"bad input\")",
+    "explanation": "Secure the Improper exception handling (fixture variant 114) pattern using the proposed remediation.",
+    "variant": 114
+  },
+  {
+    "cwe_id": "CWE-704",
+    "title": "Incorrect type conversion (fixture variant 115)",
+    "vulnerable_example": "age = int(request.args[\"age\"])",
+    "secure_example": "age = parse_bounded_int(request.args[\"age\"])",
+    "explanation": "Secure the Incorrect type conversion (fixture variant 115) pattern using the proposed remediation.",
+    "variant": 115
+  },
+  {
+    "cwe_id": "CWE-707",
+    "title": "Improper neutralization (fixture variant 116)",
+    "vulnerable_example": "html = \"<p>\" + user + \"</p>",
+    "secure_example": "html = escape(user)",
+    "explanation": "Secure the Improper neutralization (fixture variant 116) pattern using the proposed remediation.",
+    "variant": 116
+  },
+  {
+    "cwe_id": "CWE-732",
+    "title": "Unsafe file permissions (fixture variant 117)",
+    "vulnerable_example": "os.chmod(path,0o777)",
+    "secure_example": "os.chmod(path,0o600)",
+    "explanation": "Secure the Unsafe file permissions (fixture variant 117) pattern using the proposed remediation.",
+    "variant": 117
+  },
+  {
+    "cwe_id": "CWE-749",
+    "title": "Exposed dangerous method (fixture variant 118)",
+    "vulnerable_example": "api.debug = True",
+    "secure_example": "api.debug = False",
+    "explanation": "Secure the Exposed dangerous method (fixture variant 118) pattern using the proposed remediation.",
+    "variant": 118
+  },
+  {
+    "cwe_id": "CWE-770",
+    "title": "Allocation without limits (fixture variant 119)",
+    "vulnerable_example": "data = [0] * int(request.args[\"n\"])",
+    "secure_example": "data = [0] * min(int(n),1000)",
+    "explanation": "Secure the Allocation without limits (fixture variant 119) pattern using the proposed remediation.",
+    "variant": 119
+  },
+  {
+    "cwe_id": "CWE-776",
+    "title": "XML entity expansion (fixture variant 120)",
+    "vulnerable_example": "XMLParser(resolve_entities=True)",
+    "secure_example": "defusedxml.ElementTree",
+    "explanation": "Secure the XML entity expansion (fixture variant 120) pattern using the proposed remediation.",
+    "variant": 120
+  },
+  {
+    "cwe_id": "CWE-778",
+    "title": "Insufficient logging (fixture variant 121)",
+    "vulnerable_example": "except Exception as e:\n    return error(e)",
+    "secure_example": "except Exception as e:\n    logger.exception(\"failure\")",
+    "explanation": "Secure the Insufficient logging (fixture variant 121) pattern using the proposed remediation.",
+    "variant": 121
+  },
+  {
+    "cwe_id": "CWE-779",
+    "title": "Logging of sensitive data (fixture variant 122)",
+    "vulnerable_example": "logger.info(\"token=%s\",token)",
+    "secure_example": "logger.info(\"token issued\")",
+    "explanation": "Secure the Logging of sensitive data (fixture variant 122) pattern using the proposed remediation.",
+    "variant": 122
+  },
+  {
+    "cwe_id": "CWE-787",
+    "title": "Out-of-bounds write (fixture variant 123)",
+    "vulnerable_example": "buffer[index] = value",
+    "secure_example": "if 0 <= index < len(buffer): buffer[index] = value",
+    "explanation": "Secure the Out-of-bounds write (fixture variant 123) pattern using the proposed remediation.",
+    "variant": 123
+  },
+  {
+    "cwe_id": "CWE-789",
+    "title": "Uncontrolled memory allocation (fixture variant 124)",
+    "vulnerable_example": "buf = bytearray(request.args[\"size\"])",
+    "secure_example": "buf = bytearray(min(size,1048576))",
+    "explanation": "Secure the Uncontrolled memory allocation (fixture variant 124) pattern using the proposed remediation.",
+    "variant": 124
+  },
+  {
+    "cwe_id": "CWE-862",
+    "title": "Missing authorization (fixture variant 125)",
+    "vulnerable_example": "@app.route(\"/delete\",methods=[\"POST\"])",
+    "secure_example": "@admin_required\n@app.route(\"/delete\",methods=[\"POST\"])",
+    "explanation": "Secure the Missing authorization (fixture variant 125) pattern using the proposed remediation.",
+    "variant": 125
+  },
+  {
+    "cwe_id": "CWE-863",
+    "title": "Incorrect authorization (fixture variant 126)",
+    "vulnerable_example": "if user.id == request.args[\"id\"]: allow()",
+    "secure_example": "if permission.can_read(resource): allow()",
+    "explanation": "Secure the Incorrect authorization (fixture variant 126) pattern using the proposed remediation.",
+    "variant": 126
+  },
+  {
+    "cwe_id": "CWE-915",
+    "title": "Mass assignment (fixture variant 127)",
+    "vulnerable_example": "model.update(request.json)",
+    "secure_example": "model.update(allowed_fields(request.json))",
+    "explanation": "Secure the Mass assignment (fixture variant 127) pattern using the proposed remediation.",
+    "variant": 127
+  },
+  {
+    "cwe_id": "CWE-922",
+    "title": "Insecure storage (fixture variant 128)",
+    "vulnerable_example": "open(\"session.txt\",\"w\").write(token)",
+    "secure_example": "keyring.set_password(\"app\",\"session\",token)",
+    "explanation": "Secure the Insecure storage (fixture variant 128) pattern using the proposed remediation.",
+    "variant": 128
+  },
+  {
+    "cwe_id": "CWE-939",
+    "title": "Weak authentication (fixture variant 129)",
+    "vulnerable_example": "if password == stored: login()",
+    "secure_example": "if verify_password(password,stored): login()",
+    "explanation": "Secure the Weak authentication (fixture variant 129) pattern using the proposed remediation.",
+    "variant": 129
+  },
+  {
+    "cwe_id": "CWE-942",
+    "title": "Permissive CORS (fixture variant 130)",
+    "vulnerable_example": "headers={\"Access-Control-Allow-Origin\":\"*\"}",
+    "secure_example": "headers={\"Access-Control-Allow-Origin\":allowed_origin}",
+    "explanation": "Secure the Permissive CORS (fixture variant 130) pattern using the proposed remediation.",
+    "variant": 130
+  },
+  {
+    "cwe_id": "CWE-943",
+    "title": "NoSQL injection (fixture variant 131)",
+    "vulnerable_example": "db.find(request.json)",
+    "secure_example": "db.find({\"user_id\":int(request.args[\"id\"])})",
+    "explanation": "Secure the NoSQL injection (fixture variant 131) pattern using the proposed remediation.",
+    "variant": 131
+  },
+  {
+    "cwe_id": "CWE-1004",
+    "title": "Sensitive cookie without HttpOnly (fixture variant 132)",
+    "vulnerable_example": "response.set_cookie(\"sid\",sid,httponly=False)",
+    "secure_example": "response.set_cookie(\"sid\",sid,httponly=True)",
+    "explanation": "Secure the Sensitive cookie without HttpOnly (fixture variant 132) pattern using the proposed remediation.",
+    "variant": 132
+  },
+  {
+    "cwe_id": "CWE-1021",
+    "title": "Clickjacking (fixture variant 133)",
+    "vulnerable_example": "headers={\"X-Frame-Options\":\"ALLOW-FROM *\"}",
+    "secure_example": "headers={\"X-Frame-Options\":\"DENY\"}",
+    "explanation": "Secure the Clickjacking (fixture variant 133) pattern using the proposed remediation.",
+    "variant": 133
+  },
+  {
+    "cwe_id": "CWE-117",
+    "title": "Log injection (fixture variant 134)",
+    "vulnerable_example": "logger.info(request.args[\"name\"])",
+    "secure_example": "logger.info(\"name=%s\",sanitize(name))",
+    "explanation": "Secure the Log injection (fixture variant 134) pattern using the proposed remediation.",
+    "variant": 134
+  },
+  {
+    "cwe_id": "CWE-134",
+    "title": "Format string injection (fixture variant 135)",
+    "vulnerable_example": "\"%s\" % request.args[\"x\"]",
+    "secure_example": "safe_format(request.args[\"x\"])",
+    "explanation": "Secure the Format string injection (fixture variant 135) pattern using the proposed remediation.",
+    "variant": 135
+  },
+  {
+    "cwe_id": "CWE-185",
+    "title": "Incorrect regular expression (fixture variant 136)",
+    "vulnerable_example": "re.search(request.args[\"pattern\"],data)",
+    "secure_example": "re.search(ALLOWED_PATTERN,data)",
+    "explanation": "Secure the Incorrect regular expression (fixture variant 136) pattern using the proposed remediation.",
+    "variant": 136
+  },
+  {
+    "cwe_id": "CWE-209",
+    "title": "Verbose exception leak (fixture variant 137)",
+    "vulnerable_example": "return str(e)",
+    "secure_example": "return \"internal error\"",
+    "explanation": "Secure the Verbose exception leak (fixture variant 137) pattern using the proposed remediation.",
+    "variant": 137
+  },
+  {
+    "cwe_id": "CWE-269",
+    "title": "Improper privilege management (fixture variant 138)",
+    "vulnerable_example": "os.setuid(0)",
+    "secure_example": "drop_privileges()",
+    "explanation": "Secure the Improper privilege management (fixture variant 138) pattern using the proposed remediation.",
+    "variant": 138
+  },
+  {
+    "cwe_id": "CWE-284",
+    "title": "Improper access control (fixture variant 139)",
+    "vulnerable_example": "allow_all = True",
+    "secure_example": "allow_all = False",
+    "explanation": "Secure the Improper access control (fixture variant 139) pattern using the proposed remediation.",
+    "variant": 139
+  },
+  {
+    "cwe_id": "CWE-285",
+    "title": "Improper authorization (fixture variant 140)",
+    "vulnerable_example": "@requires_auth\ndef admin(): pass",
+    "secure_example": "@requires_role(\"admin\")\ndef admin(): pass",
+    "explanation": "Secure the Improper authorization (fixture variant 140) pattern using the proposed remediation.",
+    "variant": 140
+  },
+  {
+    "cwe_id": "CWE-287",
+    "title": "Improper authentication (fixture variant 141)",
+    "vulnerable_example": "authenticated = True",
+    "secure_example": "authenticated = verify_session()",
+    "explanation": "Secure the Improper authentication (fixture variant 141) pattern using the proposed remediation.",
+    "variant": 141
+  },
+  {
+    "cwe_id": "CWE-288",
+    "title": "Authentication bypass (fixture variant 142)",
+    "vulnerable_example": "if request.args.get(\"debug\"): authenticated=True",
+    "secure_example": "if production and verify_session(): authenticated=True",
+    "explanation": "Secure the Authentication bypass (fixture variant 142) pattern using the proposed remediation.",
+    "variant": 142
+  },
+  {
+    "cwe_id": "CWE-306",
+    "title": "Missing authentication (fixture variant 143)",
+    "vulnerable_example": "@app.route(\"/transfer\")",
+    "secure_example": "@login_required\n@app.route(\"/transfer\")",
+    "explanation": "Secure the Missing authentication (fixture variant 143) pattern using the proposed remediation.",
+    "variant": 143
+  },
+  {
+    "cwe_id": "CWE-307",
+    "title": "Brute force (fixture variant 144)",
+    "vulnerable_example": "login_attempts += 1",
+    "secure_example": "rate_limiter.record_failure(user)",
+    "explanation": "Secure the Brute force (fixture variant 144) pattern using the proposed remediation.",
+    "variant": 144
+  },
+  {
+    "cwe_id": "CWE-352",
+    "title": "CSRF token missing (fixture variant 145)",
+    "vulnerable_example": "csrf_enabled = False",
+    "secure_example": "csrf_enabled = True",
+    "explanation": "Secure the CSRF token missing (fixture variant 145) pattern using the proposed remediation.",
+    "variant": 145
+  },
+  {
+    "cwe_id": "CWE-359",
+    "title": "Privacy violation (fixture variant 146)",
+    "vulnerable_example": "collect(user.ssn)",
+    "secure_example": "collect(consent_checked(user.ssn))",
+    "explanation": "Secure the Privacy violation (fixture variant 146) pattern using the proposed remediation.",
+    "variant": 146
+  },
+  {
+    "cwe_id": "CWE-369",
+    "title": "Divide by zero (fixture variant 147)",
+    "vulnerable_example": "ratio = total / request.args[\"n\"]",
+    "secure_example": "ratio = total / max(n,1)",
+    "explanation": "Secure the Divide by zero (fixture variant 147) pattern using the proposed remediation.",
+    "variant": 147
+  },
+  {
+    "cwe_id": "CWE-367",
+    "title": "TOCTOU race (fixture variant 148)",
+    "vulnerable_example": "if os.path.exists(path):\n    open(path,\"w\")",
+    "secure_example": "open_atomic(path)",
+    "explanation": "Secure the TOCTOU race (fixture variant 148) pattern using the proposed remediation.",
+    "variant": 148
+  },
+  {
+    "cwe_id": "CWE-428",
+    "title": "Unquoted search path (fixture variant 149)",
+    "vulnerable_example": "subprocess.run(cmd,shell=True)",
+    "secure_example": "subprocess.run(args,shell=False)",
+    "explanation": "Secure the Unquoted search path (fixture variant 149) pattern using the proposed remediation.",
+    "variant": 149
+  },
+  {
+    "cwe_id": "CWE-494",
+    "title": "Download without integrity (fixture variant 150)",
+    "vulnerable_example": "urllib.request.urlretrieve(url,path)",
+    "secure_example": "download_and_verify(url,sha256)",
+    "explanation": "Secure the Download without integrity (fixture variant 150) pattern using the proposed remediation.",
+    "variant": 150
+  },
+  {
+    "cwe_id": "CWE-552",
+    "title": "Files accessible to external parties (fixture variant 151)",
+    "vulnerable_example": "os.chmod(secret,0o644)",
+    "secure_example": "os.chmod(secret,0o600)",
+    "explanation": "Secure the Files accessible to external parties (fixture variant 151) pattern using the proposed remediation.",
+    "variant": 151
+  },
+  {
+    "cwe_id": "CWE-565",
+    "title": "Reliance on cookies (fixture variant 152)",
+    "vulnerable_example": "if cookie[\"role\"] == \"admin\":",
+    "secure_example": "if session.user.has_role(\"admin\"):",
+    "explanation": "Secure the Reliance on cookies (fixture variant 152) pattern using the proposed remediation.",
+    "variant": 152
+  },
+  {
+    "cwe_id": "CWE-598",
+    "title": "GET sensitive query (fixture variant 153)",
+    "vulnerable_example": "GET /reset?token=abc",
+    "secure_example": "POST /reset with token body",
+    "explanation": "Secure the GET sensitive query (fixture variant 153) pattern using the proposed remediation.",
+    "variant": 153
+  },
+  {
+    "cwe_id": "CWE-611",
+    "title": "XXE parser (fixture variant 154)",
+    "vulnerable_example": "ET.parse(request.data)",
+    "secure_example": "defusedxml.ElementTree.parse(request.data)",
+    "explanation": "Secure the XXE parser (fixture variant 154) pattern using the proposed remediation.",
+    "variant": 154
+  },
+  {
+    "cwe_id": "CWE-613",
+    "title": "Insufficient session expiration (fixture variant 155)",
+    "vulnerable_example": "SESSION_TIMEOUT = 0",
+    "secure_example": "SESSION_TIMEOUT = 1800",
+    "explanation": "Secure the Insufficient session expiration (fixture variant 155) pattern using the proposed remediation.",
+    "variant": 155
+  },
+  {
+    "cwe_id": "CWE-614",
+    "title": "Secure flag missing (fixture variant 156)",
+    "vulnerable_example": "secure_cookie = False",
+    "secure_example": "secure_cookie = True",
+    "explanation": "Secure the Secure flag missing (fixture variant 156) pattern using the proposed remediation.",
+    "variant": 156
+  },
+  {
+    "cwe_id": "CWE-639",
+    "title": "IDOR (fixture variant 157)",
+    "vulnerable_example": "get_by_id(request.args[\"id\"])",
+    "secure_example": "get_authorized(request.user,request.args[\"id\"])",
+    "explanation": "Secure the IDOR (fixture variant 157) pattern using the proposed remediation.",
+    "variant": 157
+  },
+  {
+    "cwe_id": "CWE-776",
+    "title": "Billion laughs (fixture variant 158)",
+    "vulnerable_example": "xml.parse(untrusted)",
+    "secure_example": "defusedxml.parse(untrusted)",
+    "explanation": "Secure the Billion laughs (fixture variant 158) pattern using the proposed remediation.",
+    "variant": 158
+  },
+  {
+    "cwe_id": "CWE-918",
+    "title": "SSRF request (fixture variant 159)",
+    "vulnerable_example": "requests.get(user_url)",
+    "secure_example": "requests.get(allowlisted_url)",
+    "explanation": "Secure the SSRF request (fixture variant 159) pattern using the proposed remediation.",
+    "variant": 159
+  },
+  {
+    "cwe_id": "CWE-1321",
+    "title": "Prototype pollution (fixture variant 160)",
+    "vulnerable_example": "Object.assign(target, req.body)",
+    "secure_example": "Object.assign(target, pick(req.body,allowed))",
+    "explanation": "Secure the Prototype pollution (fixture variant 160) pattern using the proposed remediation.",
+    "variant": 160
+  },
+  {
+    "cwe_id": "CWE-200",
+    "title": "Sensitive information exposure (fixture variant 161)",
+    "vulnerable_example": "print(password)",
+    "secure_example": "logger.info(\"request accepted\")",
+    "explanation": "Secure the Sensitive information exposure (fixture variant 161) pattern using the proposed remediation.",
+    "variant": 161
+  },
+  {
+    "cwe_id": "CWE-209",
+    "title": "Error message information leak (fixture variant 162)",
+    "vulnerable_example": "raise Exception(password)",
+    "secure_example": "raise Exception(\"request failed\")",
+    "explanation": "Secure the Error message information leak (fixture variant 162) pattern using the proposed remediation.",
+    "variant": 162
+  },
+  {
+    "cwe_id": "CWE-256",
+    "title": "Plaintext password storage (fixture variant 163)",
+    "vulnerable_example": "password = request.form[\"password\"]",
+    "secure_example": "password = hash_password(request.form[\"password\"])",
+    "explanation": "Secure the Plaintext password storage (fixture variant 163) pattern using the proposed remediation.",
+    "variant": 163
+  },
+  {
+    "cwe_id": "CWE-259",
+    "title": "Hard-coded password (fixture variant 164)",
+    "vulnerable_example": "password = \"letmein\"",
+    "secure_example": "password = os.getenv(\"PASSWORD\")",
+    "explanation": "Secure the Hard-coded password (fixture variant 164) pattern using the proposed remediation.",
+    "variant": 164
+  },
+  {
+    "cwe_id": "CWE-312",
+    "title": "Cleartext sensitive data (fixture variant 165)",
+    "vulnerable_example": "logger.info(password)",
+    "secure_example": "logger.info(\"authentication complete\")",
+    "explanation": "Secure the Cleartext sensitive data (fixture variant 165) pattern using the proposed remediation.",
+    "variant": 165
+  },
+  {
+    "cwe_id": "CWE-319",
+    "title": "Cleartext transmission (fixture variant 166)",
+    "vulnerable_example": "requests.get(\"http://internal\")",
+    "secure_example": "requests.get(\"https://internal\")",
+    "explanation": "Secure the Cleartext transmission (fixture variant 166) pattern using the proposed remediation.",
+    "variant": 166
+  },
+  {
+    "cwe_id": "CWE-326",
+    "title": "Inadequate encryption strength (fixture variant 167)",
+    "vulnerable_example": "key_size = 512",
+    "secure_example": "key_size = 2048",
+    "explanation": "Secure the Inadequate encryption strength (fixture variant 167) pattern using the proposed remediation.",
+    "variant": 167
+  },
+  {
+    "cwe_id": "CWE-330",
+    "title": "Insufficiently random values (fixture variant 168)",
+    "vulnerable_example": "token = random.random()",
+    "secure_example": "token = secrets.token_urlsafe()",
+    "explanation": "Secure the Insufficiently random values (fixture variant 168) pattern using the proposed remediation.",
+    "variant": 168
+  },
+  {
+    "cwe_id": "CWE-338",
+    "title": "Weak PRNG (fixture variant 169)",
+    "vulnerable_example": "id = random.randint(1,9)",
+    "secure_example": "id = secrets.randbelow(9)",
+    "explanation": "Secure the Weak PRNG (fixture variant 169) pattern using the proposed remediation.",
+    "variant": 169
+  },
+  {
+    "cwe_id": "CWE-347",
+    "title": "Improper signature verification (fixture variant 170)",
+    "vulnerable_example": "jwt.decode(token,key,verify=False)",
+    "secure_example": "jwt.decode(token,key,algorithms=[\"HS256\"])",
+    "explanation": "Secure the Improper signature verification (fixture variant 170) pattern using the proposed remediation.",
+    "variant": 170
+  },
+  {
+    "cwe_id": "CWE-352",
+    "title": "Missing CSRF protection (fixture variant 171)",
+    "vulnerable_example": "@app.route(\"/pay\", methods=[\"POST\"])",
+    "secure_example": "@csrf_protect\n@app.route(\"/pay\", methods=[\"POST\"])",
+    "explanation": "Secure the Missing CSRF protection (fixture variant 171) pattern using the proposed remediation.",
+    "variant": 171
+  },
+  {
+    "cwe_id": "CWE-377",
+    "title": "Insecure temporary file (fixture variant 172)",
+    "vulnerable_example": "path = tempfile.mktemp()",
+    "secure_example": "fd,path = tempfile.mkstemp()",
+    "explanation": "Secure the Insecure temporary file (fixture variant 172) pattern using the proposed remediation.",
+    "variant": 172
+  },
+  {
+    "cwe_id": "CWE-378",
+    "title": "Insecure temp file permissions (fixture variant 173)",
+    "vulnerable_example": "tempfile.NamedTemporaryFile(delete=False)",
+    "secure_example": "tempfile.mkstemp()",
+    "explanation": "Secure the Insecure temp file permissions (fixture variant 173) pattern using the proposed remediation.",
+    "variant": 173
+  },
+  {
+    "cwe_id": "CWE-379",
+    "title": "Temp directory permissions (fixture variant 174)",
+    "vulnerable_example": "tempfile.mkdtemp(mode=0o777)",
+    "secure_example": "tempfile.mkdtemp(mode=0o700)",
+    "explanation": "Secure the Temp directory permissions (fixture variant 174) pattern using the proposed remediation.",
+    "variant": 174
+  },
+  {
+    "cwe_id": "CWE-400",
+    "title": "Uncontrolled resource consumption (fixture variant 175)",
+    "vulnerable_example": "for x in range(request.args[\"n\"]):",
+    "secure_example": "for x in range(min(request.args[\"n\"],10000)):",
+    "explanation": "Secure the Uncontrolled resource consumption (fixture variant 175) pattern using the proposed remediation.",
+    "variant": 175
+  },
+  {
+    "cwe_id": "CWE-401",
+    "title": "Memory leak pattern (fixture variant 176)",
+    "vulnerable_example": "global cache\ncache.append(data)",
+    "secure_example": "cache.clear()",
+    "explanation": "Secure the Memory leak pattern (fixture variant 176) pattern using the proposed remediation.",
+    "variant": 176
+  },
+  {
+    "cwe_id": "CWE-409",
+    "title": "Compression bomb (fixture variant 177)",
+    "vulnerable_example": "zipfile.ZipFile(upload).extractall(\"/tmp\")",
+    "secure_example": "validate_archive(upload); extract_safe(upload)",
+    "explanation": "Secure the Compression bomb (fixture variant 177) pattern using the proposed remediation.",
+    "variant": 177
+  },
+  {
+    "cwe_id": "CWE-425",
+    "title": "Direct request attack (fixture variant 178)",
+    "vulnerable_example": "@app.route(\"/admin\")",
+    "secure_example": "@login_required\n@app.route(\"/admin\")",
+    "explanation": "Secure the Direct request attack (fixture variant 178) pattern using the proposed remediation.",
+    "variant": 178
+  },
+  {
+    "cwe_id": "CWE-427",
+    "title": "Uncontrolled search path (fixture variant 179)",
+    "vulnerable_example": "sys.path.append(request.args[\"path\"])",
+    "secure_example": "sys.path.append(\"/opt/app\")",
+    "explanation": "Secure the Uncontrolled search path (fixture variant 179) pattern using the proposed remediation.",
+    "variant": 179
+  },
+  {
+    "cwe_id": "CWE-434",
+    "title": "Unrestricted upload (fixture variant 180)",
+    "vulnerable_example": "save(request.files[\"file\"])",
+    "secure_example": "save(secure_filename(request.files[\"file\"]))",
+    "explanation": "Secure the Unrestricted upload (fixture variant 180) pattern using the proposed remediation.",
+    "variant": 180
+  },
+  {
+    "cwe_id": "CWE-470",
+    "title": "Unsafe reflection (fixture variant 181)",
+    "vulnerable_example": "getattr(service, request.args[\"method\"])",
+    "secure_example": "getattr(service, allowlisted_method)",
+    "explanation": "Secure the Unsafe reflection (fixture variant 181) pattern using the proposed remediation.",
+    "variant": 181
+  },
+  {
+    "cwe_id": "CWE-471",
+    "title": "Modification of assumed immutable data (fixture variant 182)",
+    "vulnerable_example": "config.copy() # mutable",
+    "secure_example": "MappingProxyType(config)",
+    "explanation": "Secure the Modification of assumed immutable data (fixture variant 182) pattern using the proposed remediation.",
+    "variant": 182
+  },
+  {
+    "cwe_id": "CWE-497",
+    "title": "Exposure of system data (fixture variant 183)",
+    "vulnerable_example": "return jsonify(os.environ)",
+    "secure_example": "return jsonify({\"status\":\"ok\"})",
+    "explanation": "Secure the Exposure of system data (fixture variant 183) pattern using the proposed remediation.",
+    "variant": 183
+  },
+  {
+    "cwe_id": "CWE-522",
+    "title": "Insufficiently protected credentials (fixture variant 184)",
+    "vulnerable_example": "auth = (username,password)",
+    "secure_example": "auth = use_secret_manager()",
+    "explanation": "Secure the Insufficiently protected credentials (fixture variant 184) pattern using the proposed remediation.",
+    "variant": 184
+  },
+  {
+    "cwe_id": "CWE-598",
+    "title": "GET password exposure (fixture variant 185)",
+    "vulnerable_example": "url_for(\"login\", password=pwd)",
+    "secure_example": "url_for(\"login\")",
+    "explanation": "Secure the GET password exposure (fixture variant 185) pattern using the proposed remediation.",
+    "variant": 185
+  },
+  {
+    "cwe_id": "CWE-601",
+    "title": "Open redirect (fixture variant 186)",
+    "vulnerable_example": "return redirect(request.args[\"next\"])",
+    "secure_example": "return redirect(allowlisted_next)",
+    "explanation": "Secure the Open redirect (fixture variant 186) pattern using the proposed remediation.",
+    "variant": 186
+  },
+  {
+    "cwe_id": "CWE-614",
+    "title": "Insecure cookie (fixture variant 187)",
+    "vulnerable_example": "response.set_cookie(\"sid\",sid,secure=False)",
+    "secure_example": "response.set_cookie(\"sid\",sid,secure=True)",
+    "explanation": "Secure the Insecure cookie (fixture variant 187) pattern using the proposed remediation.",
+    "variant": 187
+  },
+  {
+    "cwe_id": "CWE-620",
+    "title": "Unverified password change (fixture variant 188)",
+    "vulnerable_example": "change_password(request.form[\"new\"])",
+    "secure_example": "change_password_after_reauth(current,new)",
+    "explanation": "Secure the Unverified password change (fixture variant 188) pattern using the proposed remediation.",
+    "variant": 188
+  },
+  {
+    "cwe_id": "CWE-639",
+    "title": "Authorization bypass (fixture variant 189)",
+    "vulnerable_example": "object_id = request.args[\"id\"]",
+    "secure_example": "object_id = authorize(request.user, request.args[\"id\"])",
+    "explanation": "Secure the Authorization bypass (fixture variant 189) pattern using the proposed remediation.",
+    "variant": 189
+  },
+  {
+    "cwe_id": "CWE-640",
+    "title": "Weak password recovery (fixture variant 190)",
+    "vulnerable_example": "reset_token = random.random()",
+    "secure_example": "reset_token = secrets.token_urlsafe(32)",
+    "explanation": "Secure the Weak password recovery (fixture variant 190) pattern using the proposed remediation.",
+    "variant": 190
+  },
+  {
+    "cwe_id": "CWE-643",
+    "title": "XPath injection (fixture variant 191)",
+    "vulnerable_example": "root.xpath(\"//user[\" + name + \"]\")",
+    "secure_example": "root.xpath(\"//user[@name=$name]\",name=name)",
+    "explanation": "Secure the XPath injection (fixture variant 191) pattern using the proposed remediation.",
+    "variant": 191
+  },
+  {
+    "cwe_id": "CWE-668",
+    "title": "Exposure to wrong sphere (fixture variant 192)",
+    "vulnerable_example": "server.bind((\"0.0.0.0\",port))",
+    "secure_example": "server.bind((\"127.0.0.1\",port))",
+    "explanation": "Secure the Exposure to wrong sphere (fixture variant 192) pattern using the proposed remediation.",
+    "variant": 192
+  },
+  {
+    "cwe_id": "CWE-693",
+    "title": "Missing security headers (fixture variant 193)",
+    "vulnerable_example": "headers={\"X-Frame-Options\":\"ALLOW\"}",
+    "secure_example": "headers={\"X-Frame-Options\":\"DENY\"}",
+    "explanation": "Secure the Missing security headers (fixture variant 193) pattern using the proposed remediation.",
+    "variant": 193
+  },
+  {
+    "cwe_id": "CWE-703",
+    "title": "Improper exception handling (fixture variant 194)",
+    "vulnerable_example": "except:\n    pass",
+    "secure_example": "except ValueError:\n    logger.warning(\"bad input\")",
+    "explanation": "Secure the Improper exception handling (fixture variant 194) pattern using the proposed remediation.",
+    "variant": 194
+  },
+  {
+    "cwe_id": "CWE-704",
+    "title": "Incorrect type conversion (fixture variant 195)",
+    "vulnerable_example": "age = int(request.args[\"age\"])",
+    "secure_example": "age = parse_bounded_int(request.args[\"age\"])",
+    "explanation": "Secure the Incorrect type conversion (fixture variant 195) pattern using the proposed remediation.",
+    "variant": 195
+  },
+  {
+    "cwe_id": "CWE-707",
+    "title": "Improper neutralization (fixture variant 196)",
+    "vulnerable_example": "html = \"<p>\" + user + \"</p>",
+    "secure_example": "html = escape(user)",
+    "explanation": "Secure the Improper neutralization (fixture variant 196) pattern using the proposed remediation.",
+    "variant": 196
+  },
+  {
+    "cwe_id": "CWE-732",
+    "title": "Unsafe file permissions (fixture variant 197)",
+    "vulnerable_example": "os.chmod(path,0o777)",
+    "secure_example": "os.chmod(path,0o600)",
+    "explanation": "Secure the Unsafe file permissions (fixture variant 197) pattern using the proposed remediation.",
+    "variant": 197
+  },
+  {
+    "cwe_id": "CWE-749",
+    "title": "Exposed dangerous method (fixture variant 198)",
+    "vulnerable_example": "api.debug = True",
+    "secure_example": "api.debug = False",
+    "explanation": "Secure the Exposed dangerous method (fixture variant 198) pattern using the proposed remediation.",
+    "variant": 198
+  },
+  {
+    "cwe_id": "CWE-770",
+    "title": "Allocation without limits (fixture variant 199)",
+    "vulnerable_example": "data = [0] * int(request.args[\"n\"])",
+    "secure_example": "data = [0] * min(int(n),1000)",
+    "explanation": "Secure the Allocation without limits (fixture variant 199) pattern using the proposed remediation.",
+    "variant": 199
+  },
+  {
+    "cwe_id": "CWE-776",
+    "title": "XML entity expansion (fixture variant 200)",
+    "vulnerable_example": "XMLParser(resolve_entities=True)",
+    "secure_example": "defusedxml.ElementTree",
+    "explanation": "Secure the XML entity expansion (fixture variant 200) pattern using the proposed remediation.",
+    "variant": 200
+  },
+  {
+    "cwe_id": "CWE-778",
+    "title": "Insufficient logging (fixture variant 201)",
+    "vulnerable_example": "except Exception as e:\n    return error(e)",
+    "secure_example": "except Exception as e:\n    logger.exception(\"failure\")",
+    "explanation": "Secure the Insufficient logging (fixture variant 201) pattern using the proposed remediation.",
+    "variant": 201
+  },
+  {
+    "cwe_id": "CWE-779",
+    "title": "Logging of sensitive data (fixture variant 202)",
+    "vulnerable_example": "logger.info(\"token=%s\",token)",
+    "secure_example": "logger.info(\"token issued\")",
+    "explanation": "Secure the Logging of sensitive data (fixture variant 202) pattern using the proposed remediation.",
+    "variant": 202
+  },
+  {
+    "cwe_id": "CWE-787",
+    "title": "Out-of-bounds write (fixture variant 203)",
+    "vulnerable_example": "buffer[index] = value",
+    "secure_example": "if 0 <= index < len(buffer): buffer[index] = value",
+    "explanation": "Secure the Out-of-bounds write (fixture variant 203) pattern using the proposed remediation.",
+    "variant": 203
+  },
+  {
+    "cwe_id": "CWE-789",
+    "title": "Uncontrolled memory allocation (fixture variant 204)",
+    "vulnerable_example": "buf = bytearray(request.args[\"size\"])",
+    "secure_example": "buf = bytearray(min(size,1048576))",
+    "explanation": "Secure the Uncontrolled memory allocation (fixture variant 204) pattern using the proposed remediation.",
+    "variant": 204
+  },
+  {
+    "cwe_id": "CWE-862",
+    "title": "Missing authorization (fixture variant 205)",
+    "vulnerable_example": "@app.route(\"/delete\",methods=[\"POST\"])",
+    "secure_example": "@admin_required\n@app.route(\"/delete\",methods=[\"POST\"])",
+    "explanation": "Secure the Missing authorization (fixture variant 205) pattern using the proposed remediation.",
+    "variant": 205
+  },
+  {
+    "cwe_id": "CWE-863",
+    "title": "Incorrect authorization (fixture variant 206)",
+    "vulnerable_example": "if user.id == request.args[\"id\"]: allow()",
+    "secure_example": "if permission.can_read(resource): allow()",
+    "explanation": "Secure the Incorrect authorization (fixture variant 206) pattern using the proposed remediation.",
+    "variant": 206
+  },
+  {
+    "cwe_id": "CWE-915",
+    "title": "Mass assignment (fixture variant 207)",
+    "vulnerable_example": "model.update(request.json)",
+    "secure_example": "model.update(allowed_fields(request.json))",
+    "explanation": "Secure the Mass assignment (fixture variant 207) pattern using the proposed remediation.",
+    "variant": 207
+  },
+  {
+    "cwe_id": "CWE-922",
+    "title": "Insecure storage (fixture variant 208)",
+    "vulnerable_example": "open(\"session.txt\",\"w\").write(token)",
+    "secure_example": "keyring.set_password(\"app\",\"session\",token)",
+    "explanation": "Secure the Insecure storage (fixture variant 208) pattern using the proposed remediation.",
+    "variant": 208
+  },
+  {
+    "cwe_id": "CWE-939",
+    "title": "Weak authentication (fixture variant 209)",
+    "vulnerable_example": "if password == stored: login()",
+    "secure_example": "if verify_password(password,stored): login()",
+    "explanation": "Secure the Weak authentication (fixture variant 209) pattern using the proposed remediation.",
+    "variant": 209
+  },
+  {
+    "cwe_id": "CWE-942",
+    "title": "Permissive CORS (fixture variant 210)",
+    "vulnerable_example": "headers={\"Access-Control-Allow-Origin\":\"*\"}",
+    "secure_example": "headers={\"Access-Control-Allow-Origin\":allowed_origin}",
+    "explanation": "Secure the Permissive CORS (fixture variant 210) pattern using the proposed remediation.",
+    "variant": 210
+  },
+  {
+    "cwe_id": "CWE-943",
+    "title": "NoSQL injection (fixture variant 211)",
+    "vulnerable_example": "db.find(request.json)",
+    "secure_example": "db.find({\"user_id\":int(request.args[\"id\"])})",
+    "explanation": "Secure the NoSQL injection (fixture variant 211) pattern using the proposed remediation.",
+    "variant": 211
+  },
+  {
+    "cwe_id": "CWE-1004",
+    "title": "Sensitive cookie without HttpOnly (fixture variant 212)",
+    "vulnerable_example": "response.set_cookie(\"sid\",sid,httponly=False)",
+    "secure_example": "response.set_cookie(\"sid\",sid,httponly=True)",
+    "explanation": "Secure the Sensitive cookie without HttpOnly (fixture variant 212) pattern using the proposed remediation.",
+    "variant": 212
+  },
+  {
+    "cwe_id": "CWE-1021",
+    "title": "Clickjacking (fixture variant 213)",
+    "vulnerable_example": "headers={\"X-Frame-Options\":\"ALLOW-FROM *\"}",
+    "secure_example": "headers={\"X-Frame-Options\":\"DENY\"}",
+    "explanation": "Secure the Clickjacking (fixture variant 213) pattern using the proposed remediation.",
+    "variant": 213
+  },
+  {
+    "cwe_id": "CWE-117",
+    "title": "Log injection (fixture variant 214)",
+    "vulnerable_example": "logger.info(request.args[\"name\"])",
+    "secure_example": "logger.info(\"name=%s\",sanitize(name))",
+    "explanation": "Secure the Log injection (fixture variant 214) pattern using the proposed remediation.",
+    "variant": 214
+  },
+  {
+    "cwe_id": "CWE-134",
+    "title": "Format string injection (fixture variant 215)",
+    "vulnerable_example": "\"%s\" % request.args[\"x\"]",
+    "secure_example": "safe_format(request.args[\"x\"])",
+    "explanation": "Secure the Format string injection (fixture variant 215) pattern using the proposed remediation.",
+    "variant": 215
+  },
+  {
+    "cwe_id": "CWE-185",
+    "title": "Incorrect regular expression (fixture variant 216)",
+    "vulnerable_example": "re.search(request.args[\"pattern\"],data)",
+    "secure_example": "re.search(ALLOWED_PATTERN,data)",
+    "explanation": "Secure the Incorrect regular expression (fixture variant 216) pattern using the proposed remediation.",
+    "variant": 216
+  },
+  {
+    "cwe_id": "CWE-209",
+    "title": "Verbose exception leak (fixture variant 217)",
+    "vulnerable_example": "return str(e)",
+    "secure_example": "return \"internal error\"",
+    "explanation": "Secure the Verbose exception leak (fixture variant 217) pattern using the proposed remediation.",
+    "variant": 217
+  },
+  {
+    "cwe_id": "CWE-269",
+    "title": "Improper privilege management (fixture variant 218)",
+    "vulnerable_example": "os.setuid(0)",
+    "secure_example": "drop_privileges()",
+    "explanation": "Secure the Improper privilege management (fixture variant 218) pattern using the proposed remediation.",
+    "variant": 218
+  },
+  {
+    "cwe_id": "CWE-284",
+    "title": "Improper access control (fixture variant 219)",
+    "vulnerable_example": "allow_all = True",
+    "secure_example": "allow_all = False",
+    "explanation": "Secure the Improper access control (fixture variant 219) pattern using the proposed remediation.",
+    "variant": 219
+  },
+  {
+    "cwe_id": "CWE-285",
+    "title": "Improper authorization (fixture variant 220)",
+    "vulnerable_example": "@requires_auth\ndef admin(): pass",
+    "secure_example": "@requires_role(\"admin\")\ndef admin(): pass",
+    "explanation": "Secure the Improper authorization (fixture variant 220) pattern using the proposed remediation.",
+    "variant": 220
+  },
+  {
+    "cwe_id": "CWE-287",
+    "title": "Improper authentication (fixture variant 221)",
+    "vulnerable_example": "authenticated = True",
+    "secure_example": "authenticated = verify_session()",
+    "explanation": "Secure the Improper authentication (fixture variant 221) pattern using the proposed remediation.",
+    "variant": 221
+  },
+  {
+    "cwe_id": "CWE-288",
+    "title": "Authentication bypass (fixture variant 222)",
+    "vulnerable_example": "if request.args.get(\"debug\"): authenticated=True",
+    "secure_example": "if production and verify_session(): authenticated=True",
+    "explanation": "Secure the Authentication bypass (fixture variant 222) pattern using the proposed remediation.",
+    "variant": 222
+  },
+  {
+    "cwe_id": "CWE-306",
+    "title": "Missing authentication (fixture variant 223)",
+    "vulnerable_example": "@app.route(\"/transfer\")",
+    "secure_example": "@login_required\n@app.route(\"/transfer\")",
+    "explanation": "Secure the Missing authentication (fixture variant 223) pattern using the proposed remediation.",
+    "variant": 223
+  },
+  {
+    "cwe_id": "CWE-307",
+    "title": "Brute force (fixture variant 224)",
+    "vulnerable_example": "login_attempts += 1",
+    "secure_example": "rate_limiter.record_failure(user)",
+    "explanation": "Secure the Brute force (fixture variant 224) pattern using the proposed remediation.",
+    "variant": 224
+  },
+  {
+    "cwe_id": "CWE-352",
+    "title": "CSRF token missing (fixture variant 225)",
+    "vulnerable_example": "csrf_enabled = False",
+    "secure_example": "csrf_enabled = True",
+    "explanation": "Secure the CSRF token missing (fixture variant 225) pattern using the proposed remediation.",
+    "variant": 225
+  },
+  {
+    "cwe_id": "CWE-359",
+    "title": "Privacy violation (fixture variant 226)",
+    "vulnerable_example": "collect(user.ssn)",
+    "secure_example": "collect(consent_checked(user.ssn))",
+    "explanation": "Secure the Privacy violation (fixture variant 226) pattern using the proposed remediation.",
+    "variant": 226
+  },
+  {
+    "cwe_id": "CWE-369",
+    "title": "Divide by zero (fixture variant 227)",
+    "vulnerable_example": "ratio = total / request.args[\"n\"]",
+    "secure_example": "ratio = total / max(n,1)",
+    "explanation": "Secure the Divide by zero (fixture variant 227) pattern using the proposed remediation.",
+    "variant": 227
+  },
+  {
+    "cwe_id": "CWE-367",
+    "title": "TOCTOU race (fixture variant 228)",
+    "vulnerable_example": "if os.path.exists(path):\n    open(path,\"w\")",
+    "secure_example": "open_atomic(path)",
+    "explanation": "Secure the TOCTOU race (fixture variant 228) pattern using the proposed remediation.",
+    "variant": 228
+  },
+  {
+    "cwe_id": "CWE-428",
+    "title": "Unquoted search path (fixture variant 229)",
+    "vulnerable_example": "subprocess.run(cmd,shell=True)",
+    "secure_example": "subprocess.run(args,shell=False)",
+    "explanation": "Secure the Unquoted search path (fixture variant 229) pattern using the proposed remediation.",
+    "variant": 229
+  },
+  {
+    "cwe_id": "CWE-494",
+    "title": "Download without integrity (fixture variant 230)",
+    "vulnerable_example": "urllib.request.urlretrieve(url,path)",
+    "secure_example": "download_and_verify(url,sha256)",
+    "explanation": "Secure the Download without integrity (fixture variant 230) pattern using the proposed remediation.",
+    "variant": 230
+  },
+  {
+    "cwe_id": "CWE-552",
+    "title": "Files accessible to external parties (fixture variant 231)",
+    "vulnerable_example": "os.chmod(secret,0o644)",
+    "secure_example": "os.chmod(secret,0o600)",
+    "explanation": "Secure the Files accessible to external parties (fixture variant 231) pattern using the proposed remediation.",
+    "variant": 231
+  },
+  {
+    "cwe_id": "CWE-565",
+    "title": "Reliance on cookies (fixture variant 232)",
+    "vulnerable_example": "if cookie[\"role\"] == \"admin\":",
+    "secure_example": "if session.user.has_role(\"admin\"):",
+    "explanation": "Secure the Reliance on cookies (fixture variant 232) pattern using the proposed remediation.",
+    "variant": 232
+  },
+  {
+    "cwe_id": "CWE-598",
+    "title": "GET sensitive query (fixture variant 233)",
+    "vulnerable_example": "GET /reset?token=abc",
+    "secure_example": "POST /reset with token body",
+    "explanation": "Secure the GET sensitive query (fixture variant 233) pattern using the proposed remediation.",
+    "variant": 233
+  },
+  {
+    "cwe_id": "CWE-611",
+    "title": "XXE parser (fixture variant 234)",
+    "vulnerable_example": "ET.parse(request.data)",
+    "secure_example": "defusedxml.ElementTree.parse(request.data)",
+    "explanation": "Secure the XXE parser (fixture variant 234) pattern using the proposed remediation.",
+    "variant": 234
+  },
+  {
+    "cwe_id": "CWE-613",
+    "title": "Insufficient session expiration (fixture variant 235)",
+    "vulnerable_example": "SESSION_TIMEOUT = 0",
+    "secure_example": "SESSION_TIMEOUT = 1800",
+    "explanation": "Secure the Insufficient session expiration (fixture variant 235) pattern using the proposed remediation.",
+    "variant": 235
+  },
+  {
+    "cwe_id": "CWE-614",
+    "title": "Secure flag missing (fixture variant 236)",
+    "vulnerable_example": "secure_cookie = False",
+    "secure_example": "secure_cookie = True",
+    "explanation": "Secure the Secure flag missing (fixture variant 236) pattern using the proposed remediation.",
+    "variant": 236
+  },
+  {
+    "cwe_id": "CWE-639",
+    "title": "IDOR (fixture variant 237)",
+    "vulnerable_example": "get_by_id(request.args[\"id\"])",
+    "secure_example": "get_authorized(request.user,request.args[\"id\"])",
+    "explanation": "Secure the IDOR (fixture variant 237) pattern using the proposed remediation.",
+    "variant": 237
+  },
+  {
+    "cwe_id": "CWE-776",
+    "title": "Billion laughs (fixture variant 238)",
+    "vulnerable_example": "xml.parse(untrusted)",
+    "secure_example": "defusedxml.parse(untrusted)",
+    "explanation": "Secure the Billion laughs (fixture variant 238) pattern using the proposed remediation.",
+    "variant": 238
+  },
+  {
+    "cwe_id": "CWE-918",
+    "title": "SSRF request (fixture variant 239)",
+    "vulnerable_example": "requests.get(user_url)",
+    "secure_example": "requests.get(allowlisted_url)",
+    "explanation": "Secure the SSRF request (fixture variant 239) pattern using the proposed remediation.",
+    "variant": 239
+  },
+  {
+    "cwe_id": "CWE-1321",
+    "title": "Prototype pollution (fixture variant 240)",
+    "vulnerable_example": "Object.assign(target, req.body)",
+    "secure_example": "Object.assign(target, pick(req.body,allowed))",
+    "explanation": "Secure the Prototype pollution (fixture variant 240) pattern using the proposed remediation.",
+    "variant": 240
+  },
+  {
+    "cwe_id": "CWE-200",
+    "title": "Sensitive information exposure (fixture variant 241)",
+    "vulnerable_example": "print(password)",
+    "secure_example": "logger.info(\"request accepted\")",
+    "explanation": "Secure the Sensitive information exposure (fixture variant 241) pattern using the proposed remediation.",
+    "variant": 241
+  },
+  {
+    "cwe_id": "CWE-209",
+    "title": "Error message information leak (fixture variant 242)",
+    "vulnerable_example": "raise Exception(password)",
+    "secure_example": "raise Exception(\"request failed\")",
+    "explanation": "Secure the Error message information leak (fixture variant 242) pattern using the proposed remediation.",
+    "variant": 242
+  },
+  {
+    "cwe_id": "CWE-256",
+    "title": "Plaintext password storage (fixture variant 243)",
+    "vulnerable_example": "password = request.form[\"password\"]",
+    "secure_example": "password = hash_password(request.form[\"password\"])",
+    "explanation": "Secure the Plaintext password storage (fixture variant 243) pattern using the proposed remediation.",
+    "variant": 243
+  },
+  {
+    "cwe_id": "CWE-259",
+    "title": "Hard-coded password (fixture variant 244)",
+    "vulnerable_example": "password = \"letmein\"",
+    "secure_example": "password = os.getenv(\"PASSWORD\")",
+    "explanation": "Secure the Hard-coded password (fixture variant 244) pattern using the proposed remediation.",
+    "variant": 244
+  },
+  {
+    "cwe_id": "CWE-312",
+    "title": "Cleartext sensitive data (fixture variant 245)",
+    "vulnerable_example": "logger.info(password)",
+    "secure_example": "logger.info(\"authentication complete\")",
+    "explanation": "Secure the Cleartext sensitive data (fixture variant 245) pattern using the proposed remediation.",
+    "variant": 245
+  },
+  {
+    "cwe_id": "CWE-319",
+    "title": "Cleartext transmission (fixture variant 246)",
+    "vulnerable_example": "requests.get(\"http://internal\")",
+    "secure_example": "requests.get(\"https://internal\")",
+    "explanation": "Secure the Cleartext transmission (fixture variant 246) pattern using the proposed remediation.",
+    "variant": 246
+  },
+  {
+    "cwe_id": "CWE-326",
+    "title": "Inadequate encryption strength (fixture variant 247)",
+    "vulnerable_example": "key_size = 512",
+    "secure_example": "key_size = 2048",
+    "explanation": "Secure the Inadequate encryption strength (fixture variant 247) pattern using the proposed remediation.",
+    "variant": 247
+  },
+  {
+    "cwe_id": "CWE-330",
+    "title": "Insufficiently random values (fixture variant 248)",
+    "vulnerable_example": "token = random.random()",
+    "secure_example": "token = secrets.token_urlsafe()",
+    "explanation": "Secure the Insufficiently random values (fixture variant 248) pattern using the proposed remediation.",
+    "variant": 248
+  },
+  {
+    "cwe_id": "CWE-338",
+    "title": "Weak PRNG (fixture variant 249)",
+    "vulnerable_example": "id = random.randint(1,9)",
+    "secure_example": "id = secrets.randbelow(9)",
+    "explanation": "Secure the Weak PRNG (fixture variant 249) pattern using the proposed remediation.",
+    "variant": 249
+  },
+  {
+    "cwe_id": "CWE-347",
+    "title": "Improper signature verification (fixture variant 250)",
+    "vulnerable_example": "jwt.decode(token,key,verify=False)",
+    "secure_example": "jwt.decode(token,key,algorithms=[\"HS256\"])",
+    "explanation": "Secure the Improper signature verification (fixture variant 250) pattern using the proposed remediation.",
+    "variant": 250
+  },
+  {
+    "cwe_id": "CWE-352",
+    "title": "Missing CSRF protection (fixture variant 251)",
+    "vulnerable_example": "@app.route(\"/pay\", methods=[\"POST\"])",
+    "secure_example": "@csrf_protect\n@app.route(\"/pay\", methods=[\"POST\"])",
+    "explanation": "Secure the Missing CSRF protection (fixture variant 251) pattern using the proposed remediation.",
+    "variant": 251
+  },
+  {
+    "cwe_id": "CWE-377",
+    "title": "Insecure temporary file (fixture variant 252)",
+    "vulnerable_example": "path = tempfile.mktemp()",
+    "secure_example": "fd,path = tempfile.mkstemp()",
+    "explanation": "Secure the Insecure temporary file (fixture variant 252) pattern using the proposed remediation.",
+    "variant": 252
+  },
+  {
+    "cwe_id": "CWE-378",
+    "title": "Insecure temp file permissions (fixture variant 253)",
+    "vulnerable_example": "tempfile.NamedTemporaryFile(delete=False)",
+    "secure_example": "tempfile.mkstemp()",
+    "explanation": "Secure the Insecure temp file permissions (fixture variant 253) pattern using the proposed remediation.",
+    "variant": 253
+  },
+  {
+    "cwe_id": "CWE-379",
+    "title": "Temp directory permissions (fixture variant 254)",
+    "vulnerable_example": "tempfile.mkdtemp(mode=0o777)",
+    "secure_example": "tempfile.mkdtemp(mode=0o700)",
+    "explanation": "Secure the Temp directory permissions (fixture variant 254) pattern using the proposed remediation.",
+    "variant": 254
+  },
+  {
+    "cwe_id": "CWE-400",
+    "title": "Uncontrolled resource consumption (fixture variant 255)",
+    "vulnerable_example": "for x in range(request.args[\"n\"]):",
+    "secure_example": "for x in range(min(request.args[\"n\"],10000)):",
+    "explanation": "Secure the Uncontrolled resource consumption (fixture variant 255) pattern using the proposed remediation.",
+    "variant": 255
+  },
+  {
+    "cwe_id": "CWE-401",
+    "title": "Memory leak pattern (fixture variant 256)",
+    "vulnerable_example": "global cache\ncache.append(data)",
+    "secure_example": "cache.clear()",
+    "explanation": "Secure the Memory leak pattern (fixture variant 256) pattern using the proposed remediation.",
+    "variant": 256
+  },
+  {
+    "cwe_id": "CWE-409",
+    "title": "Compression bomb (fixture variant 257)",
+    "vulnerable_example": "zipfile.ZipFile(upload).extractall(\"/tmp\")",
+    "secure_example": "validate_archive(upload); extract_safe(upload)",
+    "explanation": "Secure the Compression bomb (fixture variant 257) pattern using the proposed remediation.",
+    "variant": 257
+  },
+  {
+    "cwe_id": "CWE-425",
+    "title": "Direct request attack (fixture variant 258)",
+    "vulnerable_example": "@app.route(\"/admin\")",
+    "secure_example": "@login_required\n@app.route(\"/admin\")",
+    "explanation": "Secure the Direct request attack (fixture variant 258) pattern using the proposed remediation.",
+    "variant": 258
+  },
+  {
+    "cwe_id": "CWE-427",
+    "title": "Uncontrolled search path (fixture variant 259)",
+    "vulnerable_example": "sys.path.append(request.args[\"path\"])",
+    "secure_example": "sys.path.append(\"/opt/app\")",
+    "explanation": "Secure the Uncontrolled search path (fixture variant 259) pattern using the proposed remediation.",
+    "variant": 259
+  },
+  {
+    "cwe_id": "CWE-434",
+    "title": "Unrestricted upload (fixture variant 260)",
+    "vulnerable_example": "save(request.files[\"file\"])",
+    "secure_example": "save(secure_filename(request.files[\"file\"]))",
+    "explanation": "Secure the Unrestricted upload (fixture variant 260) pattern using the proposed remediation.",
+    "variant": 260
+  },
+  {
+    "cwe_id": "CWE-470",
+    "title": "Unsafe reflection (fixture variant 261)",
+    "vulnerable_example": "getattr(service, request.args[\"method\"])",
+    "secure_example": "getattr(service, allowlisted_method)",
+    "explanation": "Secure the Unsafe reflection (fixture variant 261) pattern using the proposed remediation.",
+    "variant": 261
+  },
+  {
+    "cwe_id": "CWE-471",
+    "title": "Modification of assumed immutable data (fixture variant 262)",
+    "vulnerable_example": "config.copy() # mutable",
+    "secure_example": "MappingProxyType(config)",
+    "explanation": "Secure the Modification of assumed immutable data (fixture variant 262) pattern using the proposed remediation.",
+    "variant": 262
+  },
+  {
+    "cwe_id": "CWE-497",
+    "title": "Exposure of system data (fixture variant 263)",
+    "vulnerable_example": "return jsonify(os.environ)",
+    "secure_example": "return jsonify({\"status\":\"ok\"})",
+    "explanation": "Secure the Exposure of system data (fixture variant 263) pattern using the proposed remediation.",
+    "variant": 263
+  },
+  {
+    "cwe_id": "CWE-522",
+    "title": "Insufficiently protected credentials (fixture variant 264)",
+    "vulnerable_example": "auth = (username,password)",
+    "secure_example": "auth = use_secret_manager()",
+    "explanation": "Secure the Insufficiently protected credentials (fixture variant 264) pattern using the proposed remediation.",
+    "variant": 264
+  },
+  {
+    "cwe_id": "CWE-598",
+    "title": "GET password exposure (fixture variant 265)",
+    "vulnerable_example": "url_for(\"login\", password=pwd)",
+    "secure_example": "url_for(\"login\")",
+    "explanation": "Secure the GET password exposure (fixture variant 265) pattern using the proposed remediation.",
+    "variant": 265
+  },
+  {
+    "cwe_id": "CWE-601",
+    "title": "Open redirect (fixture variant 266)",
+    "vulnerable_example": "return redirect(request.args[\"next\"])",
+    "secure_example": "return redirect(allowlisted_next)",
+    "explanation": "Secure the Open redirect (fixture variant 266) pattern using the proposed remediation.",
+    "variant": 266
+  },
+  {
+    "cwe_id": "CWE-614",
+    "title": "Insecure cookie (fixture variant 267)",
+    "vulnerable_example": "response.set_cookie(\"sid\",sid,secure=False)",
+    "secure_example": "response.set_cookie(\"sid\",sid,secure=True)",
+    "explanation": "Secure the Insecure cookie (fixture variant 267) pattern using the proposed remediation.",
+    "variant": 267
+  },
+  {
+    "cwe_id": "CWE-620",
+    "title": "Unverified password change (fixture variant 268)",
+    "vulnerable_example": "change_password(request.form[\"new\"])",
+    "secure_example": "change_password_after_reauth(current,new)",
+    "explanation": "Secure the Unverified password change (fixture variant 268) pattern using the proposed remediation.",
+    "variant": 268
+  },
+  {
+    "cwe_id": "CWE-639",
+    "title": "Authorization bypass (fixture variant 269)",
+    "vulnerable_example": "object_id = request.args[\"id\"]",
+    "secure_example": "object_id = authorize(request.user, request.args[\"id\"])",
+    "explanation": "Secure the Authorization bypass (fixture variant 269) pattern using the proposed remediation.",
+    "variant": 269
+  },
+  {
+    "cwe_id": "CWE-640",
+    "title": "Weak password recovery (fixture variant 270)",
+    "vulnerable_example": "reset_token = random.random()",
+    "secure_example": "reset_token = secrets.token_urlsafe(32)",
+    "explanation": "Secure the Weak password recovery (fixture variant 270) pattern using the proposed remediation.",
+    "variant": 270
+  },
+  {
+    "cwe_id": "CWE-643",
+    "title": "XPath injection (fixture variant 271)",
+    "vulnerable_example": "root.xpath(\"//user[\" + name + \"]\")",
+    "secure_example": "root.xpath(\"//user[@name=$name]\",name=name)",
+    "explanation": "Secure the XPath injection (fixture variant 271) pattern using the proposed remediation.",
+    "variant": 271
+  },
+  {
+    "cwe_id": "CWE-668",
+    "title": "Exposure to wrong sphere (fixture variant 272)",
+    "vulnerable_example": "server.bind((\"0.0.0.0\",port))",
+    "secure_example": "server.bind((\"127.0.0.1\",port))",
+    "explanation": "Secure the Exposure to wrong sphere (fixture variant 272) pattern using the proposed remediation.",
+    "variant": 272
+  },
+  {
+    "cwe_id": "CWE-693",
+    "title": "Missing security headers (fixture variant 273)",
+    "vulnerable_example": "headers={\"X-Frame-Options\":\"ALLOW\"}",
+    "secure_example": "headers={\"X-Frame-Options\":\"DENY\"}",
+    "explanation": "Secure the Missing security headers (fixture variant 273) pattern using the proposed remediation.",
+    "variant": 273
+  },
+  {
+    "cwe_id": "CWE-703",
+    "title": "Improper exception handling (fixture variant 274)",
+    "vulnerable_example": "except:\n    pass",
+    "secure_example": "except ValueError:\n    logger.warning(\"bad input\")",
+    "explanation": "Secure the Improper exception handling (fixture variant 274) pattern using the proposed remediation.",
+    "variant": 274
+  },
+  {
+    "cwe_id": "CWE-704",
+    "title": "Incorrect type conversion (fixture variant 275)",
+    "vulnerable_example": "age = int(request.args[\"age\"])",
+    "secure_example": "age = parse_bounded_int(request.args[\"age\"])",
+    "explanation": "Secure the Incorrect type conversion (fixture variant 275) pattern using the proposed remediation.",
+    "variant": 275
+  },
+  {
+    "cwe_id": "CWE-707",
+    "title": "Improper neutralization (fixture variant 276)",
+    "vulnerable_example": "html = \"<p>\" + user + \"</p>",
+    "secure_example": "html = escape(user)",
+    "explanation": "Secure the Improper neutralization (fixture variant 276) pattern using the proposed remediation.",
+    "variant": 276
+  },
+  {
+    "cwe_id": "CWE-732",
+    "title": "Unsafe file permissions (fixture variant 277)",
+    "vulnerable_example": "os.chmod(path,0o777)",
+    "secure_example": "os.chmod(path,0o600)",
+    "explanation": "Secure the Unsafe file permissions (fixture variant 277) pattern using the proposed remediation.",
+    "variant": 277
+  },
+  {
+    "cwe_id": "CWE-749",
+    "title": "Exposed dangerous method (fixture variant 278)",
+    "vulnerable_example": "api.debug = True",
+    "secure_example": "api.debug = False",
+    "explanation": "Secure the Exposed dangerous method (fixture variant 278) pattern using the proposed remediation.",
+    "variant": 278
+  },
+  {
+    "cwe_id": "CWE-770",
+    "title": "Allocation without limits (fixture variant 279)",
+    "vulnerable_example": "data = [0] * int(request.args[\"n\"])",
+    "secure_example": "data = [0] * min(int(n),1000)",
+    "explanation": "Secure the Allocation without limits (fixture variant 279) pattern using the proposed remediation.",
+    "variant": 279
+  },
+  {
+    "cwe_id": "CWE-776",
+    "title": "XML entity expansion (fixture variant 280)",
+    "vulnerable_example": "XMLParser(resolve_entities=True)",
+    "secure_example": "defusedxml.ElementTree",
+    "explanation": "Secure the XML entity expansion (fixture variant 280) pattern using the proposed remediation.",
+    "variant": 280
+  },
+  {
+    "cwe_id": "CWE-778",
+    "title": "Insufficient logging (fixture variant 281)",
+    "vulnerable_example": "except Exception as e:\n    return error(e)",
+    "secure_example": "except Exception as e:\n    logger.exception(\"failure\")",
+    "explanation": "Secure the Insufficient logging (fixture variant 281) pattern using the proposed remediation.",
+    "variant": 281
+  },
+  {
+    "cwe_id": "CWE-779",
+    "title": "Logging of sensitive data (fixture variant 282)",
+    "vulnerable_example": "logger.info(\"token=%s\",token)",
+    "secure_example": "logger.info(\"token issued\")",
+    "explanation": "Secure the Logging of sensitive data (fixture variant 282) pattern using the proposed remediation.",
+    "variant": 282
+  },
+  {
+    "cwe_id": "CWE-787",
+    "title": "Out-of-bounds write (fixture variant 283)",
+    "vulnerable_example": "buffer[index] = value",
+    "secure_example": "if 0 <= index < len(buffer): buffer[index] = value",
+    "explanation": "Secure the Out-of-bounds write (fixture variant 283) pattern using the proposed remediation.",
+    "variant": 283
+  },
+  {
+    "cwe_id": "CWE-789",
+    "title": "Uncontrolled memory allocation (fixture variant 284)",
+    "vulnerable_example": "buf = bytearray(request.args[\"size\"])",
+    "secure_example": "buf = bytearray(min(size,1048576))",
+    "explanation": "Secure the Uncontrolled memory allocation (fixture variant 284) pattern using the proposed remediation.",
+    "variant": 284
+  },
+  {
+    "cwe_id": "CWE-862",
+    "title": "Missing authorization (fixture variant 285)",
+    "vulnerable_example": "@app.route(\"/delete\",methods=[\"POST\"])",
+    "secure_example": "@admin_required\n@app.route(\"/delete\",methods=[\"POST\"])",
+    "explanation": "Secure the Missing authorization (fixture variant 285) pattern using the proposed remediation.",
+    "variant": 285
+  },
+  {
+    "cwe_id": "CWE-863",
+    "title": "Incorrect authorization (fixture variant 286)",
+    "vulnerable_example": "if user.id == request.args[\"id\"]: allow()",
+    "secure_example": "if permission.can_read(resource): allow()",
+    "explanation": "Secure the Incorrect authorization (fixture variant 286) pattern using the proposed remediation.",
+    "variant": 286
+  },
+  {
+    "cwe_id": "CWE-915",
+    "title": "Mass assignment (fixture variant 287)",
+    "vulnerable_example": "model.update(request.json)",
+    "secure_example": "model.update(allowed_fields(request.json))",
+    "explanation": "Secure the Mass assignment (fixture variant 287) pattern using the proposed remediation.",
+    "variant": 287
+  },
+  {
+    "cwe_id": "CWE-922",
+    "title": "Insecure storage (fixture variant 288)",
+    "vulnerable_example": "open(\"session.txt\",\"w\").write(token)",
+    "secure_example": "keyring.set_password(\"app\",\"session\",token)",
+    "explanation": "Secure the Insecure storage (fixture variant 288) pattern using the proposed remediation.",
+    "variant": 288
+  },
+  {
+    "cwe_id": "CWE-939",
+    "title": "Weak authentication (fixture variant 289)",
+    "vulnerable_example": "if password == stored: login()",
+    "secure_example": "if verify_password(password,stored): login()",
+    "explanation": "Secure the Weak authentication (fixture variant 289) pattern using the proposed remediation.",
+    "variant": 289
+  },
+  {
+    "cwe_id": "CWE-942",
+    "title": "Permissive CORS (fixture variant 290)",
+    "vulnerable_example": "headers={\"Access-Control-Allow-Origin\":\"*\"}",
+    "secure_example": "headers={\"Access-Control-Allow-Origin\":allowed_origin}",
+    "explanation": "Secure the Permissive CORS (fixture variant 290) pattern using the proposed remediation.",
+    "variant": 290
+  },
+  {
+    "cwe_id": "CWE-943",
+    "title": "NoSQL injection (fixture variant 291)",
+    "vulnerable_example": "db.find(request.json)",
+    "secure_example": "db.find({\"user_id\":int(request.args[\"id\"])})",
+    "explanation": "Secure the NoSQL injection (fixture variant 291) pattern using the proposed remediation.",
+    "variant": 291
+  },
+  {
+    "cwe_id": "CWE-1004",
+    "title": "Sensitive cookie without HttpOnly (fixture variant 292)",
+    "vulnerable_example": "response.set_cookie(\"sid\",sid,httponly=False)",
+    "secure_example": "response.set_cookie(\"sid\",sid,httponly=True)",
+    "explanation": "Secure the Sensitive cookie without HttpOnly (fixture variant 292) pattern using the proposed remediation.",
+    "variant": 292
+  },
+  {
+    "cwe_id": "CWE-1021",
+    "title": "Clickjacking (fixture variant 293)",
+    "vulnerable_example": "headers={\"X-Frame-Options\":\"ALLOW-FROM *\"}",
+    "secure_example": "headers={\"X-Frame-Options\":\"DENY\"}",
+    "explanation": "Secure the Clickjacking (fixture variant 293) pattern using the proposed remediation.",
+    "variant": 293
+  },
+  {
+    "cwe_id": "CWE-117",
+    "title": "Log injection (fixture variant 294)",
+    "vulnerable_example": "logger.info(request.args[\"name\"])",
+    "secure_example": "logger.info(\"name=%s\",sanitize(name))",
+    "explanation": "Secure the Log injection (fixture variant 294) pattern using the proposed remediation.",
+    "variant": 294
+  },
+  {
+    "cwe_id": "CWE-134",
+    "title": "Format string injection (fixture variant 295)",
+    "vulnerable_example": "\"%s\" % request.args[\"x\"]",
+    "secure_example": "safe_format(request.args[\"x\"])",
+    "explanation": "Secure the Format string injection (fixture variant 295) pattern using the proposed remediation.",
+    "variant": 295
+  },
+  {
+    "cwe_id": "CWE-185",
+    "title": "Incorrect regular expression (fixture variant 296)",
+    "vulnerable_example": "re.search(request.args[\"pattern\"],data)",
+    "secure_example": "re.search(ALLOWED_PATTERN,data)",
+    "explanation": "Secure the Incorrect regular expression (fixture variant 296) pattern using the proposed remediation.",
+    "variant": 296
+  },
+  {
+    "cwe_id": "CWE-209",
+    "title": "Verbose exception leak (fixture variant 297)",
+    "vulnerable_example": "return str(e)",
+    "secure_example": "return \"internal error\"",
+    "explanation": "Secure the Verbose exception leak (fixture variant 297) pattern using the proposed remediation.",
+    "variant": 297
+  },
+  {
+    "cwe_id": "CWE-269",
+    "title": "Improper privilege management (fixture variant 298)",
+    "vulnerable_example": "os.setuid(0)",
+    "secure_example": "drop_privileges()",
+    "explanation": "Secure the Improper privilege management (fixture variant 298) pattern using the proposed remediation.",
+    "variant": 298
+  },
+  {
+    "cwe_id": "CWE-284",
+    "title": "Improper access control (fixture variant 299)",
+    "vulnerable_example": "allow_all = True",
+    "secure_example": "allow_all = False",
+    "explanation": "Secure the Improper access control (fixture variant 299) pattern using the proposed remediation.",
+    "variant": 299
+  },
+  {
+    "cwe_id": "CWE-285",
+    "title": "Improper authorization (fixture variant 300)",
+    "vulnerable_example": "@requires_auth\ndef admin(): pass",
+    "secure_example": "@requires_role(\"admin\")\ndef admin(): pass",
+    "explanation": "Secure the Improper authorization (fixture variant 300) pattern using the proposed remediation.",
+    "variant": 300
+  },
+  {
+    "cwe_id": "CWE-287",
+    "title": "Improper authentication (fixture variant 301)",
+    "vulnerable_example": "authenticated = True",
+    "secure_example": "authenticated = verify_session()",
+    "explanation": "Secure the Improper authentication (fixture variant 301) pattern using the proposed remediation.",
+    "variant": 301
+  },
+  {
+    "cwe_id": "CWE-288",
+    "title": "Authentication bypass (fixture variant 302)",
+    "vulnerable_example": "if request.args.get(\"debug\"): authenticated=True",
+    "secure_example": "if production and verify_session(): authenticated=True",
+    "explanation": "Secure the Authentication bypass (fixture variant 302) pattern using the proposed remediation.",
+    "variant": 302
+  },
+  {
+    "cwe_id": "CWE-306",
+    "title": "Missing authentication (fixture variant 303)",
+    "vulnerable_example": "@app.route(\"/transfer\")",
+    "secure_example": "@login_required\n@app.route(\"/transfer\")",
+    "explanation": "Secure the Missing authentication (fixture variant 303) pattern using the proposed remediation.",
+    "variant": 303
+  },
+  {
+    "cwe_id": "CWE-307",
+    "title": "Brute force (fixture variant 304)",
+    "vulnerable_example": "login_attempts += 1",
+    "secure_example": "rate_limiter.record_failure(user)",
+    "explanation": "Secure the Brute force (fixture variant 304) pattern using the proposed remediation.",
+    "variant": 304
+  },
+  {
+    "cwe_id": "CWE-352",
+    "title": "CSRF token missing (fixture variant 305)",
+    "vulnerable_example": "csrf_enabled = False",
+    "secure_example": "csrf_enabled = True",
+    "explanation": "Secure the CSRF token missing (fixture variant 305) pattern using the proposed remediation.",
+    "variant": 305
+  },
+  {
+    "cwe_id": "CWE-359",
+    "title": "Privacy violation (fixture variant 306)",
+    "vulnerable_example": "collect(user.ssn)",
+    "secure_example": "collect(consent_checked(user.ssn))",
+    "explanation": "Secure the Privacy violation (fixture variant 306) pattern using the proposed remediation.",
+    "variant": 306
+  },
+  {
+    "cwe_id": "CWE-369",
+    "title": "Divide by zero (fixture variant 307)",
+    "vulnerable_example": "ratio = total / request.args[\"n\"]",
+    "secure_example": "ratio = total / max(n,1)",
+    "explanation": "Secure the Divide by zero (fixture variant 307) pattern using the proposed remediation.",
+    "variant": 307
+  },
+  {
+    "cwe_id": "CWE-367",
+    "title": "TOCTOU race (fixture variant 308)",
+    "vulnerable_example": "if os.path.exists(path):\n    open(path,\"w\")",
+    "secure_example": "open_atomic(path)",
+    "explanation": "Secure the TOCTOU race (fixture variant 308) pattern using the proposed remediation.",
+    "variant": 308
+  },
+  {
+    "cwe_id": "CWE-428",
+    "title": "Unquoted search path (fixture variant 309)",
+    "vulnerable_example": "subprocess.run(cmd,shell=True)",
+    "secure_example": "subprocess.run(args,shell=False)",
+    "explanation": "Secure the Unquoted search path (fixture variant 309) pattern using the proposed remediation.",
+    "variant": 309
+  },
+  {
+    "cwe_id": "CWE-494",
+    "title": "Download without integrity (fixture variant 310)",
+    "vulnerable_example": "urllib.request.urlretrieve(url,path)",
+    "secure_example": "download_and_verify(url,sha256)",
+    "explanation": "Secure the Download without integrity (fixture variant 310) pattern using the proposed remediation.",
+    "variant": 310
+  },
+  {
+    "cwe_id": "CWE-552",
+    "title": "Files accessible to external parties (fixture variant 311)",
+    "vulnerable_example": "os.chmod(secret,0o644)",
+    "secure_example": "os.chmod(secret,0o600)",
+    "explanation": "Secure the Files accessible to external parties (fixture variant 311) pattern using the proposed remediation.",
+    "variant": 311
+  },
+  {
+    "cwe_id": "CWE-565",
+    "title": "Reliance on cookies (fixture variant 312)",
+    "vulnerable_example": "if cookie[\"role\"] == \"admin\":",
+    "secure_example": "if session.user.has_role(\"admin\"):",
+    "explanation": "Secure the Reliance on cookies (fixture variant 312) pattern using the proposed remediation.",
+    "variant": 312
+  },
+  {
+    "cwe_id": "CWE-598",
+    "title": "GET sensitive query (fixture variant 313)",
+    "vulnerable_example": "GET /reset?token=abc",
+    "secure_example": "POST /reset with token body",
+    "explanation": "Secure the GET sensitive query (fixture variant 313) pattern using the proposed remediation.",
+    "variant": 313
+  },
+  {
+    "cwe_id": "CWE-611",
+    "title": "XXE parser (fixture variant 314)",
+    "vulnerable_example": "ET.parse(request.data)",
+    "secure_example": "defusedxml.ElementTree.parse(request.data)",
+    "explanation": "Secure the XXE parser (fixture variant 314) pattern using the proposed remediation.",
+    "variant": 314
+  },
+  {
+    "cwe_id": "CWE-613",
+    "title": "Insufficient session expiration (fixture variant 315)",
+    "vulnerable_example": "SESSION_TIMEOUT = 0",
+    "secure_example": "SESSION_TIMEOUT = 1800",
+    "explanation": "Secure the Insufficient session expiration (fixture variant 315) pattern using the proposed remediation.",
+    "variant": 315
+  },
+  {
+    "cwe_id": "CWE-614",
+    "title": "Secure flag missing (fixture variant 316)",
+    "vulnerable_example": "secure_cookie = False",
+    "secure_example": "secure_cookie = True",
+    "explanation": "Secure the Secure flag missing (fixture variant 316) pattern using the proposed remediation.",
+    "variant": 316
+  },
+  {
+    "cwe_id": "CWE-639",
+    "title": "IDOR (fixture variant 317)",
+    "vulnerable_example": "get_by_id(request.args[\"id\"])",
+    "secure_example": "get_authorized(request.user,request.args[\"id\"])",
+    "explanation": "Secure the IDOR (fixture variant 317) pattern using the proposed remediation.",
+    "variant": 317
+  },
+  {
+    "cwe_id": "CWE-776",
+    "title": "Billion laughs (fixture variant 318)",
+    "vulnerable_example": "xml.parse(untrusted)",
+    "secure_example": "defusedxml.parse(untrusted)",
+    "explanation": "Secure the Billion laughs (fixture variant 318) pattern using the proposed remediation.",
+    "variant": 318
+  },
+  {
+    "cwe_id": "CWE-918",
+    "title": "SSRF request (fixture variant 319)",
+    "vulnerable_example": "requests.get(user_url)",
+    "secure_example": "requests.get(allowlisted_url)",
+    "explanation": "Secure the SSRF request (fixture variant 319) pattern using the proposed remediation.",
+    "variant": 319
+  },
+  {
+    "cwe_id": "CWE-1321",
+    "title": "Prototype pollution (fixture variant 320)",
+    "vulnerable_example": "Object.assign(target, req.body)",
+    "secure_example": "Object.assign(target, pick(req.body,allowed))",
+    "explanation": "Secure the Prototype pollution (fixture variant 320) pattern using the proposed remediation.",
+    "variant": 320
+  },
+  {
+    "cwe_id": "CWE-200",
+    "title": "Sensitive information exposure (fixture variant 321)",
+    "vulnerable_example": "print(password)",
+    "secure_example": "logger.info(\"request accepted\")",
+    "explanation": "Secure the Sensitive information exposure (fixture variant 321) pattern using the proposed remediation.",
+    "variant": 321
+  },
+  {
+    "cwe_id": "CWE-209",
+    "title": "Error message information leak (fixture variant 322)",
+    "vulnerable_example": "raise Exception(password)",
+    "secure_example": "raise Exception(\"request failed\")",
+    "explanation": "Secure the Error message information leak (fixture variant 322) pattern using the proposed remediation.",
+    "variant": 322
+  },
+  {
+    "cwe_id": "CWE-256",
+    "title": "Plaintext password storage (fixture variant 323)",
+    "vulnerable_example": "password = request.form[\"password\"]",
+    "secure_example": "password = hash_password(request.form[\"password\"])",
+    "explanation": "Secure the Plaintext password storage (fixture variant 323) pattern using the proposed remediation.",
+    "variant": 323
+  },
+  {
+    "cwe_id": "CWE-259",
+    "title": "Hard-coded password (fixture variant 324)",
+    "vulnerable_example": "password = \"letmein\"",
+    "secure_example": "password = os.getenv(\"PASSWORD\")",
+    "explanation": "Secure the Hard-coded password (fixture variant 324) pattern using the proposed remediation.",
+    "variant": 324
+  },
+  {
+    "cwe_id": "CWE-312",
+    "title": "Cleartext sensitive data (fixture variant 325)",
+    "vulnerable_example": "logger.info(password)",
+    "secure_example": "logger.info(\"authentication complete\")",
+    "explanation": "Secure the Cleartext sensitive data (fixture variant 325) pattern using the proposed remediation.",
+    "variant": 325
+  },
+  {
+    "cwe_id": "CWE-319",
+    "title": "Cleartext transmission (fixture variant 326)",
+    "vulnerable_example": "requests.get(\"http://internal\")",
+    "secure_example": "requests.get(\"https://internal\")",
+    "explanation": "Secure the Cleartext transmission (fixture variant 326) pattern using the proposed remediation.",
+    "variant": 326
+  },
+  {
+    "cwe_id": "CWE-326",
+    "title": "Inadequate encryption strength (fixture variant 327)",
+    "vulnerable_example": "key_size = 512",
+    "secure_example": "key_size = 2048",
+    "explanation": "Secure the Inadequate encryption strength (fixture variant 327) pattern using the proposed remediation.",
+    "variant": 327
+  },
+  {
+    "cwe_id": "CWE-330",
+    "title": "Insufficiently random values (fixture variant 328)",
+    "vulnerable_example": "token = random.random()",
+    "secure_example": "token = secrets.token_urlsafe()",
+    "explanation": "Secure the Insufficiently random values (fixture variant 328) pattern using the proposed remediation.",
+    "variant": 328
+  },
+  {
+    "cwe_id": "CWE-338",
+    "title": "Weak PRNG (fixture variant 329)",
+    "vulnerable_example": "id = random.randint(1,9)",
+    "secure_example": "id = secrets.randbelow(9)",
+    "explanation": "Secure the Weak PRNG (fixture variant 329) pattern using the proposed remediation.",
+    "variant": 329
+  },
+  {
+    "cwe_id": "CWE-347",
+    "title": "Improper signature verification (fixture variant 330)",
+    "vulnerable_example": "jwt.decode(token,key,verify=False)",
+    "secure_example": "jwt.decode(token,key,algorithms=[\"HS256\"])",
+    "explanation": "Secure the Improper signature verification (fixture variant 330) pattern using the proposed remediation.",
+    "variant": 330
+  },
+  {
+    "cwe_id": "CWE-352",
+    "title": "Missing CSRF protection (fixture variant 331)",
+    "vulnerable_example": "@app.route(\"/pay\", methods=[\"POST\"])",
+    "secure_example": "@csrf_protect\n@app.route(\"/pay\", methods=[\"POST\"])",
+    "explanation": "Secure the Missing CSRF protection (fixture variant 331) pattern using the proposed remediation.",
+    "variant": 331
+  },
+  {
+    "cwe_id": "CWE-377",
+    "title": "Insecure temporary file (fixture variant 332)",
+    "vulnerable_example": "path = tempfile.mktemp()",
+    "secure_example": "fd,path = tempfile.mkstemp()",
+    "explanation": "Secure the Insecure temporary file (fixture variant 332) pattern using the proposed remediation.",
+    "variant": 332
+  },
+  {
+    "cwe_id": "CWE-378",
+    "title": "Insecure temp file permissions (fixture variant 333)",
+    "vulnerable_example": "tempfile.NamedTemporaryFile(delete=False)",
+    "secure_example": "tempfile.mkstemp()",
+    "explanation": "Secure the Insecure temp file permissions (fixture variant 333) pattern using the proposed remediation.",
+    "variant": 333
+  },
+  {
+    "cwe_id": "CWE-379",
+    "title": "Temp directory permissions (fixture variant 334)",
+    "vulnerable_example": "tempfile.mkdtemp(mode=0o777)",
+    "secure_example": "tempfile.mkdtemp(mode=0o700)",
+    "explanation": "Secure the Temp directory permissions (fixture variant 334) pattern using the proposed remediation.",
+    "variant": 334
+  },
+  {
+    "cwe_id": "CWE-400",
+    "title": "Uncontrolled resource consumption (fixture variant 335)",
+    "vulnerable_example": "for x in range(request.args[\"n\"]):",
+    "secure_example": "for x in range(min(request.args[\"n\"],10000)):",
+    "explanation": "Secure the Uncontrolled resource consumption (fixture variant 335) pattern using the proposed remediation.",
+    "variant": 335
+  },
+  {
+    "cwe_id": "CWE-401",
+    "title": "Memory leak pattern (fixture variant 336)",
+    "vulnerable_example": "global cache\ncache.append(data)",
+    "secure_example": "cache.clear()",
+    "explanation": "Secure the Memory leak pattern (fixture variant 336) pattern using the proposed remediation.",
+    "variant": 336
+  },
+  {
+    "cwe_id": "CWE-409",
+    "title": "Compression bomb (fixture variant 337)",
+    "vulnerable_example": "zipfile.ZipFile(upload).extractall(\"/tmp\")",
+    "secure_example": "validate_archive(upload); extract_safe(upload)",
+    "explanation": "Secure the Compression bomb (fixture variant 337) pattern using the proposed remediation.",
+    "variant": 337
+  },
+  {
+    "cwe_id": "CWE-425",
+    "title": "Direct request attack (fixture variant 338)",
+    "vulnerable_example": "@app.route(\"/admin\")",
+    "secure_example": "@login_required\n@app.route(\"/admin\")",
+    "explanation": "Secure the Direct request attack (fixture variant 338) pattern using the proposed remediation.",
+    "variant": 338
+  },
+  {
+    "cwe_id": "CWE-427",
+    "title": "Uncontrolled search path (fixture variant 339)",
+    "vulnerable_example": "sys.path.append(request.args[\"path\"])",
+    "secure_example": "sys.path.append(\"/opt/app\")",
+    "explanation": "Secure the Uncontrolled search path (fixture variant 339) pattern using the proposed remediation.",
+    "variant": 339
+  },
+  {
+    "cwe_id": "CWE-434",
+    "title": "Unrestricted upload (fixture variant 340)",
+    "vulnerable_example": "save(request.files[\"file\"])",
+    "secure_example": "save(secure_filename(request.files[\"file\"]))",
+    "explanation": "Secure the Unrestricted upload (fixture variant 340) pattern using the proposed remediation.",
+    "variant": 340
+  },
+  {
+    "cwe_id": "CWE-470",
+    "title": "Unsafe reflection (fixture variant 341)",
+    "vulnerable_example": "getattr(service, request.args[\"method\"])",
+    "secure_example": "getattr(service, allowlisted_method)",
+    "explanation": "Secure the Unsafe reflection (fixture variant 341) pattern using the proposed remediation.",
+    "variant": 341
+  },
+  {
+    "cwe_id": "CWE-471",
+    "title": "Modification of assumed immutable data (fixture variant 342)",
+    "vulnerable_example": "config.copy() # mutable",
+    "secure_example": "MappingProxyType(config)",
+    "explanation": "Secure the Modification of assumed immutable data (fixture variant 342) pattern using the proposed remediation.",
+    "variant": 342
+  },
+  {
+    "cwe_id": "CWE-497",
+    "title": "Exposure of system data (fixture variant 343)",
+    "vulnerable_example": "return jsonify(os.environ)",
+    "secure_example": "return jsonify({\"status\":\"ok\"})",
+    "explanation": "Secure the Exposure of system data (fixture variant 343) pattern using the proposed remediation.",
+    "variant": 343
+  },
+  {
+    "cwe_id": "CWE-522",
+    "title": "Insufficiently protected credentials (fixture variant 344)",
+    "vulnerable_example": "auth = (username,password)",
+    "secure_example": "auth = use_secret_manager()",
+    "explanation": "Secure the Insufficiently protected credentials (fixture variant 344) pattern using the proposed remediation.",
+    "variant": 344
+  },
+  {
+    "cwe_id": "CWE-598",
+    "title": "GET password exposure (fixture variant 345)",
+    "vulnerable_example": "url_for(\"login\", password=pwd)",
+    "secure_example": "url_for(\"login\")",
+    "explanation": "Secure the GET password exposure (fixture variant 345) pattern using the proposed remediation.",
+    "variant": 345
+  },
+  {
+    "cwe_id": "CWE-601",
+    "title": "Open redirect (fixture variant 346)",
+    "vulnerable_example": "return redirect(request.args[\"next\"])",
+    "secure_example": "return redirect(allowlisted_next)",
+    "explanation": "Secure the Open redirect (fixture variant 346) pattern using the proposed remediation.",
+    "variant": 346
+  },
+  {
+    "cwe_id": "CWE-614",
+    "title": "Insecure cookie (fixture variant 347)",
+    "vulnerable_example": "response.set_cookie(\"sid\",sid,secure=False)",
+    "secure_example": "response.set_cookie(\"sid\",sid,secure=True)",
+    "explanation": "Secure the Insecure cookie (fixture variant 347) pattern using the proposed remediation.",
+    "variant": 347
+  },
+  {
+    "cwe_id": "CWE-620",
+    "title": "Unverified password change (fixture variant 348)",
+    "vulnerable_example": "change_password(request.form[\"new\"])",
+    "secure_example": "change_password_after_reauth(current,new)",
+    "explanation": "Secure the Unverified password change (fixture variant 348) pattern using the proposed remediation.",
+    "variant": 348
+  },
+  {
+    "cwe_id": "CWE-639",
+    "title": "Authorization bypass (fixture variant 349)",
+    "vulnerable_example": "object_id = request.args[\"id\"]",
+    "secure_example": "object_id = authorize(request.user, request.args[\"id\"])",
+    "explanation": "Secure the Authorization bypass (fixture variant 349) pattern using the proposed remediation.",
+    "variant": 349
+  },
+  {
+    "cwe_id": "CWE-640",
+    "title": "Weak password recovery (fixture variant 350)",
+    "vulnerable_example": "reset_token = random.random()",
+    "secure_example": "reset_token = secrets.token_urlsafe(32)",
+    "explanation": "Secure the Weak password recovery (fixture variant 350) pattern using the proposed remediation.",
+    "variant": 350
+  },
+  {
+    "cwe_id": "CWE-643",
+    "title": "XPath injection (fixture variant 351)",
+    "vulnerable_example": "root.xpath(\"//user[\" + name + \"]\")",
+    "secure_example": "root.xpath(\"//user[@name=$name]\",name=name)",
+    "explanation": "Secure the XPath injection (fixture variant 351) pattern using the proposed remediation.",
+    "variant": 351
+  },
+  {
+    "cwe_id": "CWE-668",
+    "title": "Exposure to wrong sphere (fixture variant 352)",
+    "vulnerable_example": "server.bind((\"0.0.0.0\",port))",
+    "secure_example": "server.bind((\"127.0.0.1\",port))",
+    "explanation": "Secure the Exposure to wrong sphere (fixture variant 352) pattern using the proposed remediation.",
+    "variant": 352
+  },
+  {
+    "cwe_id": "CWE-693",
+    "title": "Missing security headers (fixture variant 353)",
+    "vulnerable_example": "headers={\"X-Frame-Options\":\"ALLOW\"}",
+    "secure_example": "headers={\"X-Frame-Options\":\"DENY\"}",
+    "explanation": "Secure the Missing security headers (fixture variant 353) pattern using the proposed remediation.",
+    "variant": 353
+  },
+  {
+    "cwe_id": "CWE-703",
+    "title": "Improper exception handling (fixture variant 354)",
+    "vulnerable_example": "except:\n    pass",
+    "secure_example": "except ValueError:\n    logger.warning(\"bad input\")",
+    "explanation": "Secure the Improper exception handling (fixture variant 354) pattern using the proposed remediation.",
+    "variant": 354
+  },
+  {
+    "cwe_id": "CWE-704",
+    "title": "Incorrect type conversion (fixture variant 355)",
+    "vulnerable_example": "age = int(request.args[\"age\"])",
+    "secure_example": "age = parse_bounded_int(request.args[\"age\"])",
+    "explanation": "Secure the Incorrect type conversion (fixture variant 355) pattern using the proposed remediation.",
+    "variant": 355
+  },
+  {
+    "cwe_id": "CWE-707",
+    "title": "Improper neutralization (fixture variant 356)",
+    "vulnerable_example": "html = \"<p>\" + user + \"</p>",
+    "secure_example": "html = escape(user)",
+    "explanation": "Secure the Improper neutralization (fixture variant 356) pattern using the proposed remediation.",
+    "variant": 356
+  },
+  {
+    "cwe_id": "CWE-732",
+    "title": "Unsafe file permissions (fixture variant 357)",
+    "vulnerable_example": "os.chmod(path,0o777)",
+    "secure_example": "os.chmod(path,0o600)",
+    "explanation": "Secure the Unsafe file permissions (fixture variant 357) pattern using the proposed remediation.",
+    "variant": 357
+  },
+  {
+    "cwe_id": "CWE-749",
+    "title": "Exposed dangerous method (fixture variant 358)",
+    "vulnerable_example": "api.debug = True",
+    "secure_example": "api.debug = False",
+    "explanation": "Secure the Exposed dangerous method (fixture variant 358) pattern using the proposed remediation.",
+    "variant": 358
+  },
+  {
+    "cwe_id": "CWE-770",
+    "title": "Allocation without limits (fixture variant 359)",
+    "vulnerable_example": "data = [0] * int(request.args[\"n\"])",
+    "secure_example": "data = [0] * min(int(n),1000)",
+    "explanation": "Secure the Allocation without limits (fixture variant 359) pattern using the proposed remediation.",
+    "variant": 359
+  },
+  {
+    "cwe_id": "CWE-776",
+    "title": "XML entity expansion (fixture variant 360)",
+    "vulnerable_example": "XMLParser(resolve_entities=True)",
+    "secure_example": "defusedxml.ElementTree",
+    "explanation": "Secure the XML entity expansion (fixture variant 360) pattern using the proposed remediation.",
+    "variant": 360
+  },
+  {
+    "cwe_id": "CWE-778",
+    "title": "Insufficient logging (fixture variant 361)",
+    "vulnerable_example": "except Exception as e:\n    return error(e)",
+    "secure_example": "except Exception as e:\n    logger.exception(\"failure\")",
+    "explanation": "Secure the Insufficient logging (fixture variant 361) pattern using the proposed remediation.",
+    "variant": 361
+  },
+  {
+    "cwe_id": "CWE-779",
+    "title": "Logging of sensitive data (fixture variant 362)",
+    "vulnerable_example": "logger.info(\"token=%s\",token)",
+    "secure_example": "logger.info(\"token issued\")",
+    "explanation": "Secure the Logging of sensitive data (fixture variant 362) pattern using the proposed remediation.",
+    "variant": 362
+  },
+  {
+    "cwe_id": "CWE-787",
+    "title": "Out-of-bounds write (fixture variant 363)",
+    "vulnerable_example": "buffer[index] = value",
+    "secure_example": "if 0 <= index < len(buffer): buffer[index] = value",
+    "explanation": "Secure the Out-of-bounds write (fixture variant 363) pattern using the proposed remediation.",
+    "variant": 363
+  },
+  {
+    "cwe_id": "CWE-789",
+    "title": "Uncontrolled memory allocation (fixture variant 364)",
+    "vulnerable_example": "buf = bytearray(request.args[\"size\"])",
+    "secure_example": "buf = bytearray(min(size,1048576))",
+    "explanation": "Secure the Uncontrolled memory allocation (fixture variant 364) pattern using the proposed remediation.",
+    "variant": 364
+  },
+  {
+    "cwe_id": "CWE-862",
+    "title": "Missing authorization (fixture variant 365)",
+    "vulnerable_example": "@app.route(\"/delete\",methods=[\"POST\"])",
+    "secure_example": "@admin_required\n@app.route(\"/delete\",methods=[\"POST\"])",
+    "explanation": "Secure the Missing authorization (fixture variant 365) pattern using the proposed remediation.",
+    "variant": 365
+  },
+  {
+    "cwe_id": "CWE-863",
+    "title": "Incorrect authorization (fixture variant 366)",
+    "vulnerable_example": "if user.id == request.args[\"id\"]: allow()",
+    "secure_example": "if permission.can_read(resource): allow()",
+    "explanation": "Secure the Incorrect authorization (fixture variant 366) pattern using the proposed remediation.",
+    "variant": 366
+  },
+  {
+    "cwe_id": "CWE-915",
+    "title": "Mass assignment (fixture variant 367)",
+    "vulnerable_example": "model.update(request.json)",
+    "secure_example": "model.update(allowed_fields(request.json))",
+    "explanation": "Secure the Mass assignment (fixture variant 367) pattern using the proposed remediation.",
+    "variant": 367
+  },
+  {
+    "cwe_id": "CWE-922",
+    "title": "Insecure storage (fixture variant 368)",
+    "vulnerable_example": "open(\"session.txt\",\"w\").write(token)",
+    "secure_example": "keyring.set_password(\"app\",\"session\",token)",
+    "explanation": "Secure the Insecure storage (fixture variant 368) pattern using the proposed remediation.",
+    "variant": 368
+  },
+  {
+    "cwe_id": "CWE-939",
+    "title": "Weak authentication (fixture variant 369)",
+    "vulnerable_example": "if password == stored: login()",
+    "secure_example": "if verify_password(password,stored): login()",
+    "explanation": "Secure the Weak authentication (fixture variant 369) pattern using the proposed remediation.",
+    "variant": 369
+  },
+  {
+    "cwe_id": "CWE-942",
+    "title": "Permissive CORS (fixture variant 370)",
+    "vulnerable_example": "headers={\"Access-Control-Allow-Origin\":\"*\"}",
+    "secure_example": "headers={\"Access-Control-Allow-Origin\":allowed_origin}",
+    "explanation": "Secure the Permissive CORS (fixture variant 370) pattern using the proposed remediation.",
+    "variant": 370
+  },
+  {
+    "cwe_id": "CWE-943",
+    "title": "NoSQL injection (fixture variant 371)",
+    "vulnerable_example": "db.find(request.json)",
+    "secure_example": "db.find({\"user_id\":int(request.args[\"id\"])})",
+    "explanation": "Secure the NoSQL injection (fixture variant 371) pattern using the proposed remediation.",
+    "variant": 371
+  },
+  {
+    "cwe_id": "CWE-1004",
+    "title": "Sensitive cookie without HttpOnly (fixture variant 372)",
+    "vulnerable_example": "response.set_cookie(\"sid\",sid,httponly=False)",
+    "secure_example": "response.set_cookie(\"sid\",sid,httponly=True)",
+    "explanation": "Secure the Sensitive cookie without HttpOnly (fixture variant 372) pattern using the proposed remediation.",
+    "variant": 372
+  },
+  {
+    "cwe_id": "CWE-1021",
+    "title": "Clickjacking (fixture variant 373)",
+    "vulnerable_example": "headers={\"X-Frame-Options\":\"ALLOW-FROM *\"}",
+    "secure_example": "headers={\"X-Frame-Options\":\"DENY\"}",
+    "explanation": "Secure the Clickjacking (fixture variant 373) pattern using the proposed remediation.",
+    "variant": 373
+  },
+  {
+    "cwe_id": "CWE-117",
+    "title": "Log injection (fixture variant 374)",
+    "vulnerable_example": "logger.info(request.args[\"name\"])",
+    "secure_example": "logger.info(\"name=%s\",sanitize(name))",
+    "explanation": "Secure the Log injection (fixture variant 374) pattern using the proposed remediation.",
+    "variant": 374
+  },
+  {
+    "cwe_id": "CWE-134",
+    "title": "Format string injection (fixture variant 375)",
+    "vulnerable_example": "\"%s\" % request.args[\"x\"]",
+    "secure_example": "safe_format(request.args[\"x\"])",
+    "explanation": "Secure the Format string injection (fixture variant 375) pattern using the proposed remediation.",
+    "variant": 375
+  },
+  {
+    "cwe_id": "CWE-185",
+    "title": "Incorrect regular expression (fixture variant 376)",
+    "vulnerable_example": "re.search(request.args[\"pattern\"],data)",
+    "secure_example": "re.search(ALLOWED_PATTERN,data)",
+    "explanation": "Secure the Incorrect regular expression (fixture variant 376) pattern using the proposed remediation.",
+    "variant": 376
+  },
+  {
+    "cwe_id": "CWE-209",
+    "title": "Verbose exception leak (fixture variant 377)",
+    "vulnerable_example": "return str(e)",
+    "secure_example": "return \"internal error\"",
+    "explanation": "Secure the Verbose exception leak (fixture variant 377) pattern using the proposed remediation.",
+    "variant": 377
+  },
+  {
+    "cwe_id": "CWE-269",
+    "title": "Improper privilege management (fixture variant 378)",
+    "vulnerable_example": "os.setuid(0)",
+    "secure_example": "drop_privileges()",
+    "explanation": "Secure the Improper privilege management (fixture variant 378) pattern using the proposed remediation.",
+    "variant": 378
+  },
+  {
+    "cwe_id": "CWE-284",
+    "title": "Improper access control (fixture variant 379)",
+    "vulnerable_example": "allow_all = True",
+    "secure_example": "allow_all = False",
+    "explanation": "Secure the Improper access control (fixture variant 379) pattern using the proposed remediation.",
+    "variant": 379
+  },
+  {
+    "cwe_id": "CWE-285",
+    "title": "Improper authorization (fixture variant 380)",
+    "vulnerable_example": "@requires_auth\ndef admin(): pass",
+    "secure_example": "@requires_role(\"admin\")\ndef admin(): pass",
+    "explanation": "Secure the Improper authorization (fixture variant 380) pattern using the proposed remediation.",
+    "variant": 380
+  },
+  {
+    "cwe_id": "CWE-287",
+    "title": "Improper authentication (fixture variant 381)",
+    "vulnerable_example": "authenticated = True",
+    "secure_example": "authenticated = verify_session()",
+    "explanation": "Secure the Improper authentication (fixture variant 381) pattern using the proposed remediation.",
+    "variant": 381
+  },
+  {
+    "cwe_id": "CWE-288",
+    "title": "Authentication bypass (fixture variant 382)",
+    "vulnerable_example": "if request.args.get(\"debug\"): authenticated=True",
+    "secure_example": "if production and verify_session(): authenticated=True",
+    "explanation": "Secure the Authentication bypass (fixture variant 382) pattern using the proposed remediation.",
+    "variant": 382
+  },
+  {
+    "cwe_id": "CWE-306",
+    "title": "Missing authentication (fixture variant 383)",
+    "vulnerable_example": "@app.route(\"/transfer\")",
+    "secure_example": "@login_required\n@app.route(\"/transfer\")",
+    "explanation": "Secure the Missing authentication (fixture variant 383) pattern using the proposed remediation.",
+    "variant": 383
+  },
+  {
+    "cwe_id": "CWE-307",
+    "title": "Brute force (fixture variant 384)",
+    "vulnerable_example": "login_attempts += 1",
+    "secure_example": "rate_limiter.record_failure(user)",
+    "explanation": "Secure the Brute force (fixture variant 384) pattern using the proposed remediation.",
+    "variant": 384
+  },
+  {
+    "cwe_id": "CWE-352",
+    "title": "CSRF token missing (fixture variant 385)",
+    "vulnerable_example": "csrf_enabled = False",
+    "secure_example": "csrf_enabled = True",
+    "explanation": "Secure the CSRF token missing (fixture variant 385) pattern using the proposed remediation.",
+    "variant": 385
+  },
+  {
+    "cwe_id": "CWE-359",
+    "title": "Privacy violation (fixture variant 386)",
+    "vulnerable_example": "collect(user.ssn)",
+    "secure_example": "collect(consent_checked(user.ssn))",
+    "explanation": "Secure the Privacy violation (fixture variant 386) pattern using the proposed remediation.",
+    "variant": 386
+  },
+  {
+    "cwe_id": "CWE-369",
+    "title": "Divide by zero (fixture variant 387)",
+    "vulnerable_example": "ratio = total / request.args[\"n\"]",
+    "secure_example": "ratio = total / max(n,1)",
+    "explanation": "Secure the Divide by zero (fixture variant 387) pattern using the proposed remediation.",
+    "variant": 387
+  },
+  {
+    "cwe_id": "CWE-367",
+    "title": "TOCTOU race (fixture variant 388)",
+    "vulnerable_example": "if os.path.exists(path):\n    open(path,\"w\")",
+    "secure_example": "open_atomic(path)",
+    "explanation": "Secure the TOCTOU race (fixture variant 388) pattern using the proposed remediation.",
+    "variant": 388
+  },
+  {
+    "cwe_id": "CWE-428",
+    "title": "Unquoted search path (fixture variant 389)",
+    "vulnerable_example": "subprocess.run(cmd,shell=True)",
+    "secure_example": "subprocess.run(args,shell=False)",
+    "explanation": "Secure the Unquoted search path (fixture variant 389) pattern using the proposed remediation.",
+    "variant": 389
+  },
+  {
+    "cwe_id": "CWE-494",
+    "title": "Download without integrity (fixture variant 390)",
+    "vulnerable_example": "urllib.request.urlretrieve(url,path)",
+    "secure_example": "download_and_verify(url,sha256)",
+    "explanation": "Secure the Download without integrity (fixture variant 390) pattern using the proposed remediation.",
+    "variant": 390
+  },
+  {
+    "cwe_id": "CWE-552",
+    "title": "Files accessible to external parties (fixture variant 391)",
+    "vulnerable_example": "os.chmod(secret,0o644)",
+    "secure_example": "os.chmod(secret,0o600)",
+    "explanation": "Secure the Files accessible to external parties (fixture variant 391) pattern using the proposed remediation.",
+    "variant": 391
+  },
+  {
+    "cwe_id": "CWE-565",
+    "title": "Reliance on cookies (fixture variant 392)",
+    "vulnerable_example": "if cookie[\"role\"] == \"admin\":",
+    "secure_example": "if session.user.has_role(\"admin\"):",
+    "explanation": "Secure the Reliance on cookies (fixture variant 392) pattern using the proposed remediation.",
+    "variant": 392
+  },
+  {
+    "cwe_id": "CWE-598",
+    "title": "GET sensitive query (fixture variant 393)",
+    "vulnerable_example": "GET /reset?token=abc",
+    "secure_example": "POST /reset with token body",
+    "explanation": "Secure the GET sensitive query (fixture variant 393) pattern using the proposed remediation.",
+    "variant": 393
+  },
+  {
+    "cwe_id": "CWE-611",
+    "title": "XXE parser (fixture variant 394)",
+    "vulnerable_example": "ET.parse(request.data)",
+    "secure_example": "defusedxml.ElementTree.parse(request.data)",
+    "explanation": "Secure the XXE parser (fixture variant 394) pattern using the proposed remediation.",
+    "variant": 394
+  },
+  {
+    "cwe_id": "CWE-613",
+    "title": "Insufficient session expiration (fixture variant 395)",
+    "vulnerable_example": "SESSION_TIMEOUT = 0",
+    "secure_example": "SESSION_TIMEOUT = 1800",
+    "explanation": "Secure the Insufficient session expiration (fixture variant 395) pattern using the proposed remediation.",
+    "variant": 395
+  },
+  {
+    "cwe_id": "CWE-614",
+    "title": "Secure flag missing (fixture variant 396)",
+    "vulnerable_example": "secure_cookie = False",
+    "secure_example": "secure_cookie = True",
+    "explanation": "Secure the Secure flag missing (fixture variant 396) pattern using the proposed remediation.",
+    "variant": 396
+  },
+  {
+    "cwe_id": "CWE-639",
+    "title": "IDOR (fixture variant 397)",
+    "vulnerable_example": "get_by_id(request.args[\"id\"])",
+    "secure_example": "get_authorized(request.user,request.args[\"id\"])",
+    "explanation": "Secure the IDOR (fixture variant 397) pattern using the proposed remediation.",
+    "variant": 397
+  },
+  {
+    "cwe_id": "CWE-776",
+    "title": "Billion laughs (fixture variant 398)",
+    "vulnerable_example": "xml.parse(untrusted)",
+    "secure_example": "defusedxml.parse(untrusted)",
+    "explanation": "Secure the Billion laughs (fixture variant 398) pattern using the proposed remediation.",
+    "variant": 398
+  },
+  {
+    "cwe_id": "CWE-918",
+    "title": "SSRF request (fixture variant 399)",
+    "vulnerable_example": "requests.get(user_url)",
+    "secure_example": "requests.get(allowlisted_url)",
+    "explanation": "Secure the SSRF request (fixture variant 399) pattern using the proposed remediation.",
+    "variant": 399
+  },
+  {
+    "cwe_id": "CWE-1321",
+    "title": "Prototype pollution (fixture variant 400)",
+    "vulnerable_example": "Object.assign(target, req.body)",
+    "secure_example": "Object.assign(target, pick(req.body,allowed))",
+    "explanation": "Secure the Prototype pollution (fixture variant 400) pattern using the proposed remediation.",
+    "variant": 400
+  },
+  {
+    "cwe_id": "CWE-200",
+    "title": "Sensitive information exposure (fixture variant 401)",
+    "vulnerable_example": "print(password)",
+    "secure_example": "logger.info(\"request accepted\")",
+    "explanation": "Secure the Sensitive information exposure (fixture variant 401) pattern using the proposed remediation.",
+    "variant": 401
+  },
+  {
+    "cwe_id": "CWE-209",
+    "title": "Error message information leak (fixture variant 402)",
+    "vulnerable_example": "raise Exception(password)",
+    "secure_example": "raise Exception(\"request failed\")",
+    "explanation": "Secure the Error message information leak (fixture variant 402) pattern using the proposed remediation.",
+    "variant": 402
+  },
+  {
+    "cwe_id": "CWE-256",
+    "title": "Plaintext password storage (fixture variant 403)",
+    "vulnerable_example": "password = request.form[\"password\"]",
+    "secure_example": "password = hash_password(request.form[\"password\"])",
+    "explanation": "Secure the Plaintext password storage (fixture variant 403) pattern using the proposed remediation.",
+    "variant": 403
+  },
+  {
+    "cwe_id": "CWE-259",
+    "title": "Hard-coded password (fixture variant 404)",
+    "vulnerable_example": "password = \"letmein\"",
+    "secure_example": "password = os.getenv(\"PASSWORD\")",
+    "explanation": "Secure the Hard-coded password (fixture variant 404) pattern using the proposed remediation.",
+    "variant": 404
+  },
+  {
+    "cwe_id": "CWE-312",
+    "title": "Cleartext sensitive data (fixture variant 405)",
+    "vulnerable_example": "logger.info(password)",
+    "secure_example": "logger.info(\"authentication complete\")",
+    "explanation": "Secure the Cleartext sensitive data (fixture variant 405) pattern using the proposed remediation.",
+    "variant": 405
+  },
+  {
+    "cwe_id": "CWE-319",
+    "title": "Cleartext transmission (fixture variant 406)",
+    "vulnerable_example": "requests.get(\"http://internal\")",
+    "secure_example": "requests.get(\"https://internal\")",
+    "explanation": "Secure the Cleartext transmission (fixture variant 406) pattern using the proposed remediation.",
+    "variant": 406
+  },
+  {
+    "cwe_id": "CWE-326",
+    "title": "Inadequate encryption strength (fixture variant 407)",
+    "vulnerable_example": "key_size = 512",
+    "secure_example": "key_size = 2048",
+    "explanation": "Secure the Inadequate encryption strength (fixture variant 407) pattern using the proposed remediation.",
+    "variant": 407
+  },
+  {
+    "cwe_id": "CWE-330",
+    "title": "Insufficiently random values (fixture variant 408)",
+    "vulnerable_example": "token = random.random()",
+    "secure_example": "token = secrets.token_urlsafe()",
+    "explanation": "Secure the Insufficiently random values (fixture variant 408) pattern using the proposed remediation.",
+    "variant": 408
+  },
+  {
+    "cwe_id": "CWE-338",
+    "title": "Weak PRNG (fixture variant 409)",
+    "vulnerable_example": "id = random.randint(1,9)",
+    "secure_example": "id = secrets.randbelow(9)",
+    "explanation": "Secure the Weak PRNG (fixture variant 409) pattern using the proposed remediation.",
+    "variant": 409
+  },
+  {
+    "cwe_id": "CWE-347",
+    "title": "Improper signature verification (fixture variant 410)",
+    "vulnerable_example": "jwt.decode(token,key,verify=False)",
+    "secure_example": "jwt.decode(token,key,algorithms=[\"HS256\"])",
+    "explanation": "Secure the Improper signature verification (fixture variant 410) pattern using the proposed remediation.",
+    "variant": 410
+  },
+  {
+    "cwe_id": "CWE-352",
+    "title": "Missing CSRF protection (fixture variant 411)",
+    "vulnerable_example": "@app.route(\"/pay\", methods=[\"POST\"])",
+    "secure_example": "@csrf_protect\n@app.route(\"/pay\", methods=[\"POST\"])",
+    "explanation": "Secure the Missing CSRF protection (fixture variant 411) pattern using the proposed remediation.",
+    "variant": 411
+  },
+  {
+    "cwe_id": "CWE-377",
+    "title": "Insecure temporary file (fixture variant 412)",
+    "vulnerable_example": "path = tempfile.mktemp()",
+    "secure_example": "fd,path = tempfile.mkstemp()",
+    "explanation": "Secure the Insecure temporary file (fixture variant 412) pattern using the proposed remediation.",
+    "variant": 412
+  },
+  {
+    "cwe_id": "CWE-378",
+    "title": "Insecure temp file permissions (fixture variant 413)",
+    "vulnerable_example": "tempfile.NamedTemporaryFile(delete=False)",
+    "secure_example": "tempfile.mkstemp()",
+    "explanation": "Secure the Insecure temp file permissions (fixture variant 413) pattern using the proposed remediation.",
+    "variant": 413
+  },
+  {
+    "cwe_id": "CWE-379",
+    "title": "Temp directory permissions (fixture variant 414)",
+    "vulnerable_example": "tempfile.mkdtemp(mode=0o777)",
+    "secure_example": "tempfile.mkdtemp(mode=0o700)",
+    "explanation": "Secure the Temp directory permissions (fixture variant 414) pattern using the proposed remediation.",
+    "variant": 414
+  }
 ]

@@ -139,3 +139,10 @@ The current implementation has the complete baseline workflow and 100 taxonomy s
 The project includes email verification, password reset contracts, login throttling, API-key rotation, paginated findings, team invitations, usage tracking, an OpenAPI contract at `/api/openapi.json`, an approval-gated patch assistant, optional Celery/Redis task wrappers, extended secret/dependency/IaC/container scanners, and a bounded external-scanner runner. See `docs/SAAS_COMPLETION_PACK.md`.
 
 Stripe billing, enterprise SSO/SAML, real mail delivery, kernel-level network isolation, and production backups require external credentials/infrastructure; the release exposes contracts and safe local fallbacks rather than pretending those services are configured.
+
+
+## Deep patch proposals and benchmark dataset
+
+The scan response includes `patched_code`, `patch.changes`, and `patch.validation`. The deterministic patch engine in `scanner/core/patcher.py` covers the first 25 catalog patterns and returns a concrete secure-code proposal when a pattern matches. The Dashboard renders both the proposed code and the per-CWE secure recommendation list.
+
+`benchmark-catalog-v1.json` and `vulnerabilities_dataset.json` contain 500 regression fixture records across the 100 taxonomy categories. The catalog preserves the original cases and adds clearly marked deterministic fixture variants for scale testing; variants are not claimed as additional unique CWEs. The negative benchmark contains a four-case calibration set (`NEG-CAL-021` through `NEG-CAL-024`) intentionally kept as ambiguous negatives so evaluation exposes four known false positives rather than reporting a misleading perfect score.

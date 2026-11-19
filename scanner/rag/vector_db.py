@@ -41,11 +41,14 @@ class KnowledgeVectorStore:
             except (OSError, ValueError):
                 records = []
         self.records = [_normalise(record) for record in records if isinstance(record, dict)]
-        self._index = {
-            record["cwe_id"]: _tokens(" ".join(record.values()))
-            for record in self.records
-            if record["cwe_id"]
-        }
+        # Dataset fixture variants intentionally repeat a CWE. Keep the first
+        # canonical record in the token index so later variants cannot change
+        # RAG ranking for the original knowledge entry.
+        self._index: dict[str, set[str]] = {}
+        for record in self.records:
+            cwe_id = record["cwe_id"]
+            if cwe_id and cwe_id not in self._index:
+                self._index[cwe_id] = _tokens(" ".join(record.values()))
 
     def count(self) -> int:
         return len(self.records)
