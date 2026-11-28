@@ -27,6 +27,8 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 
 from scanner.analysis.security_scanner import full_security_scan
 from scanner.core.patcher import propose_patch
+from scanner.providers.llm import OllamaProvider
+from scanner.rag.rag_engine import SecurityRAGEngine
 from .models import APIKey, AuditLog, CodeScan, EmailVerification, Membership, Organization, Project, RepositoryEvent, RepositoryIntegration, ScanJob, UsageRecord, VulnerabilityReport
 from scanner.services.integrations import create_integration_project, hash_secret, ingest_webhook
 from scanner.services.provider_clients import ProviderClient, ProviderError, extract_source_files, normalize_ref
@@ -168,6 +170,15 @@ class ScanCodeAPIView(APIView):
             )
 
             findings = result["all_findings"]
+            rag = SecurityRAGEngine()
+            rag_findings = rag.enrich_findings(findings)
+            llm_result = {"status": "disabled", "findings": []}
+            if request.data.get("use_llm") is True or os.getenv("ENABLE_LLM_SCAN", "0") == "1":
+                llm_result = OllamaProvider().analyze(
+                    code,
+                    language=result["language"],
+                    retrieved_context=[item["rag_suggested_fix"] for item in rag_findings if item["rag_suggested_fix"]],
+                )
             summary = summarize_findings(
                 findings,
                 duration_ms=round((time.perf_counter() - started_at) * 1000, 2),
@@ -213,6 +224,12 @@ class ScanCodeAPIView(APIView):
                     "patched_code": patch["patched_code"],
                     "patch": patch,
                     "vulnerabilities": findings,
+                    "rag": {
+                        "backend": type(rag.store).__name__,
+                        "knowledge_base_size": rag.store.count(),
+                        "findings": rag_findings,
+                    },
+                    "llm_advisory": llm_result,
                     "engines": {
                         "ast": result["ast_findings"],
                         "bandit": result["bandit_findings"],

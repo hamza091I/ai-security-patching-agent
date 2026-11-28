@@ -43,6 +43,7 @@ class UsageRecord(models.Model):
 
 class AssistantRequest(models.Model):
     STATUS_CHOICES = [("DRAFT", "Draft"), ("APPROVED", "Approved"), ("REJECTED", "Rejected"), ("APPLIED", "Applied")]
+    REGRESSION_STATUS_CHOICES = [("NOT_RUN", "Not run"), ("PASSED", "Passed"), ("FAILED", "Failed")]
     organization = models.ForeignKey("Organization", on_delete=models.CASCADE, related_name="assistant_requests")
     requested_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
     scan = models.ForeignKey("CodeScan", on_delete=models.CASCADE, null=True, blank=True)
@@ -53,5 +54,7 @@ class AssistantRequest(models.Model):
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="DRAFT")
     approved_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="approved_assistant_requests")
     regression_passed = models.BooleanField(null=True, blank=True)
+    regression_status = models.CharField(max_length=20, choices=REGRESSION_STATUS_CHOICES, default="NOT_RUN")
+    regression_result = models.JSONField(default=dict, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

@@ -5,3 +5,6 @@ redis>=5,<6
 drf-spectacular>=0.27,<1
 # Optional supply-chain audit in CI
 pip-audit>=2.7,<3
+# Optional embedding-backed RAG; deterministic RAG remains the default.
+chromadb>=0.5,<1
+sentence-transformers>=3,<6

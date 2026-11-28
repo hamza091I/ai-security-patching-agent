@@ -13,7 +13,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from scanner.models import APIKey, AssistantRequest, AuditLog, EmailVerification, Membership, TeamInvite, UsageRecord
-from scanner.core.patcher import propose_patch
+from scanner.core.patcher import propose_patch, validate_patch
 from scanner.views import _workspace_for_user
 
 
@@ -89,17 +89,60 @@ class AssistantAPIView(APIView):
         filename = request.data.get("filename", "sample.py")
         if not org or not isinstance(code, str) or not code.strip(): return Response({"status": "error", "message": "Workspace and code are required."}, status=400)
         patch = propose_patch(code, filename)
-        assistant = AssistantRequest.objects.create(organization=org, requested_by=request.user, prompt=str(request.data.get("prompt", "Generate a safe patch")), evidence={"filename": filename}, proposed_diff=patch.get("patched_code", ""))
-        return Response({"status": "draft", "request_id": assistant.id, "proposed_patch": assistant.proposed_diff, "requires_human_approval": True}, status=201)
+        assistant = AssistantRequest.objects.create(
+            organization=org,
+            requested_by=request.user,
+            prompt=str(request.data.get("prompt", "Generate a safe patch")),
+            evidence={"filename": filename, "original_code": code, "validation": patch.get("validation", {})},
+            proposed_diff=patch.get("patched_code", ""),
+        )
+        return Response({
+            "status": "draft",
+            "request_id": assistant.id,
+            "proposed_patch": assistant.proposed_diff,
+            "validation": patch.get("validation", {}),
+            "approval_decision": "PENDING",
+            "regression_status": assistant.regression_status,
+            "requires_human_approval": True,
+            "auto_apply": False,
+        }, status=201)
     def patch(self, request, request_id):
         org = _workspace_for_user(request.user)
         item = AssistantRequest.objects.filter(id=request_id, organization=org).first()
         if not item: return Response({"status": "error", "message": "Assistant request not found."}, status=404)
         decision = str(request.data.get("decision", "")).upper()
         if decision not in {"APPROVE", "REJECT"}: return Response({"status": "error", "message": "decision must be APPROVE or REJECT."}, status=400)
-        item.status = "APPROVED" if decision == "APPROVE" else "REJECTED"; item.approved_by = request.user; item.regression_passed = decision == "APPROVE"; item.save(update_fields=["status", "approved_by", "regression_passed", "updated_at"])
+        if decision == "APPROVE":
+            evidence = item.evidence or {}
+            regression = validate_patch(
+                evidence.get("original_code", ""),
+                item.proposed_diff,
+                evidence.get("filename", "sample.py"),
+            )
+            item.regression_result = regression
+            item.regression_passed = bool(regression.get("syntax") and regression.get("rescan"))
+            item.regression_status = "PASSED" if item.regression_passed else "FAILED"
+            item.status = "APPROVED"
+        else:
+            item.status = "REJECTED"
+            item.regression_passed = None
+            item.regression_status = "NOT_RUN"
+            item.regression_result = {"status": "not_run", "reason": "Patch rejected by human reviewer."}
+        item.approved_by = request.user
+        item.save(update_fields=["status", "approved_by", "regression_passed", "regression_status", "regression_result", "updated_at"])
         AuditLog.objects.create(organization=org, actor=request.user, action="assistant.decision", metadata={"request_id": item.id, "decision": decision})
-        return Response({"status": "success", "request_id": item.id, "decision": item.status, "patch": item.proposed_diff})
+        return Response({
+            "status": "success",
+            "request_id": item.id,
+            "decision": item.status,
+            "approval_decision": item.status,
+            "regression_status": item.regression_status,
+            "regression_passed": item.regression_passed,
+            "regression_result": item.regression_result,
+            "patch": item.proposed_diff,
+            "auto_apply": False,
+            "apply_allowed": item.status == "APPROVED" and item.regression_passed is True,
+        })
 
 
 class VerifyEmailAPIView(APIView):

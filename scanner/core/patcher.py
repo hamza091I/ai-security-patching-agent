@@ -11,7 +11,7 @@ import ast
 import re
 from typing import Callable
 
-from scanner.analysis.orchestrator import scan_code
+from scanner.analysis.security_scanner import full_security_scan
 
 
 def _replace_once(code: str, pattern: str, replacement, *, flags=re.MULTILINE):
@@ -38,20 +38,41 @@ def _python_parseable(code: str) -> bool:
 
 
 def validate_patch(original: str, patched: str, filename: str = "sample.py") -> dict:
+    """Validate a proposal without executing submitted code.
+
+    The rescan uses the complete scanner so Bandit and extended rules participate.
+    A snippet has no repository test context, therefore the test result is explicit
+    rather than ``None``; repository CI remains the gate for real project tests.
+    """
     syntax_valid = True
     if filename.lower().endswith((".py", ".pyw")):
         syntax_valid = _python_parseable(patched)
 
-    before_findings = scan_code(original, filename).get("findings", [])
-    after_findings = scan_code(patched, filename).get("findings", [])
-    before_cwes = {f.get("cwe_id") for f in before_findings}
-    after_cwes = {f.get("cwe_id") for f in after_findings}
-    rescan_valid = (
-        not before_cwes
-        or (len(after_findings) <= len(before_findings)
-            and len(after_cwes.intersection(before_cwes)) < len(before_cwes))
-    )
-    return {"syntax": syntax_valid, "rescan": rescan_valid, "tests": None}
+    before_result = full_security_scan(original, filename)
+    after_result = full_security_scan(patched, filename)
+    before_findings = before_result.get("all_findings", [])
+    after_findings = after_result.get("all_findings", [])
+    before_cwes = {f.get("cwe_id") for f in before_findings if f.get("cwe_id")}
+    after_cwes = {f.get("cwe_id") for f in after_findings if f.get("cwe_id")}
+    remaining_cwes = before_cwes & after_cwes
+    new_cwes = after_cwes - before_cwes
+    changed = original != patched
+    rescan_valid = bool(syntax_valid and changed and not new_cwes and len(after_findings) < len(before_findings))
+    return {
+        "syntax": syntax_valid,
+        "rescan": rescan_valid,
+        "before_findings": len(before_findings),
+        "after_findings": len(after_findings),
+        "remaining_cwes": sorted(remaining_cwes),
+        "new_cwes": sorted(new_cwes),
+        "requires_review": not rescan_valid or bool(remaining_cwes),
+        "reason": "cleaner_full_rescan" if rescan_valid else "semantic_or_security_review_required",
+        "tests": {
+            "status": "not_run",
+            "passed": None,
+            "reason": "A code snippet has no repository test context; run the repository test suite in CI before applying.",
+        },
+    }
 
 
 def _patch_python(patched: str, changes: list[dict]) -> str:
@@ -157,6 +178,6 @@ def propose_patch(code: str, filename: str = "sample.py") -> dict:
 
 def run_patcher_on_code(code: str, filename: str = "sample.py") -> dict:
     result = propose_patch(code, filename)
-    result["vulnerabilities"] = scan_code(code, filename).get("findings", [])
+    result["vulnerabilities"] = full_security_scan(code, filename)["all_findings"]
     result["retrieved_fixes"] = result["changes"]
     return result

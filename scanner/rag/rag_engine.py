@@ -2,13 +2,13 @@
 from __future__ import annotations
 
 from scanner.analysis.ast_parser import analyze_code_string
-from scanner.rag.vector_db import KnowledgeVectorStore, get_knowledge_store
+from scanner.rag.vector_db import KnowledgeStore, get_knowledge_store
 
 
 class SecurityRAGEngine:
     """Enrich findings with the best matching CWE knowledge record."""
 
-    def __init__(self, store: KnowledgeVectorStore | None = None):
+    def __init__(self, store: KnowledgeStore | None = None):
         self.store = store or get_knowledge_store()
         self.records = self.store.records
 
@@ -23,7 +23,11 @@ class SecurityRAGEngine:
         enriched = []
         for finding in findings:
             knowledge = self.find(finding.get("cwe_id"), query=finding.get("message", ""))
-            enriched.append({"detected_issue": finding, "rag_suggested_fix": knowledge})
+            enriched.append({
+                "detected_issue": finding,
+                "rag_suggested_fix": knowledge,
+                "retrieval_source": type(self.store).__name__,
+            })
         return enriched
 
 

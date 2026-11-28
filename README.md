@@ -37,7 +37,11 @@ Example:
 curl -X POST http://127.0.0.1:8000/api/scan/ -H 'Content-Type: application/json' -d '{"filename":"sample.py","code":"value = eval(user_input)"}'
 ```
 
-All findings include engine, language, CWE, rule, severity, confidence, risk score, line range, evidence, recommendation, and validation fields. Ollama is optional and is never required for the deterministic baseline. Patches are proposals only; this project does not push to GitHub/GitLab automatically.
+All findings include engine, language, CWE, rule, severity, confidence, risk score, line range, evidence, recommendation, and validation fields. The scan response also includes `rag.findings`: retrieval from the single `scanner.rag` facade. The deterministic token-overlap store is the default; an optional Chroma/SentenceTransformer adapter uses the same `search`, `lookup`, and `count` contract and falls back to deterministic retrieval if its packages are unavailable.
+
+Ollama is optional and runs only after retrieval when `use_llm=true` is sent or `ENABLE_LLM_SCAN=1`. Its prompt treats submitted code and retrieved context as untrusted data, and its JSON is schema-checked before being returned as `llm_advisory`; deterministic scanner findings remain authoritative. Install `requirements-optional.txt` before selecting `RAG_BACKEND=chroma`.
+
+Patches are proposals only; this project does not execute submitted code, auto-apply patches, auto-commit, or auto-push to GitHub/GitLab. The Assistant API keeps `approval_decision` separate from `regression_status` and `regression_result`. An approval does not mean a regression passed, and even a passed proposal still requires an explicit apply operation outside this API.
 
 ## Phase 2 SaaS workflow
 
